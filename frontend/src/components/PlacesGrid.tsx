@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Place } from '../types';
+import { apiUrl } from '../config';
 import { PlaceCard } from './PlaceCard';
 import { Search, Filter, Mountain, Compass, ShieldCheck } from 'lucide-react';
 
@@ -16,9 +17,9 @@ export const PlacesGrid: React.FC = () => {
   useEffect(() => {
     const loadPlaces = async () => {
       try {
-        let res = await fetch('/api/attractions?limit=100');
+        let res = await fetch(apiUrl('/api/attractions?limit=100'));
         if (!res.ok) {
-          res = await fetch('/api/v1/places?limit=100');
+          res = await fetch(apiUrl('/api/v1/places?limit=100'));
         }
         if (!res.ok) {
           throw new Error(`API returned HTTP ${res.status}`);
@@ -41,7 +42,7 @@ export const PlacesGrid: React.FC = () => {
       } catch (err: any) {
         // Fallback to /api/v1/places if /api/attractions failed
         try {
-          const res2 = await fetch('/api/v1/places?limit=100');
+          const res2 = await fetch(apiUrl('/api/v1/places?limit=100'));
           if (res2.ok) {
             const data2 = await res2.json();
             const placesArray2: Place[] = Array.isArray(data2)

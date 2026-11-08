@@ -45,6 +45,12 @@ async def chat_stream_endpoint(request: ChatMessageRequest):
                 journeys_payload = json.dumps(identified_journeys, ensure_ascii=False)
                 yield f"event: transit\ndata: {journeys_payload}\n\n"
 
+            # Stream CrowdSense alternatives if any were calculated
+            identified_crowd = state.get("identified_crowd_alternatives", [])
+            if identified_crowd:
+                crowd_payload = json.dumps(identified_crowd, ensure_ascii=False)
+                yield f"event: crowd_alternatives\ndata: {crowd_payload}\n\n"
+
             # Stream done event with current profile state
             done_payload = json.dumps({
                 "session_id": request.session_id,

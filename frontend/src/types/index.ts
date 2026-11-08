@@ -88,5 +88,79 @@ export interface ChatMessage {
   text: string;
   places?: Place[];
   journeys?: Journey[];
+  crowd_alternatives?: CrowdAlternativeCard[];
   timestamp: string;
+}
+
+export type CrowdLevel = 'low' | 'moderate' | 'high' | 'packed' | 'LOW' | 'MODERATE' | 'HIGH';
+export type CrowdDataClassification = 'SIMULATED_BASELINE' | 'CALIBRATED_HEURISTIC' | 'REAL_TIME_TELEMETRY' | 'SIMULATED';
+export type CrowdPreference = 'quiet' | 'balanced' | 'popular';
+export type CrowdScenario = 'low' | 'moderate' | 'high';
+
+export interface PlaceCrowdStatus {
+  place_id: string;
+  name_ja?: string;
+  name_en?: string;
+  scenario?: CrowdScenario;
+  level?: string;
+  score?: number;
+  crowd_level?: CrowdLevel | string;
+  crowd_index?: number;
+  capacity_percentage?: number;
+  congestion_advisory?: string;
+  advisory?: string;
+  data_classification?: CrowdDataClassification | string;
+  real_time_telemetry_status?: string;
+  image_url?: string;
+  image_attribution?: string;
+  fuji_view_rating?: number;
+  accessibility_status?: string;
+  primary_category?: string;
+}
+
+export interface CrowdAlternativeCard {
+  place_id: string;
+  name_ja: string;
+  name_en: string;
+  primary_category: string;
+  crowd_level: CrowdLevel | string;
+  crowd_index: number;
+  crowd_reduction_percent: number;
+  crowd_reduction_pct?: number;
+  distance_km: number;
+  fuji_view_rating: number;
+  accessibility_status: string;
+  admission_type?: string;
+  admission_fee_jpy?: number | null;
+  image_url: string;
+  image_attribution: string;
+  recommendation_reason: string;
+  match_score?: number;
+  place?: Place;
+  crowd_status?: PlaceCrowdStatus;
+}
+
+export interface CrowdRecommendationResponse {
+  current_place_id: string;
+  current_place_name: string;
+  current_crowd_level: CrowdLevel | string;
+  current_congestion_advisory: string;
+  current_scenario: CrowdScenario;
+  data_classification: CrowdDataClassification | string;
+  real_time_telemetry_status: string;
+  alternatives: CrowdAlternativeCard[];
+  selected_destination?: Place;
+  selected_crowd_status?: PlaceCrowdStatus;
+}
+
+export interface CrowdSystemStatusResponse {
+  active_scenario: CrowdScenario;
+  available_scenarios: Array<{ id: string; name: string; description: string }> | any[];
+  data_classification?: CrowdDataClassification | string;
+  classification?: string;
+  real_time_telemetry_status?: string;
+  status_text?: string;
+  places?: PlaceCrowdStatus[];
+  hero_image_url?: string;
+  hero_image_attribution?: string;
 }

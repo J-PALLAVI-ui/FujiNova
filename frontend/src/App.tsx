@@ -1,21 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { ChatDrawer } from './components/ChatDrawer';
 import { PlacesGrid } from './components/PlacesGrid';
+import { CrowdDashboard } from './components/CrowdDashboard';
 import { TravellerProfile } from './types';
-import { MessageSquare, Mountain } from 'lucide-react';
+import { apiUrl } from './config';
+import { MessageSquare, Mountain, Compass, Map } from 'lucide-react';
 
 export const App: React.FC = () => {
   const [sessionId] = useState<string>(() => `fn_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`);
   const [profile, setProfile] = useState<TravellerProfile>({});
   const [isChatOpen, setIsChatOpen] = useState(true);
+  const [activeTab, setActiveTab] = useState<'crowdsense' | 'places'>('crowdsense');
+  const [externalPrompt, setExternalPrompt] = useState<string | undefined>(undefined);
   const [health, setHealth] = useState<{ status: string; primary_model: string } | null>(null);
 
   useEffect(() => {
     const checkHealth = async () => {
       try {
-        let res = await fetch('/health');
+        let res = await fetch(apiUrl('/health'));
         if (!res.ok) {
-          res = await fetch('/api/v1/health');
+          res = await fetch(apiUrl('/api/v1/health'));
         }
         if (res.ok) {
           const data = await res.json();
@@ -25,7 +29,7 @@ export const App: React.FC = () => {
         }
       } catch (err) {
         try {
-          const res2 = await fetch('/api/v1/health');
+          const res2 = await fetch(apiUrl('/api/v1/health'));
           if (res2.ok) {
             const data2 = await res2.json();
             setHealth(data2);
@@ -39,21 +43,53 @@ export const App: React.FC = () => {
     checkHealth();
   }, []);
 
+  const handleAskHana = (prompt: string) => {
+    setIsChatOpen(true);
+    setExternalPrompt(prompt);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       {/* Top Navigation */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 font-black text-slate-900 tracking-tight text-lg">
               <span className="w-8 h-8 rounded-lg bg-sky-600 text-white flex items-center justify-center shadow-xs">
                 <Mountain className="w-5 h-5" />
               </span>
               <span>FujiNova</span>
             </div>
-            <span className="hidden sm:inline-block text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">
-              Stage 1 Prototype
-            </span>
+
+            {/* Navigation Tabs */}
+            <nav className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+              <button
+                onClick={() => setActiveTab('crowdsense')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  activeTab === 'crowdsense'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Compass className="w-3.5 h-3.5 text-sky-600" />
+                <span>CrowdSense Engine</span>
+                <span className="bg-emerald-100 text-emerald-800 text-[10px] px-1.5 py-0.2 rounded-full font-bold">
+                  Stage 3
+                </span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('places')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  activeTab === 'places'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Map className="w-3.5 h-3.5 text-slate-500" />
+                <span>Places Catalogue</span>
+              </button>
+            </nav>
           </div>
 
           {/* Active Profile Constraints Pills */}
@@ -100,9 +136,13 @@ export const App: React.FC = () => {
 
       {/* Main Workspace */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Main Place Explorer */}
+        {/* Main Workspace View */}
         <main className={`flex-1 overflow-y-auto transition-all duration-200 ${isChatOpen ? 'lg:mr-[420px]' : ''}`}>
-          <PlacesGrid />
+          {activeTab === 'crowdsense' ? (
+            <CrowdDashboard onAskHana={handleAskHana} />
+          ) : (
+            <PlacesGrid />
+          )}
         </main>
 
         {/* Hana Chat Drawer */}
@@ -111,6 +151,7 @@ export const App: React.FC = () => {
             <ChatDrawer
               sessionId={sessionId}
               onProfileUpdated={(updatedProfile) => setProfile(updatedProfile)}
+              externalPrompt={externalPrompt}
             />
           </aside>
         )}

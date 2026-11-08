@@ -12,6 +12,8 @@ from backend.app.services.llm.router import ModelRouter, router as global_router
 from backend.app.core.config import settings
 from backend.app.services.routing.transit_models import RouteSearchRequest, JourneySchema
 from backend.app.services.routing.routing_service import get_routing_service
+from backend.app.services.crowd.crowd_models import CrowdRecommendationRequest
+from backend.app.services.crowd.recommendation_service import recommendation_service
 
 logger = logging.getLogger("fujinova.agent.hana")
 
@@ -24,6 +26,7 @@ class HanaState(TypedDict):
     asked_questions: List[str]
     identified_places: List[Dict[str, Any]]
     identified_journeys: List[Dict[str, Any]]
+    identified_crowd_alternatives: List[Dict[str, Any]]
     next_question: Optional[str]
 
 
@@ -187,6 +190,61 @@ def extract_transit_query(text: str) -> Optional[Tuple[str, str, Optional[str]]]
     return None
 
 
+PLACE_NAME_TO_ID = {
+    "oishi park": "kawaguchiko_oishi_park",
+    "oishi": "kawaguchiko_oishi_park",
+    "大石公園": "kawaguchiko_oishi_park",
+    "chureito": "arakurayama_chureito",
+    "chureito pagoda": "arakurayama_chureito",
+    "arakurayama": "arakurayama_chureito",
+    "新倉山浅間公園": "arakurayama_chureito",
+    "oshino hakkai": "oshino_hakkai",
+    "忍野八海": "oshino_hakkai",
+    "ropeway": "kawaguchiko_ropeway",
+    "kachi kachi ropeway": "kawaguchiko_ropeway",
+    "fuji-q": "fujiq_central_park",
+    "fujiq": "fujiq_central_park",
+    "yagizaki": "kawaguchiko_yagizaki_park",
+    "yagizaki park": "kawaguchiko_yagizaki_park",
+    "八木崎公園": "kawaguchiko_yagizaki_park",
+    "shojiko": "shojiko_tategohama",
+    "lake shoji": "shojiko_tategohama",
+    "精進湖": "shojiko_tategohama",
+    "motosuko": "motosuko_viewpoint",
+    "lake motosu": "motosuko_viewpoint",
+    "本栖湖": "motosuko_viewpoint",
+    "saiko": "saiko_iyashi_nenba",
+    "iyashi no sato": "saiko_iyashi_nenba",
+    "西湖いやしの里根場": "saiko_iyashi_nenba",
+    "kitaguchi": "kitaguchi_sengen_shrine",
+    "kitaguchi sengen": "kitaguchi_sengen_shrine",
+    "music forest": "kawaguchiko_music_forest",
+    "art museum": "kawaguchiko_art_museum",
+    "natural living center": "kawaguchiko_living_center",
+    "kawaguchiko living center": "kawaguchiko_living_center",
+}
+
+
+def extract_crowd_query(text: str) -> Optional[Tuple[str, str]]:
+    """Detects inquiries about crowd levels, crowdedness, or avoiding crowds for a destination."""
+    lower = text.lower()
+    crowd_keywords = ["crowd", "crowded", "quiet", "busy", "peaceful", "avoid people", "packed", "tourist", "alternative", "quieter"]
+    if not any(k in lower for k in crowd_keywords):
+        return None
+
+    # Determine matched destination
+    for name, pid in PLACE_NAME_TO_ID.items():
+        if name in lower:
+            pref = "quiet" if any(q in lower for q in ["quiet", "quieter", "peaceful", "less crowded", "don't like crowd", "avoid", "hate crowd"]) else "balanced"
+            return name, pref
+
+    # Fallback to Oishi Park if general crowd question about "lakeside" or "viewpoint"
+    if any(q in lower for q in ["quiet spot", "quieter alternative", "avoid crowds", "avoid crowded"]):
+        return "oishi park", "quiet"
+
+    return None
+
+
 class HanaAgent:
     """Hana Agent managing conversation flow, profile tracking, and grounded tool recommendations."""
 
@@ -203,6 +261,12 @@ class HanaAgent:
     def extract_transit_query(self, text: str) -> Optional[Tuple[str, str, Optional[str]]]:
         return extract_transit_query(text)
 
+    def extract_crowd_query(self, text: str) -> Optional[Tuple[str, str]]:
+        return extract_crowd_query(text)
+
+    def resolve_place_id(self, name: str) -> Optional[str]:
+        return PLACE_NAME_TO_ID.get(name.lower().strip())
+
     def get_or_create_state(self, session_id: str) -> HanaState:
         """Retrieve existing session state or initialize a fresh profile."""
         if session_id not in self.sessions:
@@ -213,6 +277,7 @@ class HanaAgent:
                 "asked_questions": [],
                 "identified_places": [],
                 "identified_journeys": [],
+                "identified_crowd_alternatives": [],
                 "next_question": None
             }
         return self.sessions[session_id]
@@ -433,6 +498,49 @@ class HanaAgent:
             except Exception as e:
                 logger.warning(f"Transit routing query error: {e}")
 
+        # 2c. CrowdSense Adaptive Intelligence
+        crowd_info = self.extract_crowd_query(user_message)
+        crowd_context = ""
+        state["identified_crowd_alternatives"] = []
+        if crowd_info:
+            target_name, pref_mode = crowd_info
+            target_id = self.resolve_place_id(target_name) or "kawaguchiko_oishi_park"
+            try:
+                from backend.app.services.crowd.recommendation_service import get_recommendation_service
+                from backend.app.services.crowd.crowd_models import CrowdRecommendationRequest
+                rec_svc = get_recommendation_service()
+                pref_mode_str = "quiet" if pref_mode == "quiet" else "balanced"
+                crowd_req = CrowdRecommendationRequest(
+                    place_id=target_id,
+                    preference=pref_mode_str,
+                    scenario="high"
+                )
+                crowd_res = rec_svc.get_recommendations(crowd_req)
+                if crowd_res.alternatives:
+                    state["identified_crowd_alternatives"] = [a.model_dump() for a in crowd_res.alternatives]
+                    crowd_context = (
+                        f"\n\nCROWDSENSE ADAPTIVE INTELLIGENCE (Scenario: {crowd_res.scenario.upper()} [SIMULATED]):\n"
+                        f"- Target Destination: {crowd_res.selected_destination.name_en} ({crowd_res.selected_destination.name_ja})\n"
+                        f"  Current Crowd: {crowd_res.selected_crowd_status.level} ({crowd_res.selected_crowd_status.score}/100) - {crowd_res.selected_crowd_status.advisory}\n"
+                        f"- Data Classification: {crowd_res.classification} (Real-time telemetry: UNAVAILABLE)\n"
+                        f"- Recommended Alternatives ({pref_mode_str.capitalize()} Preference):\n"
+                    )
+                    for alt in crowd_res.alternatives:
+                        crowd_context += (
+                            f"  * {alt.place.name_en} ({alt.place.name_ja}): Crowd={alt.crowd_status.level} "
+                            f"(Reduction: -{alt.crowd_reduction_pct}%), Distance={alt.distance_km} km, "
+                            f"Fuji Rating={alt.place.fuji_view_rating}/5, Access={alt.place.accessibility_status}. "
+                            f"Reason: {alt.recommendation_reason}\n"
+                        )
+                    crowd_context += (
+                        "\nSTRICT CROWD GUIDANCE:\n"
+                        "- State the current crowd level clearly and warn if it is high or congested.\n"
+                        "- Suggest the top alternative destinations with their crowd reduction percentages and why they fit.\n"
+                        "- Note that real-time sensor telemetry is currently UNAVAILABLE and data reflects calibrated SIMULATED baseline models.\n"
+                    )
+            except Exception as ce:
+                logger.warning(f"CrowdSense recommendation error: {ce}")
+
         # 3. Determine next unasked interview topic
         next_topic = self.determine_next_interview_question(state)
         state["next_question"] = next_topic
@@ -461,7 +569,7 @@ class HanaAgent:
             )
 
         prompt_messages = [
-            {"role": "system", "content": HANA_SYSTEM_INSTRUCTION + grounding_context + transit_context + interview_guidance}
+            {"role": "system", "content": HANA_SYSTEM_INSTRUCTION + grounding_context + transit_context + crowd_context + interview_guidance}
         ]
         prompt_messages.extend(state["messages"][-4:])
 
@@ -469,13 +577,32 @@ class HanaAgent:
         try:
             async for token in self.router.stream_chat(
                 messages=prompt_messages,
-                system_instruction=HANA_SYSTEM_INSTRUCTION + grounding_context + transit_context + interview_guidance
+                system_instruction=HANA_SYSTEM_INSTRUCTION + grounding_context + transit_context + crowd_context + interview_guidance
             ):
                 full_response.append(token)
                 yield token
         except Exception as llm_err:
             logger.warning(f"LLM streaming error or unavailable: {llm_err}")
-            if state.get("identified_journeys"):
+            if state.get("identified_crowd_alternatives"):
+                alts = state["identified_crowd_alternatives"]
+                top = alts[0]
+                top_p = top.get("place", {}) if isinstance(top, dict) else getattr(top, "place", {})
+                top_name = top_p.get("name_en") if isinstance(top_p, dict) else getattr(top_p, "name_en", "Nagasaki Park")
+                top_ja = top_p.get("name_ja") if isinstance(top_p, dict) else getattr(top_p, "name_ja", "長崎公園")
+                top_red = top.get("crowd_reduction_pct", 75) if isinstance(top, dict) else getattr(top, "crowd_reduction_pct", 75)
+                top_reason = top.get("recommendation_reason", "") if isinstance(top, dict) else getattr(top, "recommendation_reason", "")
+                alt_names = ", ".join(
+                    f"{(a.get('place', {}).get('name_en') if isinstance(a, dict) else a.place.name_en)} (-{(a.get('crowd_reduction_pct') if isinstance(a, dict) else a.crowd_reduction_pct)}%)"
+                    for a in alts[:2]
+                )
+                fallback_msg = (
+                    f"Under our current calibrated High Crowd simulation, Oishi Park is experiencing high visitor congestion. "
+                    f"(Note: Real-time sensor telemetry is currently UNAVAILABLE; data reflects simulated baseline models.) "
+                    f"If you prefer a quieter experience, I recommend considering {top_name} ({top_ja}), "
+                    f"which offers an estimated {top_red}% crowd reduction ({top_reason}). "
+                    f"Other peaceful options include: {alt_names}. You can explore and switch destinations directly in the CrowdSense panel below!"
+                )
+            elif state.get("identified_journeys"):
                 j = state["identified_journeys"][0]
                 legs = j.get("legs", [])
                 leg_desc = ""

@@ -1,15 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Place, ChatMessage, Journey } from '../types';
+import { Place, ChatMessage, Journey, CrowdAlternativeCard } from '../types';
+import { apiUrl } from '../config';
 import { JourneyDisplay } from './JourneyDisplay';
 import { PlaceCard } from './PlaceCard';
-import { Send, Bot, User, Sparkles, Loader2 } from 'lucide-react';
+import { Send, Bot, User, Sparkles, Loader2, Users } from 'lucide-react';
 
 interface ChatDrawerProps {
   sessionId: string;
   onProfileUpdated?: (profile: any) => void;
+  externalPrompt?: string;
 }
 
-export const ChatDrawer: React.FC<ChatDrawerProps> = ({ sessionId, onProfileUpdated }) => {
+export const ChatDrawer: React.FC<ChatDrawerProps> = ({ sessionId, onProfileUpdated, externalPrompt }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'welcome',
@@ -21,6 +23,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({ sessionId, onProfileUpda
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const lastExternalPromptRef = useRef<string | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -29,6 +32,13 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({ sessionId, onProfileUpda
   useEffect(() => {
     scrollToBottom();
   }, [messages, isStreaming]);
+
+  useEffect(() => {
+    if (externalPrompt && externalPrompt !== lastExternalPromptRef.current && !isStreaming) {
+      lastExternalPromptRef.current = externalPrompt;
+      sendMessage(externalPrompt);
+    }
+  }, [externalPrompt]);
 
   const sendMessage = async (messageText?: string) => {
     const textToSend = messageText || input;
@@ -63,7 +73,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({ sessionId, onProfileUpda
     ]);
 
     try {
-      let response = await fetch('/api/ai/chat', {
+      let response = await fetch(apiUrl('/api/ai/chat'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -73,7 +83,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({ sessionId, onProfileUpda
       });
 
       if (!response.ok || !response.body) {
-        response = await fetch('/api/v1/chat/stream', {
+        response = await fetch(apiUrl('/api/v1/chat/stream'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -167,6 +177,17 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({ sessionId, onProfileUpda
             } catch (e) {
               console.error('Error parsing transit event', e);
             }
+          } else if (eventType === 'crowd_alternatives') {
+            try {
+              const crowd_alternatives: CrowdAlternativeCard[] = JSON.parse(eventData);
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === hanaMsgId ? { ...m, crowd_alternatives } : m
+                )
+              );
+            } catch (e) {
+              console.error('Error parsing crowd alternatives event', e);
+            }
           } else if (eventType === 'error') {
             try {
               const errData = JSON.parse(eventData);
@@ -229,11 +250,11 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({ sessionId, onProfileUpda
   };
 
   const quickPrompts = [
+    "Is Oishi Park crowded? Suggest quieter alternatives.",
+    "Bus from Kawaguchiko Station to Oishi Park at 9 AM",
     "I'm with my grandmother who uses a wheelchair",
     "Where can we get great Fuji views without steep stairs?",
-    "Indoor recommendations if it rains today",
-    "How do I reach Lake Kawaguchiko from Fujiyoshida?",
-    "Bus from Kawaguchiko Station to Oishi Park"
+    "Indoor recommendations if it rains today"
   ];
 
   return (
@@ -284,6 +305,44 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({ sessionId, onProfileUpda
                     <span>Calculated Transit Connections ({msg.journeys.length})</span>
                   </div>
                   <JourneyDisplay journeys={msg.journeys} />
+                </div>
+              )}
+
+              {/* CrowdSense Alternatives */}
+              {msg.crowd_alternatives && msg.crowd_alternatives.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-slate-200/80 space-y-2">
+                  <div className="text-xs font-semibold text-emerald-800 flex items-center gap-1.5">
+                    <Users className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>CrowdSense Quieter Alternatives ({msg.crowd_alternatives.length})</span>
+                  </div>
+                  <div className="space-y-2">
+                    {msg.crowd_alternatives.map((alt) => (
+                      <div
+                        key={alt.place_id}
+                        className="bg-white border border-emerald-200 rounded-xl p-2.5 flex items-center gap-3 shadow-xs"
+                      >
+                        <img
+                          src={alt.image_url}
+                          alt={alt.name_en}
+                          className="w-12 h-12 rounded-lg object-cover bg-slate-100 shrink-0"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src =
+                              'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=400&q=80';
+                          }}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-1">
+                            <h4 className="text-xs font-bold text-slate-900 truncate">{alt.name_en}</h4>
+                            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full shrink-0">
+                              -{alt.crowd_reduction_percent}%
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-slate-500 truncate">{alt.name_ja}</p>
+                          <p className="text-[10px] text-slate-600 line-clamp-1 mt-0.5">{alt.recommendation_reason}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 

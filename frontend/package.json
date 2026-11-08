@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build --config vite.config.mjs",
+    "build": "tsc --noEmit && vite build --config vite.config.cjs",
     "preview": "vite preview",
-    "test": "vitest run",
+    "test": "vitest run --config vite.config.cjs",
     "test:watch": "vitest"
   },
   "dependencies": {

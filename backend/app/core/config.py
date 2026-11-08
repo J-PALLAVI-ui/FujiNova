@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     FUJINOVA_TEMPERATURE: float = Field(0.3, description="Sampling temperature")
     FUJINOVA_MAX_RETRIES: int = Field(2, description="Maximum provider retry attempts")
     FUJINOVA_TIMEOUT_SECONDS: float = Field(12.0, description="Provider request timeout in seconds")
+    CORS_ALLOWED_ORIGINS: str = Field("", description="Comma-separated allowed CORS origins (e.g. https://fujinova.onrender.com)")
 
     # Privacy Policy Gate: If False, cross-vendor prompt transmission is rejected
     ALLOW_MULTI_VENDOR_FAILOVER: bool = Field(False, description="Explicit consent flag for cross-vendor failover")

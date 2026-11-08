@@ -58,8 +58,10 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 dist/
+dist_prod/
 dist-ssr/
 *.local
+*.timestamp-*.mjs
 
 # IDE & Editor Files
 .vscode/
