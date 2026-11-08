@@ -1,0 +1,163 @@
+import React, { useState, useEffect } from 'react';
+import { Place } from '../types';
+import { PlaceCard } from './PlaceCard';
+import { Search, Filter, Mountain, Compass, ShieldCheck } from 'lucide-react';
+
+export const PlacesGrid: React.FC = () => {
+  const [places, setPlaces] = useState<Place[]>([]);
+  const [filteredPlaces, setFilteredPlaces] = useState<Place[]>([]);
+  const [search, setSearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedAccess, setSelectedAccess] = useState<string>('all');
+  const [indoorOnly, setIndoorOnly] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/v1/places?limit=100')
+      .then((res) => res.json())
+      .then((data) => {
+        setPlaces(data);
+        setFilteredPlaces(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error('Failed to load places', err);
+        setLoading(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    let result = places;
+
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter(
+        (p) =>
+          p.name_ja.toLowerCase().includes(q) ||
+          (p.name_en && p.name_en.toLowerCase().includes(q)) ||
+          (p.sub_category && p.sub_category.toLowerCase().includes(q))
+      );
+    }
+
+    if (selectedCategory !== 'all') {
+      result = result.filter((p) => p.primary_category === selectedCategory);
+    }
+
+    if (selectedAccess !== 'all') {
+      result = result.filter((p) => p.accessibility_status === selectedAccess);
+    }
+
+    if (indoorOnly) {
+      result = result.filter((p) => p.indoor_alternative);
+    }
+
+    setFilteredPlaces(result);
+  }, [search, selectedCategory, selectedAccess, indoorOnly, places]);
+
+  const categories = ['all', 'viewpoint', 'museum', 'cultural', 'shrine', 'nature', 'park', 'onsen'];
+
+  return (
+    <div className="p-6 max-w-7xl mx-auto">
+      {/* Title & Stats */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200">
+        <div>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+            <Mountain className="w-6 h-6 text-sky-600" />
+            <span>Fuji Five Lakes & Yamanashi Explorer</span>
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Browse 35 individually verified locations with field-level provenance, official hours, and barrier-free audit evidence.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-800 px-3 py-1.5 rounded-lg text-xs font-semibold shrink-0">
+          <ShieldCheck className="w-4 h-4 text-emerald-600" />
+          <span>Stage 1 Seed: {filteredPlaces.length} / {places.length} Verified</span>
+        </div>
+      </div>
+
+      {/* Filter & Search Bar */}
+      <div className="mt-6 flex flex-col md:flex-row items-stretch md:items-center gap-3">
+        {/* Search Input */}
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by name in Japanese or English (e.g. Oishi Park, Chureito, Motosu)..."
+            className="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 bg-white"
+          />
+        </div>
+
+        {/* Accessibility Filter */}
+        <select
+          value={selectedAccess}
+          onChange={(e) => setSelectedAccess(e.target.value)}
+          className="px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:outline-none focus:border-sky-500"
+        >
+          <option value="all">All Accessibility</option>
+          <option value="VERIFIED_ACCESSIBLE">Barrier-Free (Step-Free)</option>
+          <option value="PARTIAL_STEPS">Partial Steps</option>
+          <option value="STEEP_STAIRS">Steep Stairs</option>
+        </select>
+
+        {/* Indoor Toggle */}
+        <button
+          onClick={() => setIndoorOnly(!indoorOnly)}
+          className={`px-3 py-2 rounded-xl text-xs font-medium border transition-colors flex items-center gap-1.5 ${
+            indoorOnly
+              ? 'bg-indigo-600 text-white border-indigo-600'
+              : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
+          }`}
+        >
+          <span>Rainy Day / Indoor</span>
+        </button>
+      </div>
+
+      {/* Category Tabs */}
+      <div className="mt-4 flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+        <Filter className="w-3.5 h-3.5 text-slate-400 shrink-0 mr-1" />
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setSelectedCategory(cat)}
+            className={`px-3 py-1.5 rounded-lg capitalize font-medium transition-colors shrink-0 ${
+              selectedCategory === cat
+                ? 'bg-sky-600 text-white shadow-xs'
+                : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+            }`}
+          >
+            {cat === 'all' ? 'All Categories' : cat}
+          </button>
+        ))}
+      </div>
+
+      {/* Places Cards Grid */}
+      {loading ? (
+        <div className="py-20 text-center text-slate-400 text-sm">Loading verified locations...</div>
+      ) : filteredPlaces.length === 0 ? (
+        <div className="py-20 text-center">
+          <Compass className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+          <p className="text-slate-600 font-medium">No places match the selected filters.</p>
+          <button
+            onClick={() => {
+              setSearch('');
+              setSelectedCategory('all');
+              setSelectedAccess('all');
+              setIndoorOnly(false);
+            }}
+            className="mt-3 text-xs text-sky-600 hover:underline font-semibold"
+          >
+            Reset all filters
+          </button>
+        </div>
+      ) : (
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filteredPlaces.map((place) => (
+            <PlaceCard key={place.place_id} place={place} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
