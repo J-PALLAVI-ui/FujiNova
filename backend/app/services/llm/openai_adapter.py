@@ -39,6 +39,8 @@ class OpenAIAdapter(BaseLLMAdapter):
 
     def _map_api_error(self, e: Exception) -> LLMError:
         """Map OpenAI exceptions to unified FujiNova error taxonomy."""
+        if isinstance(e, (AuthenticationError, RateLimitError, ServerError, TimeoutError, LLMError)):
+            return e
         if isinstance(e, openai.AuthenticationError):
             return AuthenticationError(f"OpenAI authentication failed: {str(e)}")
         if isinstance(e, openai.RateLimitError):

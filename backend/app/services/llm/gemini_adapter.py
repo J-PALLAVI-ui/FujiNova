@@ -61,6 +61,8 @@ class GeminiAdapter(BaseLLMAdapter):
 
     def _map_api_error(self, e: Exception) -> LLMError:
         """Map provider errors to unified FujiNova error taxonomy."""
+        if isinstance(e, (AuthenticationError, RateLimitError, ServerError, TimeoutError, LLMError)):
+            return e
         if isinstance(e, APIError):
             code = getattr(e, "code", None)
             msg = str(e)

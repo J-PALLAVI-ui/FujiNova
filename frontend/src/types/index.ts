@@ -42,10 +42,51 @@ export interface TravellerProfile {
   indoor_preference?: boolean;
 }
 
+export interface JourneyLeg {
+  mode: 'bus' | 'rail' | 'walk';
+  operator: string;
+  route_id?: string;
+  route_short_name?: string;
+  route_long_name?: string;
+  route_color: string;
+  route_text_color: string;
+  trip_headsign?: string;
+  origin_stop_id: string;
+  origin_stop_name: string;
+  origin_stop_name_en: string;
+  departure_time: string;
+  departure_timestamp_sec: number;
+  destination_stop_id: string;
+  destination_stop_name: string;
+  destination_stop_name_en: string;
+  arrival_time: string;
+  arrival_timestamp_sec: number;
+  duration_minutes: number;
+  intermediate_stops_count: number;
+  intermediate_stops: string[];
+  fare_jpy?: number | null;
+  provenance: string;
+  provenance_badge: string;
+  advisory_notes?: string | null;
+}
+
+export interface Journey {
+  journey_id: string;
+  departure_time: string;
+  arrival_time: string;
+  total_duration_minutes: number;
+  transfers_count: number;
+  total_fare_jpy?: number | null;
+  legs: JourneyLeg[];
+  provenance_badges: string[];
+  warnings: string[];
+}
+
 export interface ChatMessage {
   id: string;
   sender: 'user' | 'hana';
   text: string;
   places?: Place[];
+  journeys?: Journey[];
   timestamp: string;
 }

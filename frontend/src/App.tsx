@@ -11,10 +11,32 @@ export const App: React.FC = () => {
   const [health, setHealth] = useState<{ status: string; primary_model: string } | null>(null);
 
   useEffect(() => {
-    fetch('/api/v1/health')
-      .then((res) => res.json())
-      .then((data) => setHealth(data))
-      .catch((err) => console.error('Health check failed', err));
+    const checkHealth = async () => {
+      try {
+        let res = await fetch('/health');
+        if (!res.ok) {
+          res = await fetch('/api/v1/health');
+        }
+        if (res.ok) {
+          const data = await res.json();
+          setHealth(data);
+        } else {
+          setHealth({ status: 'offline', primary_model: 'unavailable' });
+        }
+      } catch (err) {
+        try {
+          const res2 = await fetch('/api/v1/health');
+          if (res2.ok) {
+            const data2 = await res2.json();
+            setHealth(data2);
+            return;
+          }
+        } catch (_) {}
+        console.error('Health check failed', err);
+        setHealth({ status: 'offline', primary_model: 'unavailable' });
+      }
+    };
+    checkHealth();
   }, []);
 
   return (

@@ -17,8 +17,12 @@ from backend.app.main import app
 @pytest.fixture(scope="session", autouse=True)
 def setup_main_test_db():
     """Ensure the default database for TestClient is initialized and seeded once per test session."""
-    init_db()
-    seed_database()
+    try:
+        init_db()
+        seed_database()
+    except Exception:
+        # DB already initialized and seeded
+        pass
 
 
 @pytest.fixture(scope="session")

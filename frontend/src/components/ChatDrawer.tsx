@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Place, ChatMessage } from '../types';
+import { Place, ChatMessage, Journey } from '../types';
+import { JourneyDisplay } from './JourneyDisplay';
 import { PlaceCard } from './PlaceCard';
 import { Send, Bot, User, Sparkles, Loader2 } from 'lucide-react';
 
@@ -62,7 +63,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({ sessionId, onProfileUpda
     ]);
 
     try {
-      const response = await fetch('/api/v1/chat/stream', {
+      let response = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -72,7 +73,39 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({ sessionId, onProfileUpda
       });
 
       if (!response.ok || !response.body) {
+        response = await fetch('/api/v1/chat/stream', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            session_id: sessionId,
+            message: textToSend
+          })
+        });
+      }
+
+      if (!response.ok || !response.body) {
         throw new Error(`HTTP error ${response.status}`);
+      }
+
+      const contentType = response.headers?.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        const json = await response.json();
+        const replyText = json.reply || json.text || json.message || '';
+        const journeys = json.journeys || json.identified_journeys || [];
+        const places = json.places || json.identified_places || [];
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === hanaMsgId
+              ? {
+                  ...m,
+                  text: replyText || (journeys.length > 0 ? 'Here is the verified transit route for your journey:' : ''),
+                  journeys: journeys.length > 0 ? journeys : m.journeys,
+                  places: places.length > 0 ? places : m.places
+                }
+              : m
+          )
+        );
+        return;
       }
 
       const reader = response.body.getReader();
@@ -123,6 +156,37 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({ sessionId, onProfileUpda
             } catch (e) {
               console.error('Error parsing places event', e);
             }
+          } else if (eventType === 'transit') {
+            try {
+              const journeys: Journey[] = JSON.parse(eventData);
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === hanaMsgId ? { ...m, journeys } : m
+                )
+              );
+            } catch (e) {
+              console.error('Error parsing transit event', e);
+            }
+          } else if (eventType === 'error') {
+            try {
+              const errData = JSON.parse(eventData);
+              const errMsg = errData.error || eventData;
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === hanaMsgId
+                    ? { ...m, text: m.text ? `${m.text}\n\n[Error: ${errMsg}]` : `[Error: ${errMsg}]` }
+                    : m
+                )
+              );
+            } catch {
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === hanaMsgId
+                    ? { ...m, text: m.text ? `${m.text}\n\n[Error: ${eventData}]` : `[Error: ${eventData}]` }
+                    : m
+                )
+              );
+            }
           } else if (eventType === 'done') {
             try {
               const doneData = JSON.parse(eventData);
@@ -145,13 +209,31 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({ sessionId, onProfileUpda
       );
     } finally {
       setIsStreaming(false);
+      setMessages((prev) =>
+        prev.map((m) => {
+          if (m.id === hanaMsgId) {
+            const hasText = m.text && m.text.trim().length > 0;
+            const hasJourneys = m.journeys && m.journeys.length > 0;
+            const hasPlaces = m.places && m.places.length > 0;
+            if (!hasText && !hasJourneys && !hasPlaces) {
+              return {
+                ...m,
+                text: "I couldn't retrieve a response from the service. Please verify that the FujiNova backend is running."
+              };
+            }
+          }
+          return m;
+        })
+      );
     }
   };
 
   const quickPrompts = [
     "I'm with my grandmother who uses a wheelchair",
     "Where can we get great Fuji views without steep stairs?",
-    "Indoor recommendations if it rains today"
+    "Indoor recommendations if it rains today",
+    "How do I reach Lake Kawaguchiko from Fujiyoshida?",
+    "Bus from Kawaguchiko Station to Oishi Park"
   ];
 
   return (
@@ -195,6 +277,16 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({ sessionId, onProfileUpda
               <div className="whitespace-pre-wrap leading-relaxed">{msg.text}</div>
 
               {/* Recommended Place Cards */}
+              {msg.journeys && msg.journeys.length > 0 && (
+                <div className="mt-2.5">
+                  <div className="text-xs font-semibold text-slate-600 flex items-center gap-1 mb-1">
+                    <Sparkles className="w-3.5 h-3.5 text-sky-600" />
+                    <span>Calculated Transit Connections ({msg.journeys.length})</span>
+                  </div>
+                  <JourneyDisplay journeys={msg.journeys} />
+                </div>
+              )}
+
               {msg.places && msg.places.length > 0 && (
                 <div className="mt-3.5 space-y-3 pt-3 border-t border-slate-200/80">
                   <div className="text-xs font-semibold text-slate-600 flex items-center gap-1">

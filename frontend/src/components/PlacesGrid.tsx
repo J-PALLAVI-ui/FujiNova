@@ -11,29 +11,75 @@ export const PlacesGrid: React.FC = () => {
   const [selectedAccess, setSelectedAccess] = useState<string>('all');
   const [indoorOnly, setIndoorOnly] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/api/v1/places?limit=100')
-      .then((res) => res.json())
-      .then((data) => {
-        setPlaces(data);
-        setFilteredPlaces(data);
+    const loadPlaces = async () => {
+      try {
+        let res = await fetch('/api/attractions?limit=100');
+        if (!res.ok) {
+          res = await fetch('/api/v1/places?limit=100');
+        }
+        if (!res.ok) {
+          throw new Error(`API returned HTTP ${res.status}`);
+        }
+        const data = await res.json();
+        const placesArray: Place[] = Array.isArray(data)
+          ? data
+          : Array.isArray((data as any)?.items)
+          ? (data as any).items
+          : Array.isArray((data as any)?.attractions)
+          ? (data as any).attractions
+          : Array.isArray((data as any)?.places)
+          ? (data as any).places
+          : [];
+
+        setPlaces(placesArray);
+        setFilteredPlaces(placesArray);
+        setError(null);
         setLoading(false);
-      })
-      .catch((err) => {
+      } catch (err: any) {
+        // Fallback to /api/v1/places if /api/attractions failed
+        try {
+          const res2 = await fetch('/api/v1/places?limit=100');
+          if (res2.ok) {
+            const data2 = await res2.json();
+            const placesArray2: Place[] = Array.isArray(data2)
+              ? data2
+              : Array.isArray((data2 as any)?.items)
+              ? (data2 as any).items
+              : [];
+            setPlaces(placesArray2);
+            setFilteredPlaces(placesArray2);
+            setError(null);
+            setLoading(false);
+            return;
+          }
+        } catch (_) {}
+
         console.error('Failed to load places', err);
+        setError(err.message || 'Failed to load places from backend');
+        setPlaces([]);
+        setFilteredPlaces([]);
         setLoading(false);
-      });
+      }
+    };
+
+    loadPlaces();
   }, []);
 
   useEffect(() => {
-    let result = places;
+    if (!Array.isArray(places)) {
+      setFilteredPlaces([]);
+      return;
+    }
+    let result = [...places];
 
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter(
         (p) =>
-          p.name_ja.toLowerCase().includes(q) ||
+          p.name_ja?.toLowerCase().includes(q) ||
           (p.name_en && p.name_en.toLowerCase().includes(q)) ||
           (p.sub_category && p.sub_category.toLowerCase().includes(q))
       );
@@ -135,7 +181,19 @@ export const PlacesGrid: React.FC = () => {
       {/* Places Cards Grid */}
       {loading ? (
         <div className="py-20 text-center text-slate-400 text-sm">Loading verified locations...</div>
-      ) : filteredPlaces.length === 0 ? (
+      ) : error ? (
+        <div className="py-16 text-center bg-amber-50 rounded-xl border border-amber-200 p-6 my-6">
+          <Compass className="w-8 h-8 text-amber-500 mx-auto mb-2" />
+          <p className="text-amber-800 font-semibold">Could not connect to FujiNova backend API</p>
+          <p className="text-xs text-amber-600 mt-1">Make sure the FastAPI backend is running on http://127.0.0.1:8000</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-1.5 bg-amber-600 text-white rounded-lg text-xs font-semibold hover:bg-amber-700"
+          >
+            Retry Connection
+          </button>
+        </div>
+      ) : (!Array.isArray(filteredPlaces) || filteredPlaces.length === 0) ? (
         <div className="py-20 text-center">
           <Compass className="w-8 h-8 text-slate-300 mx-auto mb-2" />
           <p className="text-slate-600 font-medium">No places match the selected filters.</p>
@@ -153,7 +211,7 @@ export const PlacesGrid: React.FC = () => {
         </div>
       ) : (
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredPlaces.map((place) => (
+          {Array.isArray(filteredPlaces) && filteredPlaces.map((place) => (
             <PlaceCard key={place.place_id} place={place} />
           ))}
         </div>

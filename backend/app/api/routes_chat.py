@@ -39,6 +39,12 @@ async def chat_stream_endpoint(request: ChatMessageRequest):
                 places_payload = json.dumps(identified_places, ensure_ascii=False)
                 yield f"event: places\ndata: {places_payload}\n\n"
 
+            # Stream deterministic transit journeys if any were calculated
+            identified_journeys = state.get("identified_journeys", [])
+            if identified_journeys:
+                journeys_payload = json.dumps(identified_journeys, ensure_ascii=False)
+                yield f"event: transit\ndata: {journeys_payload}\n\n"
+
             # Stream done event with current profile state
             done_payload = json.dumps({
                 "session_id": request.session_id,
@@ -71,5 +77,6 @@ async def get_session_state(session_id: str):
         "message_count": len(state["messages"]),
         "profile": state["profile"],
         "asked_questions": state["asked_questions"],
-        "identified_places": state["identified_places"]
+        "identified_places": state["identified_places"],
+        "identified_journeys": state.get("identified_journeys", []),
     }
