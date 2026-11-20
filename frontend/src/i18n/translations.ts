@@ -1,0 +1,746 @@
+export type LanguageCode = 'en' | 'ja' | 'hi' | 'ta' | 'kn' | 'te';
+
+export interface LanguageInfo {
+  code: LanguageCode;
+  name: string;
+  native: string;
+  country: string;
+  voiceLang: string;
+}
+
+export const SUPPORTED_LANGUAGES: LanguageInfo[] = [
+  { code: 'en', name: 'English', native: 'English', country: 'US', voiceLang: 'en-US' },
+  { code: 'ja', name: 'Japanese', native: '日本語', country: 'JP', voiceLang: 'ja-JP' },
+  { code: 'hi', name: 'Hindi', native: 'हिन्दी', country: 'IN', voiceLang: 'hi-IN' },
+  { code: 'ta', name: 'Tamil', native: 'தமிழ்', country: 'IN', voiceLang: 'ta-IN' },
+  { code: 'kn', name: 'Kannada', native: 'ಕನ್ನಡ', country: 'IN', voiceLang: 'kn-IN' },
+  { code: 'te', name: 'Telugu', native: 'తెలుగు', country: 'IN', voiceLang: 'te-IN' }
+];
+
+export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
+  en: {
+    // Nav
+    nav_discover: 'Discover',
+    nav_hana: 'Hana AI',
+    nav_twin: '3D Digital Twin',
+    nav_journey: 'Journey Planner',
+    nav_intelligence: 'Travel Intelligence',
+    nav_mytravel: 'My Travel',
+    nav_settings: 'Settings',
+    skip_content: 'Skip to main content (Alt+1)',
+
+    // Header & Actions
+    basket: 'Basket',
+    places_count: 'places',
+    clear_basket: 'Clear All',
+    view_basket_3d: 'View Route in 3D',
+    plan_with_hana: 'Plan Journey with Hana',
+    empty_basket: 'Your basket is empty. Browse Discover or ask Hana to curate stops.',
+
+    // Experience Modes
+    mode_adult: 'Standard Travel',
+    mode_teen: 'Teen Explorer',
+    mode_family: 'Family Explorer',
+    mode_accessible: 'Accessible Travel',
+
+    // Discover View
+    discover_title: 'Mount Fuji & Five Lakes Explorer',
+    discover_subtitle: 'Discover 36 verified cultural sites, scenic viewpoints, shrines and onsen around Yamanashi.',
+    search_placeholder: 'Search 36 verified destinations by name, region or category...',
+    all_categories: 'All Categories',
+    cat_cultural: 'Cultural Heritage',
+    cat_nature: 'Nature & Lakes',
+    cat_viewpoint: 'Scenic Viewpoints',
+    cat_shrine: 'Sacred Shrines',
+    cat_museum: 'Art & Museums',
+    cat_onsen: 'Hot Springs & Onsen',
+    cat_park: 'Scenic Parks',
+    fuji_view_label: 'Fuji View Rating',
+    access_verified: 'Wheelchair Accessible',
+    access_partial: 'Partial Steps',
+    access_steep: 'Steep Stairs',
+    add_to_journey: 'Add to Journey',
+    add_to_basket: 'Add to Basket',
+    in_basket: 'In Basket',
+    explore_in_3d: 'Explore in 3D',
+    compare: 'Compare',
+
+    // Hana AI
+    hana_title: 'Hana AI Travel Companion',
+    hana_subtitle: 'Intelligent Mount Fuji specialist powered by Gemini Free Tier. Zero paid APIs.',
+    hana_welcome: 'Konnichiwa! I am Hana (ハナ), your AI travel companion for Mount Fuji and the Fuji Five Lakes. I can answer any general question (including Japanese culture, machine learning, technology, translations, and regional weather) or generate personalized multi-day itineraries with verified public transport schedules. How can I assist you today?',
+    hana_placeholder: 'Ask Hana anything: Japanese culture, travel advice, RAPTOR transit, cuisine...',
+    hana_new_chat: 'New Journey Chat',
+    hana_search_history: 'Search chat history...',
+    hana_try_asking: 'Try asking:',
+    prompt_omotenashi: 'Japanese Omotenashi Hospitality & Etiquette',
+    prompt_raptor: 'RAPTOR Algorithm Public Transit Guide',
+    prompt_budget: '1-Day Lake Kawaguchiko under ¥10,000',
+    prompt_barrier: 'Wheelchair Barrier-Free Highlights',
+    action_add_journey: 'Add to Journey',
+    action_view_3d: 'View in 3D',
+    action_copy: 'Copy Response',
+    action_copied: 'Copied!',
+    action_listen: 'Listen (Audio)',
+
+    // 3D Digital Twin
+    twin_title: 'Real 3D Digital Twin & Route Journey',
+    twin_subtitle: 'High-precision DEM elevation mesh and connected travel route with calculated stop distances.',
+    twin_explore_journey: 'Explore My Journey in 3D',
+    twin_pause_tour: 'Pause 3D Tour',
+    twin_resume_tour: 'Resume 3D Tour',
+    twin_restart_tour: 'Restart Tour',
+    twin_tour_active: '3D Route Tour Active',
+    twin_day_night: 'Day / Sunset Lighting',
+    twin_snow_cover: 'Fuji Snowcap Depth',
+    twin_cloud_fog: 'Atmospheric Cloud Layer',
+    twin_wireframe: 'Topographic Wireframe',
+    twin_stops_label: 'Stops',
+    twin_distance_label: 'Total Distance',
+    twin_transit_label: 'Est. Transit Time',
+    twin_switch_2d: 'Switch to 2D Map',
+    twin_switch_3d: 'Switch to 3D Twin',
+    twin_accessible_alt: 'Accessible Route Table Alternative',
+
+    // Journey Planner
+    planner_title: 'Personalized Journey Planner',
+    planner_subtitle: 'Multi-stop itinerary with GTFS-JP public transit timetables and elevation profiles.',
+    planner_total_days: 'Total Days',
+    planner_budget_tier: 'Budget Tier',
+    planner_travel_pace: 'Travel Pace',
+    planner_export_pdf: 'Export PDF Document',
+    planner_share_qr: 'Share QR Itinerary',
+    planner_no_stops: 'No stops added yet. Explore Discover or ask Hana AI to build your dream route.',
+
+    // Travel Intelligence
+    intel_title: 'Live Regional Intelligence & CrowdSense',
+    intel_subtitle: 'Real-time visibility, crowd density predictions, and public transport status.',
+    intel_visibility_label: 'Fuji Visibility Index',
+    intel_crowd_label: 'Crowd Forecast',
+    intel_transit_status: 'Transit Operations',
+    intel_weather_label: 'Lake Kawaguchiko Weather',
+
+    // My Travel
+    mytravel_title: 'My Travel Hub',
+    mytravel_subtitle: 'Your saved trips, active route navigation, and verified travel credentials.',
+    mytravel_active_mode: 'Active Navigation Mode',
+    mytravel_saved_trips: 'Saved Trips',
+    mytravel_view_badge: 'Trip Completion Badge',
+    mytravel_download_pdf: 'Download PDF Itinerary',
+    mytravel_qr_code: 'Scan & Open on Mobile',
+
+    // Settings
+    settings_title: 'Platform & Experience Settings',
+    settings_subtitle: 'Personalize your accessibility preferences, multi-age experience mode, and display scaling.',
+    settings_mode_label: 'Experience Mode',
+    settings_font_scale: 'Text Size Scaling',
+    settings_contrast: 'High Contrast Mode',
+    settings_reduced_motion: 'Reduced Motion',
+    settings_system_health: 'System Health & AI Engine'
+  },
+
+  ja: {
+    // Nav
+    nav_discover: '発見・名所',
+    nav_hana: 'ハナ AI',
+    nav_twin: '3D デジタルツイン',
+    nav_journey: '旅程プランナー',
+    nav_intelligence: '観光インテリジェンス',
+    nav_mytravel: 'マイトラベル',
+    nav_settings: '設定',
+    skip_content: 'メインコンテンツへスキップ (Alt+1)',
+
+    // Header & Actions
+    basket: '旅カゴ',
+    places_count: '箇所',
+    clear_basket: 'すべてクリア',
+    view_basket_3d: '3Dでルート表示',
+    plan_with_hana: 'ハナと旅程作成',
+    empty_basket: '旅カゴは空です。発見タブやハナAIからお気に入りの場所を追加してください。',
+
+    // Experience Modes
+    mode_adult: '標準トラベル',
+    mode_teen: 'ティーン・エクスプローラー',
+    mode_family: 'ファミリー探検',
+    mode_accessible: 'バリアフリー旅',
+
+    // Discover View
+    discover_title: '富士山・富士五湖 名所探訪',
+    discover_subtitle: '山梨県と富士山周辺の厳選された36箇所の文化遺産、絶景展望台、神社、温泉を探索。',
+    search_placeholder: '名前、地域、カテゴリで36箇所の目的地を検索...',
+    all_categories: 'すべてのカテゴリ',
+    cat_cultural: '文化遺産',
+    cat_nature: '自然・湖沼',
+    cat_viewpoint: '絶景展望地',
+    cat_shrine: '神社・霊場',
+    cat_museum: '美術館・博物館',
+    cat_onsen: '温泉・温浴施設',
+    cat_park: '景勝公園',
+    fuji_view_label: '富士山ビュー評価',
+    access_verified: '車椅子バリアフリー',
+    access_partial: '一部階段あり',
+    access_steep: '急な石段あり',
+    add_to_journey: '旅程に追加',
+    add_to_basket: '旅カゴに追加',
+    in_basket: 'カゴ追加済',
+    explore_in_3d: '3Dで探索',
+    compare: '比較',
+
+    // Hana AI
+    hana_title: 'ハナ AI トラベルコンパニオン',
+    hana_subtitle: 'Google Gemini 無料枠で稼働する富士山専門AI。追加課金ゼロ。',
+    hana_welcome: 'こんにちは！私は富士山・富士五湖専門のAIトラベルコンパニオン「ハナ（Hana）」です。日本の文化やおもてなし、公共交通機関の時刻表、おすすめスポットから複数日の旅行プランまで何でもお手伝いします。今日のご旅行について何でもお尋ねください。',
+    hana_placeholder: 'ハナに何でも質問：日本のおもてなし文化、交通手段、RAPTOR乗換、郷土料理...',
+    hana_new_chat: '新しい旅の対話',
+    hana_search_history: 'チャット履歴を検索...',
+    hana_try_asking: 'おすすめの質問:',
+    prompt_omotenashi: '日本のおもてなしと旅行マナー',
+    prompt_raptor: 'RAPTOR公共交通アルゴリズムの解説',
+    prompt_budget: '予算1万円以内の河口湖日帰りプラン',
+    prompt_barrier: '車椅子対応のバリアフリー名所',
+    action_add_journey: '旅程に追加',
+    action_view_3d: '3Dで見る',
+    action_copy: '回答をコピー',
+    action_copied: 'コピー完了！',
+    action_listen: '音声で聴く',
+
+    // 3D Digital Twin
+    twin_title: 'リアル3D地形デジタルツイン＆ルートジャーニー',
+    twin_subtitle: '高精度DEM標高メッシュと実際の距離・所要時間を計算した旅程ルート表示。',
+    twin_explore_journey: '3Dで旅程ルートを巡る',
+    twin_pause_tour: 'ツアー一時停止',
+    twin_resume_tour: 'ツアー再開',
+    twin_restart_tour: 'ツアーを最初から',
+    twin_tour_active: '3Dルートツアー実行中',
+    twin_day_night: '昼景 / 夕景ライティング',
+    twin_snow_cover: '富士山冠雪の深さ',
+    twin_cloud_fog: '大気雲海レイヤー',
+    twin_wireframe: '等高線ワイヤーフレーム',
+    twin_stops_label: '経由地',
+    twin_distance_label: '総移動距離',
+    twin_transit_label: '推定移動時間',
+    twin_switch_2d: '2D地図へ切替',
+    twin_switch_3d: '3Dツインへ切替',
+    twin_accessible_alt: 'アクセシブルな代替ルート一覧表',
+
+    // Journey Planner
+    planner_title: 'パーソナライズ旅程プランナー',
+    planner_subtitle: 'GTFS-JP公共交通ダイヤと標高プロファイルを連動させた最適移動ルート。',
+    planner_total_days: '滞在日数',
+    planner_budget_tier: '予算クラス',
+    planner_travel_pace: '旅のペース',
+    planner_export_pdf: 'PDF旅程表を発行',
+    planner_share_qr: 'QRコードで共有',
+    planner_no_stops: '経由地がまだありません。発見タブまたはハナAIから目的地を追加してください。',
+
+    // Travel Intelligence
+    intel_title: '地域インテリジェンス＆混雑予測',
+    intel_subtitle: 'リアルタイム富士山視認性、CrowdSense混雑予測、公共交通運行情報。',
+    intel_visibility_label: '富士山見通し指数',
+    intel_crowd_label: '混雑予測',
+    intel_transit_status: '交通機関の運行状況',
+    intel_weather_label: '河口湖の現在気象',
+
+    // My Travel
+    mytravel_title: 'マイトラベル・ハブ',
+    mytravel_subtitle: '保存済み旅程、アクティブ移動ナビゲーション、旅行完了バッジ。',
+    mytravel_active_mode: 'アクティブ旅モード',
+    mytravel_saved_trips: '保存された旅程',
+    mytravel_view_badge: '富士山制覇記念バッジ',
+    mytravel_download_pdf: 'PDFをダウンロード',
+    mytravel_qr_code: 'スマホでスキャン表示',
+
+    // Settings
+    settings_title: 'プラットフォーム＆設定',
+    settings_subtitle: 'アクセシビリティ、年代別モード、文字サイズ、コントラストのカスタマイズ。',
+    settings_mode_label: '体験モード',
+    settings_font_scale: '文字サイズ拡大',
+    settings_contrast: 'ハイコントラスト表示',
+    settings_reduced_motion: 'アニメーション軽減',
+    settings_system_health: 'システム稼働状況とAIエンジン'
+  },
+
+  hi: {
+    // Nav
+    nav_discover: 'खोजें',
+    nav_hana: 'हाना AI',
+    nav_twin: '3D डिजिटल ट्विन',
+    nav_journey: 'यात्रा योजनाकार',
+    nav_intelligence: 'यात्रा बुद्धिमत्ता',
+    nav_mytravel: 'मेरी यात्रा',
+    nav_settings: 'सेटिंग्स',
+    skip_content: 'मुख्य सामग्री पर जाएं (Alt+1)',
+
+    // Header & Actions
+    basket: 'यात्रा टोकरी',
+    places_count: 'स्थान',
+    clear_basket: 'सब साफ़ करें',
+    view_basket_3d: '3D में मार्ग देखें',
+    plan_with_hana: 'हाना के साथ योजना बनाएं',
+    empty_basket: 'आपकी टोकरी खाली है। खोजें या हाना से पूछकर स्थान जोड़ें।',
+
+    // Experience Modes
+    mode_adult: 'मानक यात्रा',
+    mode_teen: 'युवा अन्वेषक',
+    mode_family: 'पारिवारिक अन्वेषक',
+    mode_accessible: 'सुलभ यात्रा',
+
+    // Discover View
+    discover_title: 'माउंट फ़ूजी और पंच झील अन्वेषक',
+    discover_subtitle: 'यामानाशी के 36 सत्यापित सांस्कृतिक स्थल, सुंदर दृश्य, मंदिर और झरने देखें।',
+    search_placeholder: 'नाम, क्षेत्र या श्रेणी द्वारा 36 गंतव्य खोजें...',
+    all_categories: 'सभी श्रेणियां',
+    cat_cultural: 'सांस्कृतिक धरोहर',
+    cat_nature: 'प्रकृति और झीलें',
+    cat_viewpoint: 'सुंदर दृष्टिकोण',
+    cat_shrine: 'पवित्र मंदिर',
+    cat_museum: 'कला और संग्रहालय',
+    cat_onsen: 'गर्म जल स्रोत (ओनसेन)',
+    cat_park: 'सुंदर पार्क',
+    fuji_view_label: 'फ़ूजी दृश्य रेटिंग',
+    access_verified: 'व्हीलचेयर सुलभ',
+    access_partial: 'कुछ सीढ़ियां',
+    access_steep: 'खड़ी सीढ़ियां',
+    add_to_journey: 'यात्रा में जोड़ें',
+    add_to_basket: 'टोकरी में जोड़ें',
+    in_basket: 'टोकरी में है',
+    explore_in_3d: '3D में अन्वेषण करें',
+    compare: 'तुलना करें',
+
+    // Hana AI
+    hana_title: 'हाना AI यात्रा साथी',
+    hana_subtitle: 'जेमिनी मुफ़्त टियर द्वारा संचालित माउंट फ़ूजी विशेषज्ञ। शून्य भुगतान।',
+    hana_welcome: 'कोन्निचिवा! मैं हाना (Hana) हूँ, माउंट फ़ूजी और फ़ूजी पंच झीलों के लिए आपकी AI यात्रा साथी। मैं जापानी संस्कृति, मौसम, यात्रा योजना और सार्वजनिक परिवहन के बारे में आपकी सहायता कर सकती हूँ। आज मैं आपकी क्या मदद करूँ?',
+    hana_placeholder: 'हाना से कुछ भी पूछें: जापानी संस्कृति, यात्रा सलाह, भोजन, परिवहन...',
+    hana_new_chat: 'नई यात्रा बातचीत',
+    hana_search_history: 'चैट इतिहास खोजें...',
+    hana_try_asking: 'यह पूछ कर देखें:',
+    prompt_omotenashi: 'जापानी ओमोतेनाशी आतिथ्य और शिष्टाचार',
+    prompt_raptor: 'RAPTOR सार्वजनिक परिवहन मार्गदर्शिका',
+    prompt_budget: '¥10,000 के अंतर्गत 1-दिवसीय कावागुचिको यात्रा',
+    prompt_barrier: 'बाधा-मुक्त सुलभ दर्शनीय स्थल',
+    action_add_journey: 'यात्रा में जोड़ें',
+    action_view_3d: '3D में देखें',
+    action_copy: 'उत्तर कॉपी करें',
+    action_copied: 'कॉपी हो गया!',
+    action_listen: 'सुनें (ऑडियो)',
+
+    // 3D Digital Twin
+    twin_title: 'वास्तविक 3D डिजिटल ट्विन और यात्रा मार्ग',
+    twin_subtitle: 'सटीक DEM स्थलाकृति और वास्तविक दूरी व समय के साथ जुड़ा हुआ यात्रा मार्ग।',
+    twin_explore_journey: '3D में मेरी यात्रा का अन्वेषण करें',
+    twin_pause_tour: '3D यात्रा रोकें',
+    twin_resume_tour: '3D यात्रा जारी रखें',
+    twin_restart_tour: 'यात्रा फिर से शुरू करें',
+    twin_tour_active: '3D यात्रा सक्रिय है',
+    twin_day_night: 'दिन / शाम का प्रकाश',
+    twin_snow_cover: 'फ़ूजी बर्फ की परत',
+    twin_cloud_fog: 'वायुमंडलीय बादल परत',
+    twin_wireframe: 'स्थलाकृतिक वायरफ्रेम',
+    twin_stops_label: 'पड़ाव',
+    twin_distance_label: 'कुल दूरी',
+    twin_transit_label: 'अनुमानित यात्रा समय',
+    twin_switch_2d: '2D मानचित्र पर जाएं',
+    twin_switch_3d: '3D ट्विन पर जाएं',
+    twin_accessible_alt: 'सुलभ मार्ग तालिका विकल्प',
+
+    // Journey Planner
+    planner_title: 'व्यक्तिगत यात्रा योजनाकार',
+    planner_subtitle: 'सार्वजनिक बस और ट्रेन समय सारिणी के साथ बहु-दिवसीय यात्रा कार्यक्रम।',
+    planner_total_days: 'कुल दिन',
+    planner_budget_tier: 'बजट स्तर',
+    planner_travel_pace: 'यात्रा गति',
+    planner_export_pdf: 'PDF दस्तावेज़ निर्यात करें',
+    planner_share_qr: 'QR कोड साझा करें',
+    planner_no_stops: 'कोई पड़ाव नहीं जोड़ा गया। खोजें या हाना AI से स्थान जोड़ें।',
+
+    // Travel Intelligence
+    intel_title: 'लाइव क्षेत्रीय बुद्धिमत्ता और भीड़ पूर्वानुमान',
+    intel_subtitle: 'वास्तविक समय फ़ूजी दृश्यता, CrowdSense भीड़ और परिवहन स्थिति।',
+    intel_visibility_label: 'फ़ूजी दृश्यता सूचकांक',
+    intel_crowd_label: 'भीड़ पूर्वानुमान',
+    intel_transit_status: 'परिवहन स्थिति',
+    intel_weather_label: 'कावागुचिको का मौसम',
+
+    // My Travel
+    mytravel_title: 'मेरा यात्रा केंद्र',
+    mytravel_subtitle: 'आपकी सहेजी गई यात्राएं, सक्रिय नेविगेशन और यात्रा प्रमाण पत्र।',
+    mytravel_active_mode: 'सक्रिय यात्रा मोड',
+    mytravel_saved_trips: 'सहेजी गई यात्राएं',
+    mytravel_view_badge: 'यात्रा पूर्णता बैज',
+    mytravel_download_pdf: 'PDF डाउनलोड करें',
+    mytravel_qr_code: 'मोबाइल पर स्कैन करें',
+
+    // Settings
+    settings_title: 'प्लेटफ़ॉर्म और अनुभव सेटिंग्स',
+    settings_subtitle: 'अभिगम्यता, आयु मोड, फ़ॉन्ट आकार और कंट्रास्ट अनुकूलित करें।',
+    settings_mode_label: 'अनुभव मोड',
+    settings_font_scale: 'टेक्स्ट आकार बढ़ाएं',
+    settings_contrast: 'उच्च कंट्रास्ट मोड',
+    settings_reduced_motion: 'गति कम करें',
+    settings_system_health: 'सिस्टम स्वास्थ्य और AI इंजन'
+  },
+
+  ta: {
+    // Nav
+    nav_discover: 'கண்டறியவும்',
+    nav_hana: 'ஹனா AI',
+    nav_twin: '3D டிஜிட்டல் இரட்டை',
+    nav_journey: 'பயண திட்டமிடுபவர்',
+    nav_intelligence: 'பயண நுண்ணறிவு',
+    nav_mytravel: 'எனது பயணம்',
+    nav_settings: 'அமைப்புகள்',
+    skip_content: 'முக்கிய உள்ளடக்கத்திற்குச் செல்க (Alt+1)',
+
+    // Header & Actions
+    basket: 'பயணக் கூடை',
+    places_count: 'இடங்கள்',
+    clear_basket: 'அனைத்தையும் நீக்கு',
+    view_basket_3d: '3D-ல் பாதையைப் பார்',
+    plan_with_hana: 'ஹனாவுடன் திட்டமிடு',
+    empty_basket: 'கூடை காலியாக உள்ளது. கண்டறிதல் மூலம் இடங்களைச் சேர்க்கவும்.',
+
+    // Experience Modes
+    mode_adult: 'நிலையான பயணம்',
+    mode_teen: 'இளைஞர் பயணம்',
+    mode_family: 'குடும்பப் பயணம்',
+    mode_accessible: 'அணுகக்கூடிய பயணம்',
+
+    // Discover View
+    discover_title: 'மவுண்ட் ஃபூஜி & ஐந்து ஏரிகள் ஆய்வு',
+    discover_subtitle: 'யமனாஷியின் 36 சரிபார்க்கப்பட்ட இடங்கள், கோயில்கள் மற்றும் நீரூற்றுகள்.',
+    search_placeholder: '36 இடங்களைத் தேடுங்கள்...',
+    all_categories: 'அனைத்து பிரிவுகள்',
+    cat_cultural: 'பாரம்பரியம்',
+    cat_nature: 'இயற்கை மற்றும் ஏரிகள்',
+    cat_viewpoint: 'காட்சி புள்ளிகள்',
+    cat_shrine: 'புனித கோயில்கள்',
+    cat_museum: 'கலைக்கூடங்கள்',
+    cat_onsen: 'வெந்நீர் ஊற்றுகள் (ஒன்சென்)',
+    cat_park: 'பூங்காக்கள்',
+    fuji_view_label: 'ஃபூஜி பார்வை மதிப்பீடு',
+    access_verified: 'சக்கர நாற்காலி அணுகல்',
+    access_partial: 'சில படிகள்',
+    access_steep: 'செங்குத்தான படிகள்',
+    add_to_journey: 'பயணத்தில் சேர்',
+    add_to_basket: 'கூடையில் சேர்',
+    in_basket: 'கூடையில் உள்ளது',
+    explore_in_3d: '3D-ல் ஆராய்க',
+    compare: 'ஒப்பிடு',
+
+    // Hana AI
+    hana_title: 'ஹனா AI பயணத் தோழி',
+    hana_subtitle: 'ஜெமினி இலவச தளம் மூலம் இயங்கும் மவுண்ட் ஃபூஜி நிபுணர்.',
+    hana_welcome: 'வணக்கம்! நான் ஹனா (Hana), மவுண்ட் ஃபூஜிக்கான உங்கள் AI பயணத் தோழி. ஜப்பானிய கலாச்சாரம், போக்குவரத்து அட்டவணை மற்றும் பயண வழிகாட்டுதலை நான் உங்களுக்கு வழங்குகிறேன். நான் எவ்வாறு உதவ முடியும்?',
+    hana_placeholder: 'ஹனாவிடம் கேளுங்கள்: கலாச்சாரம், பயணம், உணவு, போக்குவரத்து...',
+    hana_new_chat: 'புதிய உரையாடல்',
+    hana_search_history: 'வரலாற்றைத் தேடு...',
+    hana_try_asking: 'இவற்றைக் கேட்கலாம்:',
+    prompt_omotenashi: 'ஜப்பானிய ஓமோதெனாஷி விருந்தோம்பல்',
+    prompt_raptor: 'RAPTOR பொது போக்குவரத்து வழிகாட்டி',
+    prompt_budget: '¥10,000-க்குள் 1-நாள் கவாகுச்சிகோ பயணம்',
+    prompt_barrier: 'தடையில்லா அணுகக்கூடிய இடங்கள்',
+    action_add_journey: 'பயணத்தில் சேர்',
+    action_view_3d: '3D-ல் பார்',
+    action_copy: 'பதிலை நகலெடு',
+    action_copied: 'நகலெடுக்கப்பட்டது!',
+    action_listen: 'கேளுங்கள் (ஆடியோ)',
+
+    // 3D Digital Twin
+    twin_title: 'உண்மையான 3D டிஜிட்டல் இரட்டை & பயணப் பாதை',
+    twin_subtitle: 'துல்லியமான DEM தரைப்பரப்பு மற்றும் கணக்கிடப்பட்ட தூரங்களுடன் கூடிய பாதை.',
+    twin_explore_journey: '3D-ல் எனது பயணத்தை ஆராய்க',
+    twin_pause_tour: 'நிறுத்து',
+    twin_resume_tour: 'தொடரவும்',
+    twin_restart_tour: 'மீண்டும் தொடங்கு',
+    twin_tour_active: '3D சுற்றுலா இயங்குகிறது',
+    twin_day_night: 'பகல் / மாலை ஒளி',
+    twin_snow_cover: 'பனி உறைவு',
+    twin_cloud_fog: 'மேக மூட்டம்',
+    twin_wireframe: 'நிலப்பரப்பு வயர்ஃபிரேம்',
+    twin_stops_label: 'நிறுத்தங்கள்',
+    twin_distance_label: 'மொத்த தூரம்',
+    twin_transit_label: 'பயண நேரம்',
+    twin_switch_2d: '2D வரைபடம்',
+    twin_switch_3d: '3D இரட்டை',
+    twin_accessible_alt: 'மாற்று அட்டவணை பார்வை',
+
+    // Journey Planner
+    planner_title: 'தனிப்பயனாக்கப்பட்ட பயண திட்டமிடுபவர்',
+    planner_subtitle: 'GTFS-JP பொது போக்குவரத்து நேரங்களுடன் பல நிறுத்தப் பயணம்.',
+    planner_total_days: 'மொத்த நாட்கள்',
+    planner_budget_tier: 'பட்ஜெட் நிலை',
+    planner_travel_pace: 'பயண வேகம்',
+    planner_export_pdf: 'PDF ஆவணத்தைப் பதிவிறக்கு',
+    planner_share_qr: 'QR குறியீட்டைப் பகிர்',
+    planner_no_stops: 'இடங்கள் சேர்க்கப்படவில்லை. கண்டறியவும் தாவல் மூலம் சேர்க்கவும்.',
+
+    // Travel Intelligence
+    intel_title: 'நேரலை நுண்ணறிவு & கூட்டக் கணிப்பு',
+    intel_subtitle: 'நிகழ்நேர பார்வை, CrowdSense கூட்டம் மற்றும் போக்குவரத்து நிலை.',
+    intel_visibility_label: 'ஃபூஜி பார்வை குறியீடு',
+    intel_crowd_label: 'கூட்டக் கணிப்பு',
+    intel_transit_status: 'போக்குவரத்து நிலை',
+    intel_weather_label: 'வானிலை',
+
+    // My Travel
+    mytravel_title: 'எனது பயண மையம்',
+    mytravel_subtitle: 'சேமிக்கப்பட்ட பயணங்கள் மற்றும் பயண நிறைவு பேட்ஜ்.',
+    mytravel_active_mode: 'நேரலை வழிசெலுத்தல்',
+    mytravel_saved_trips: 'சேமித்த பயணங்கள்',
+    mytravel_view_badge: 'பயண சாதனை பேட்ஜ்',
+    mytravel_download_pdf: 'PDF பதிவிறக்கம்',
+    mytravel_qr_code: 'மொபைலில் ஸ்கேன் செய்',
+
+    // Settings
+    settings_title: 'அமைப்புகள் & அனுபவம்',
+    settings_subtitle: 'அணுகல்தன்மை, எழுத்துரு அளவு மற்றும் வண்ண அமைப்புகள்.',
+    settings_mode_label: 'அனுபவ முறை',
+    settings_font_scale: 'எழுத்துரு அளவு',
+    settings_contrast: 'உயர் மாறுபாடு',
+    settings_reduced_motion: 'இயக்கத்தைக் குறை',
+    settings_system_health: 'கணினி நிலை & AI இயந்திரம்'
+  },
+
+  kn: {
+    // Nav
+    nav_discover: 'ಅನ್ವೇಷಿಸಿ',
+    nav_hana: 'ಹನಾ AI',
+    nav_twin: '3D ಡಿಜಿಟಲ್ ಟ್ವಿನ್',
+    nav_journey: 'ಪ್ರವಾಸ ಯೋಜಕ',
+    nav_intelligence: 'ಪ್ರವಾಸ ಬುದ್ಧಿಮತ್ತೆ',
+    nav_mytravel: 'ನನ್ನ ಪ್ರವಾಸ',
+    nav_settings: 'ಸೆಟ್ಟಿಂಗ್‌ಗಳು',
+    skip_content: 'ಮುಖ್ಯ ವಿಷಯಕ್ಕೆ ಹೋಗಿ (Alt+1)',
+
+    // Header & Actions
+    basket: 'ಪ್ರವಾಸದ ಬುಟ್ಟಿ',
+    places_count: 'ಸ್ಥಳಗಳು',
+    clear_basket: 'ಎಲ್ಲವನ್ನೂ ತೆರವುಗೊಳಿಸಿ',
+    view_basket_3d: '3D ಯಲ್ಲಿ ಮಾರ್ಗ ವೀಕ್ಷಿಸಿ',
+    plan_with_hana: 'ಹನಾ ಜೊತೆ ಯೋಜಿಸಿ',
+    empty_basket: 'ಬುಟ್ಟಿ ಖಾಲಿಯಾಗಿದೆ. ಅನ್ವೇಷಣೆಯಿಂದ ಸ್ಥಳಗಳನ್ನು ಸೇರಿಸಿ.',
+
+    // Experience Modes
+    mode_adult: 'ಸಾಮಾನ್ಯ ಪ್ರವಾಸ',
+    mode_teen: 'ಯುವ ಅನ್ವೇಷಕ',
+    mode_family: 'ಕುಟುಂಬ ಅನ್ವೇಷಕ',
+    mode_accessible: 'ಸುಲಭ ಪ್ರವೇಶದ ಪ್ರವಾಸ',
+
+    // Discover View
+    discover_title: 'ಮೌಂಟ್ ಫೂಜಿ ಮತ್ತು ಪಂಚ ಸರೋವರಗಳ ಅನ್ವೇಷಣೆ',
+    discover_subtitle: 'ಯಮಾನಾಶಿಯ 36 ಧಾರ್ಮಿಕ ಸ್ಥಳಗಳು, ಸುಂದರ ತಾಣಗಳು ಮತ್ತು ನೈಸರ್ಗಿಕ ತಾಣಗಳನ್ನು ಅನ್ವೇಷಿಸಿ.',
+    search_placeholder: 'ಹೆಸರು ಅಥವಾ ವರ್ಗದಿಂದ 36 ತಾಣಗಳನ್ನು ಹುಡುಕಿ...',
+    all_categories: 'ಎಲ್ಲಾ ವರ್ಗಗಳು',
+    cat_cultural: 'ಸಾಂಸ್ಕೃತಿಕ ಪರಂಪರೆ',
+    cat_nature: 'ಪ್ರಕೃತಿ ಮತ್ತು ಸರೋವರಗಳು',
+    cat_viewpoint: 'ಸುಂದರ ನೋಟ ತಾಣಗಳು',
+    cat_shrine: 'ಪವಿತ್ರ ದೇವಾಲಯಗಳು',
+    cat_museum: 'ಕಲಾ ಸಂಗ್ರಹಾಲಯಗಳು',
+    cat_onsen: 'ಬಿಸಿ ನೀರಿನ ಬುಗ್ಗೆಗಳು (ಓನ್ಸೆನ್)',
+    cat_park: 'ಉದ್ಯಾನವನಗಳು',
+    fuji_view_label: 'ಫೂಜಿ ನೋಟ ರೇಟಿಂಗ್',
+    access_verified: 'ವೀಲ್‌ಚೇರ್ ಪ್ರವೇಶಿಸಬಹುದಾದ',
+    access_partial: 'ಕೆಲವು ಮೆಟ್ಟಿಲುಗಳು',
+    access_steep: 'ಕಡಿದಾದ ಮೆಟ್ಟಿಲುಗಳು',
+    add_to_journey: 'ಪ್ರವಾಸಕ್ಕೆ ಸೇರಿಸಿ',
+    add_to_basket: 'ಬುಟ್ಟಿಗೆ ಸೇರಿಸಿ',
+    in_basket: 'ಬುಟ್ಟಿಯಲ್ಲಿದೆ',
+    explore_in_3d: '3D ಯಲ್ಲಿ ಅನ್ವೇಷಿಸಿ',
+    compare: 'ಹೋಲಿಕೆ ಮಾಡಿ',
+
+    // Hana AI
+    hana_title: 'ಹನಾ AI ಪ್ರವಾಸ ಸಂಗಾತಿ',
+    hana_subtitle: 'ಜೆಮಿನಿ ಉಚಿತ ಶ್ರೇಣಿಯಿಂದ ನಡೆಸಲ್ಪಡುವ ಮೌಂಟ್ ಫೂಜಿ ತಜ್ಞೆ.',
+    hana_welcome: 'ನಮಸ್ಕಾರ! ನಾನು ಹನಾ (Hana), ಮೌಂಟ್ ಫೂಜಿಗಾಗಿ ನಿಮ್ಮ AI ಪ್ರವಾಸ ಸಂಗಾತಿ. ಜಪಾನಿನ ಸಂಸ್ಕೃತಿ, ಸಾರಿಗೆ ವೇಳಾಪಟ್ಟಿ ಮತ್ತು ಪ್ರಯಾಣ ಯೋಜನೆಯಲ್ಲಿ ನಾನು ನಿಮಗೆ ಸಹಾಯ ಮಾಡುತ್ತೇನೆ. ಇಂದು ನಿಮಗೆ ಹೇಗೆ ಸಹಾಯ ಮಾಡಲಿ?',
+    hana_placeholder: 'ಹನಾಳನ್ನು ಏನಾದರೂ ಕೇಳಿ: ಸಂಸ್ಕೃತಿ, ಸಾರಿಗೆ, ಆಹಾರ, ಮಾರ್ಗಗಳು...',
+    hana_new_chat: 'ಹೊಸ ಪ್ರವಾಸ ಚಾಟ್',
+    hana_search_history: 'ಇತಿಹಾಸ ಹುಡುಕಿ...',
+    hana_try_asking: 'ಹೀಗೆ ಕೇಳಿ ನೋಡಿ:',
+    prompt_omotenashi: 'ಜಪಾನಿನ ಓಮೊತೆನಾಶಿ ಆತಿಥ್ಯ ಮತ್ತು ಶಿಷ್ಟಾಚಾರ',
+    prompt_raptor: 'RAPTOR ಸಾರ್ವಜನಿಕ ಸಾರಿಗೆ ಮಾರ್ಗದರ್ಶಿ',
+    prompt_budget: '¥10,000 ಒಳಗೆ 1 ದಿನದ ಕವಾಗುಚಿಕೊ ಪ್ರವಾಸ',
+    prompt_barrier: 'ಅಡಚಣೆ-ಮುಕ್ತ ಸುಲಭ ಪ್ರವೇಶದ ತಾಣಗಳು',
+    action_add_journey: 'ಪ್ರವಾಸಕ್ಕೆ ಸೇರಿಸಿ',
+    action_view_3d: '3D ಯಲ್ಲಿ ನೋಡಿ',
+    action_copy: 'ಉತ್ತರ ನಕಲಿಸಿ',
+    action_copied: 'ನಕಲಿಸಲಾಗಿದೆ!',
+    action_listen: 'ಆಲಿಸಿ (ಧ್ವನಿ)',
+
+    // 3D Digital Twin
+    twin_title: 'ನೈಜ 3D ಡಿಜಿಟಲ್ ಟ್ವಿನ್ ಮತ್ತು ಪ್ರವಾಸ ಮಾರ್ಗ',
+    twin_subtitle: 'ನಿಖರವಾದ DEM ಭೂಪ್ರದೇಶ ಮತ್ತು ಲೆಕ್ಕಹಾಕಿದ ದೂರಗಳೊಂದಿಗೆ ಸಂಪರ್ಕಿತ ಮಾರ್ಗ.',
+    twin_explore_journey: '3D ಯಲ್ಲಿ ನನ್ನ ಪ್ರವಾಸವನ್ನು ಅನ್ವೇಷಿಸಿ',
+    twin_pause_tour: 'ವಿರಾಮ',
+    twin_resume_tour: 'ಮುಂದುವರಿಸಿ',
+    twin_restart_tour: 'ಮತ್ತೆ ಪ್ರಾರಂಭಿಸಿ',
+    twin_tour_active: '3D ಪ್ರವಾಸ ಸಕ್ರಿಯವಾಗಿದೆ',
+    twin_day_night: 'ಹಗಲು / ಸಂಜೆ ಬೆಳಕು',
+    twin_snow_cover: 'ಹಿಮದ ಹೊದಿಕೆ',
+    twin_cloud_fog: 'ಮೋಡದ ಪದರ',
+    twin_wireframe: 'ಭೂಪ್ರದೇಶ ವೈರ್‌ಫ್ರೇಮ್',
+    twin_stops_label: 'ನಿಲುಗಡೆಗಳು',
+    twin_distance_label: 'ಒಟ್ಟು ದೂರ',
+    twin_transit_label: 'ಅಂದಾಜು ಸಮಯ',
+    twin_switch_2d: '2D ನಕ್ಷೆ',
+    twin_switch_3d: '3D ಟ್ವಿನ್',
+    twin_accessible_alt: 'ಪರ್ಯಾಯ ಕೋಷ್ಟಕ ನೋಟ',
+
+    // Journey Planner
+    planner_title: 'ವೈಯಕ್ತಿಕಗೊಳಿಸಿದ ಪ್ರವಾಸ ಯೋಜಕ',
+    planner_subtitle: 'ಸಾರ್ವಜನಿಕ ಸಾರಿಗೆ ವೇಳಾಪಟ್ಟಿಯೊಂದಿಗೆ ಬಹು-ದಿನದ ಪ್ರವಾಸ ಯೋಜನೆ.',
+    planner_total_days: 'ಒಟ್ಟು ದಿನಗಳು',
+    planner_budget_tier: 'ಬಜೆಟ್ ಮಟ್ಟ',
+    planner_travel_pace: 'ಪ್ರವಾಸದ ವೇಗ',
+    planner_export_pdf: 'PDF ಡಾಕ್ಯುಮೆಂಟ್ ಡೌನ್‌ಲೋಡ್',
+    planner_share_qr: 'QR ಕೋಡ್ ಹಂಚಿಕೊಳ್ಳಿ',
+    planner_no_stops: 'ಯಾವುದೇ ತಾಣಗಳಿಲ್ಲ. ಅನ್ವೇಷಿಸಿ ಅಥವಾ ಹನಾ AI ಮೂಲಕ ಸೇರಿಸಿ.',
+
+    // Travel Intelligence
+    intel_title: 'ಲೈವ್ ಪ್ರಾದೇಶಿಕ ಬುದ್ಧಿಮತ್ತೆ ಮತ್ತು ಜನಸಂದಣಿ',
+    intel_subtitle: 'ನೈಜ-ಸಮಯದ ಗೋಚರತೆ, CrowdSense ಅಂದಾಜು ಮತ್ತು ಸಾರಿಗೆ ಸ್ಥಿತಿ.',
+    intel_visibility_label: 'ಫೂಜಿ ಗೋಚರತೆ ಸೂಚ್ಯಂಕ',
+    intel_crowd_label: 'ಜನಸಂದಣಿ ಮುನ್ಸೂಚನೆ',
+    intel_transit_status: 'ಸಾರಿಗೆ ಕಾರ್ಯಾಚರಣೆ',
+    intel_weather_label: 'ಹವಾಮಾನ',
+
+    // My Travel
+    mytravel_title: 'ನನ್ನ ಪ್ರವಾಸ ಕೇಂದ್ರ',
+    mytravel_subtitle: 'ಉಳಿಸಿದ ಪ್ರವಾಸಗಳು ಮತ್ತು ಪೂರ್ಣಗೊಳಿಸುವಿಕೆಯ ಬ್ಯಾಡ್ಜ್.',
+    mytravel_active_mode: 'ಸಕ್ರಿಯ ನ್ಯಾವಿಗೇಷನ್',
+    mytravel_saved_trips: 'ಉಳಿಸಿದ ಪ್ರವಾಸಗಳು',
+    mytravel_view_badge: 'ಪ್ರವಾಸ ಸಾಧನೆ ಬ್ಯಾಡ್ಜ್',
+    mytravel_download_pdf: 'PDF ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ',
+    mytravel_qr_code: 'ಮೊಬೈಲ್‌ನಲ್ಲಿ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ',
+
+    // Settings
+    settings_title: 'ಪ್ಲಾಟ್‌ಫಾರ್ಮ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು',
+    settings_subtitle: 'ಪ್ರವೇಶಿಸುವಿಕೆ, ವಯಸ್ಸಿನ ಮೋಡ್ ಮತ್ತು ಅಕ್ಷರ ಗಾತ್ರ ಹೊಂದಿಸಿ.',
+    settings_mode_label: 'ಅನುಭವ ಮೋಡ್',
+    settings_font_scale: 'ಪಠ್ಯ ಗಾತ್ರ',
+    settings_contrast: 'ಹೆಚ್ಚಿನ ಕಾಂಟ್ರಾಸ್ಟ್',
+    settings_reduced_motion: 'ಚಲನೆ ಕಡಿಮೆ ಮಾಡಿ',
+    settings_system_health: 'ಸಿಸ್ಟಮ್ ಸ್ಥಿತಿ & AI ಇಂಜಿನ್'
+  },
+
+  te: {
+    // Nav
+    nav_discover: 'అన్వేషించండి',
+    nav_hana: 'హనా AI',
+    nav_twin: '3D డిజిటల్ ట్విన్',
+    nav_journey: 'ప్రయాణ ప్రణాళిక',
+    nav_intelligence: 'ప్రయాణ సమాచారం',
+    nav_mytravel: 'నా ప్రయాణం',
+    nav_settings: 'సెట్టింగ్‌లు',
+    skip_content: 'ప్రధాన విషయానికి వెళ్లండి (Alt+1)',
+
+    // Header & Actions
+    basket: 'ప్రయాణ బుట్ట',
+    places_count: 'ప్రదేశాలు',
+    clear_basket: 'అన్నీ తీసివేయి',
+    view_basket_3d: '3Dలో మార్గాన్ని చూడు',
+    plan_with_hana: 'హనాతో ప్లాన్ చేయండి',
+    empty_basket: 'బుట్ట ఖాళీగా ఉంది. అన్వేషించండి నుండి స్థలాలను జోడించండి.',
+
+    // Experience Modes
+    mode_adult: 'ప్రామాణిక ప్రయాణం',
+    mode_teen: 'టీన్ ఎక్స్‌ప్లోరర్',
+    mode_family: 'కుటుంబ ప్రయాణం',
+    mode_accessible: 'అందరికీ అనుకూలమైన ప్రయాణం',
+
+    // Discover View
+    discover_title: 'మౌంట్ ఫూజి & పంచ సరస్సుల అన్వేషణ',
+    discover_subtitle: 'యమనాషిలోని 36 ధృవీకరించబడిన సంస్కృతి, అందమైన దృశ్యాలు మరియు దేవాలయాలు.',
+    search_placeholder: '36 ప్రదేశాలను శోధించండి...',
+    all_categories: 'అన్ని విభాగాలు',
+    cat_cultural: 'సాంస్కృతిక వారసత్వం',
+    cat_nature: 'ప్రకృతి మరియు సరస్సులు',
+    cat_viewpoint: 'అందమైన దృశ్యాలు',
+    cat_shrine: 'పవిత్ర దేవాలయాలు',
+    cat_museum: 'కళ మరియు మ్యూజియంలు',
+    cat_onsen: 'వేడి నీటి బుగ్గలు (ఒన్సెన్)',
+    cat_park: 'ఉద్యానవనాలు',
+    fuji_view_label: 'ఫూజి వీక్షణ రేటింగ్',
+    access_verified: 'వీల్‌చైర్ అనుకూలం',
+    access_partial: 'కొన్ని మెట్లు',
+    access_steep: 'ఎత్తైన మెట్లు',
+    add_to_journey: 'ప్రయాణంలో జోడించు',
+    add_to_basket: 'బుట్టలో జోడించు',
+    in_basket: 'బుట్టలో ఉంది',
+    explore_in_3d: '3Dలో అన్వేషించండి',
+    compare: 'పోల్చండి',
+
+    // Hana AI
+    hana_title: 'హనా AI ప్రయాణ సహచరి',
+    hana_subtitle: 'జెమిని ఉచిత శ్రేణితో పనిచేసే మౌంట్ ఫూజి నిపుణురాలు.',
+    hana_welcome: 'నమస్కారం! నేను హనా (Hana), మౌంట్ ఫూజి కోసం మీ AI ప్రయాణ సహచరిని. జపనీస్ సంస్కృతి, రవాణా షెడ్యూల్‌లు మరియు ప్రయాణ ప్రణాళికలో మీకు సహాయం చేయగలను. ఈరోజు మీకు ఎలా సహాయపడగలను?',
+    hana_placeholder: 'హనాను ఏదైనా అడగండి: సంస్కృతి, ప్రయాణం, ఆహారం, రవాణా...',
+    hana_new_chat: 'కొత్త ప్రయాణ సంభాషణ',
+    hana_search_history: 'చరిత్రను శోధించండి...',
+    hana_try_asking: 'ఇవి అడగండి:',
+    prompt_omotenashi: 'జపనీస్ ఒమోతెనాషి ఆతిథ్యం & మర్యాదలు',
+    prompt_raptor: 'RAPTOR ప్రజా రవాణా గైడ్',
+    prompt_budget: '¥10,000 లోపు 1-రోజు కవాగుచికో ప్రయాణం',
+    prompt_barrier: 'అడ్డంకులు లేని వీల్‌చైర్ ప్రదేశాలు',
+    action_add_journey: 'ప్రయాణంలో జోడించు',
+    action_view_3d: '3Dలో చూడండి',
+    action_copy: 'సమాధానం కాపీ చేయండి',
+    action_copied: 'కాపీ చేయబడింది!',
+    action_listen: 'వినండి (ఆడియో)',
+
+    // 3D Digital Twin
+    twin_title: 'రియల్ 3D డిజిటల్ ట్విన్ & ప్రయాణ మార్గం',
+    twin_subtitle: 'ఖచ్చితమైన DEM భూభాగం మరియు లెక్కించిన దూరాలతో అనుసంధానించబడిన మార్గం.',
+    twin_explore_journey: '3Dలో నా ప్రయాణాన్ని అన్వేషించండి',
+    twin_pause_tour: 'ఆపు',
+    twin_resume_tour: 'కొనసాగించు',
+    twin_restart_tour: 'మొదటి నుండి ప్రారంభించు',
+    twin_tour_active: '3D పర్యటన నడుస్తోంది',
+    twin_day_night: 'పగలు / సాయంత్రం కాంతి',
+    twin_snow_cover: 'మంచు కవచం',
+    twin_cloud_fog: 'మేఘాల పొర',
+    twin_wireframe: 'భూభాగం వైర్‌ఫ్రేమ్',
+    twin_stops_label: 'స్టాప్‌లు',
+    twin_distance_label: 'మొత్తం దూరం',
+    twin_transit_label: 'అంచనా సమయం',
+    twin_switch_2d: '2D మ్యాప్',
+    twin_switch_3d: '3D ట్విన్',
+    twin_accessible_alt: 'ప్రత్యామ్నాయ పట్టిక వీక్షణ',
+
+    // Journey Planner
+    planner_title: 'వ్యక్తిగతీకరించిన ప్రయాణ ప్లానర్',
+    planner_subtitle: 'రవాణా సమయాలతో కూడిన బహుళ-రోజుల ప్రయాణ ప్రణాళిక.',
+    planner_total_days: 'మొత్తం రోజులు',
+    planner_budget_tier: 'బడ్జెట్ శ్రేణి',
+    planner_travel_pace: 'ప్రయాణ వేగం',
+    planner_export_pdf: 'PDF పత్రం డౌన్‌లోడ్',
+    planner_share_qr: 'QR కోడ్ భాగస్వామ్యం',
+    planner_no_stops: 'ఎలాంటి స్థలాలు చేర్చబడలేదు. అన్వేషించండి లేదా హనా ద్వారా జోడించండి.',
+
+    // Travel Intelligence
+    intel_title: 'లైవ్ ప్రాంతీయ సమాచారం & రద్దీ అంచనా',
+    intel_subtitle: 'నిజ-సమయ దృశ్యత, CrowdSense రద్దీ మరియు రవాణా స్థితి.',
+    intel_visibility_label: 'ఫూజి దృశ్యత సూచిక',
+    intel_crowd_label: 'రద్దీ అంచనా',
+    intel_transit_status: 'రవాణా స్థితి',
+    intel_weather_label: 'వాతావరణం',
+
+    // My Travel
+    mytravel_title: 'నా ప్రయాణ కేంద్రం',
+    mytravel_subtitle: 'భద్రపరచిన ప్రయాణాలు మరియు ప్రయాణ పూర్తి బ్యాడ్జ్.',
+    mytravel_active_mode: 'లైవ్ నావిగేషన్',
+    mytravel_saved_trips: 'సేవ్ చేసిన ప్రయాణాలు',
+    mytravel_view_badge: 'ప్రయాణ సాఫల్య బ్యాడ్జ్',
+    mytravel_download_pdf: 'PDF డౌన్‌లోడ్ చేయండి',
+    mytravel_qr_code: 'మొబైల్‌లో స్కాన్ చేయండి',
+
+    // Settings
+    settings_title: 'ప్లాట్‌ఫామ్ సెట్టింగ్‌లు',
+    settings_subtitle: 'యాక్సెసిబిలిటీ, వయస్సు మోడ్ మరియు అక్షరాల పరిమాణం.',
+    settings_mode_label: 'అనుభవ మోడ్',
+    settings_font_scale: 'టెక్స్ట్ పరిమాణం',
+    settings_contrast: 'హై కాంట్రాస్ట్ మోడ్',
+    settings_reduced_motion: 'కదలికను తగ్గించు',
+    settings_system_health: 'సిస్టమ్ స్థితి & AI ఇంజిన్'
+  }
+};

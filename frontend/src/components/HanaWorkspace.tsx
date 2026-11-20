@@ -3,6 +3,8 @@ import { Place, ChatMessage, Journey, CrowdAlternativeCard, ItineraryPlan } from
 import { apiUrl } from '../config';
 import { JourneyDisplay } from './JourneyDisplay';
 import { PlaceCard } from './PlaceCard';
+import { MarkdownMessage } from './MarkdownMessage';
+import { useTranslation } from '../i18n/LanguageContext';
 import { 
   Send, 
   Bot, 
@@ -10,8 +12,6 @@ import {
   Sparkles, 
   Loader2, 
   Users, 
-  Copy, 
-  Check, 
   Trash2, 
   Cpu, 
   Plus, 
@@ -21,7 +21,6 @@ import {
   ArrowDown, 
   Edit2, 
   StopCircle, 
-  Volume2,
   AlertCircle,
   RotateCcw
 } from 'lucide-react';
@@ -55,6 +54,8 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
   activeModel = 'gemini-2.0-flash',
   externalPrompt
 }) => {
+  const { t } = useTranslation();
+
   // Conversation List State
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -66,8 +67,6 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [lastUserPrompt, setLastUserPrompt] = useState<string>('');
-  const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const [showScrollBottom, setShowScrollBottom] = useState<boolean>(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -112,7 +111,7 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
         {
           id: 'welcome',
           sender: 'hana',
-          text: "Konnichiwa! I am Hana (ハナ), your AI travel companion for Mount Fuji and the Fuji Five Lakes. I can answer any general question (including Japanese culture, machine learning, technology, translations, and regional weather) or generate personalized multi-day itineraries with verified public transport schedules. How can I assist you today?",
+          text: t('hana_welcome', "Konnichiwa! I am Hana (ハナ), your AI travel companion for Mount Fuji and the Fuji Five Lakes. I can answer any general question (including Japanese culture, machine learning, technology, translations, and regional weather) or generate personalized multi-day itineraries with verified public transport schedules. How can I assist you today?"),
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
       ]);
@@ -444,87 +443,6 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
     } catch (_) {}
   };
 
-  const handleCopyText = (id: string, text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
-  };
-
-  const handleSpeakText = (text: string) => {
-    if (!('speechSynthesis' in window)) return;
-    if (isSpeaking) {
-      window.speechSynthesis.cancel();
-      setIsSpeaking(false);
-      return;
-    }
-
-    const cleanText = text.replace(/[*#_`]/g, '');
-    const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
-    setIsSpeaking(true);
-    window.speechSynthesis.speak(utterance);
-  };
-
-  // Helper to render markdown and code blocks
-  const renderMessageContent = (text: string) => {
-    if (!text) return null;
-    const parts = text.split(/(```[\s\S]*?```)/g);
-
-    return parts.map((part, index) => {
-      if (part.startsWith('```') && part.endsWith('```')) {
-        const lines = part.slice(3, -3).trim().split('\n');
-        const language = lines[0].match(/^[a-zA-Z0-9_-]+$/) ? lines[0] : '';
-        const code = language ? lines.slice(1).join('\n') : lines.join('\n');
-
-        return (
-          <div key={index} className="my-2 rounded-xl bg-slate-950 border border-slate-800 overflow-hidden font-mono text-xs shadow-xs">
-            <div className="flex items-center justify-between px-3 py-1.5 bg-slate-900 border-b border-slate-800 text-[11px] text-slate-400">
-              <span className="font-semibold text-sky-400 uppercase">{language || 'code'}</span>
-              <button
-                onClick={() => navigator.clipboard.writeText(code)}
-                className="flex items-center gap-1 hover:text-white transition-colors"
-                title="Copy code"
-              >
-                <Copy className="w-3 h-3" />
-                <span>Copy</span>
-              </button>
-            </div>
-            <pre className="p-3 text-slate-200 overflow-x-auto whitespace-pre-wrap leading-relaxed">
-              <code>{code}</code>
-            </pre>
-          </div>
-        );
-      }
-
-      const formatted = part.split('\n').map((line, lIdx) => {
-        let l = line;
-        if (l.startsWith('### ')) {
-          return <h3 key={lIdx} className="text-sm font-bold text-white mt-2 mb-1">{l.replace('### ', '')}</h3>;
-        }
-        if (l.startsWith('## ')) {
-          return <h2 key={lIdx} className="text-base font-bold text-white mt-2.5 mb-1">{l.replace('## ', '')}</h2>;
-        }
-        if (l.startsWith('# ')) {
-          return <h1 key={lIdx} className="text-lg font-black text-white mt-3 mb-1.5">{l.replace('# ', '')}</h1>;
-        }
-        if (l.startsWith('- ') || l.startsWith('* ')) {
-          return (
-            <div key={lIdx} className="flex items-start gap-1.5 my-0.5 ml-2">
-              <span className="text-sky-400 font-bold leading-tight">•</span>
-              <span className="flex-1">{l.slice(2)}</span>
-            </div>
-          );
-        }
-        return <p key={lIdx} className={lIdx > 0 ? 'mt-1' : ''}>{l}</p>;
-      });
-
-      return <span key={index}>{formatted}</span>;
-    });
-  };
-
   return (
     <div className="flex h-full w-full bg-slate-950 text-slate-100 overflow-hidden select-text">
       {/* 1. Left Persistent Conversation History Sidebar */}
@@ -536,7 +454,7 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
             className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>New Journey Chat</span>
+            <span>{t('hana_new_chat', 'New Journey Chat')}</span>
           </button>
 
           {/* Search conversations */}
@@ -544,7 +462,7 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search chat history..."
+              placeholder={t('hana_search_history', 'Search chat history...')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
@@ -683,28 +601,12 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
                   ? 'bg-sky-600 text-white rounded-br-xs'
                   : 'bg-slate-900 border border-slate-800 text-slate-200 rounded-bl-xs'
               }`}>
-                {/* Assistant message action buttons */}
-                {msg.sender === 'hana' && msg.text && !msg.isError && (
-                  <div className="absolute right-2 top-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick={() => handleSpeakText(msg.text)}
-                      className="p-1 text-slate-400 hover:text-white rounded bg-slate-800 cursor-pointer"
-                      title="Read aloud"
-                    >
-                      <Volume2 className={`w-3.5 h-3.5 ${isSpeaking ? 'text-sky-400' : ''}`} />
-                    </button>
-                    <button
-                      onClick={() => handleCopyText(msg.id, msg.text)}
-                      className="p-1 text-slate-400 hover:text-white rounded bg-slate-800 cursor-pointer"
-                      title="Copy response"
-                    >
-                      {copiedId === msg.id ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                    </button>
-                  </div>
-                )}
-
-                {/* Render normal text / markdown */}
-                {renderMessageContent(msg.text)}
+                {/* Render formatted markdown message with headers, bold, code, tables */}
+                <MarkdownMessage
+                  content={msg.text}
+                  isHana={msg.sender === 'hana'}
+                  onExploreIn3D={() => onSelectSession(currentSessionId)}
+                />
 
                 {/* Visible Error Card (Prevent empty bubble) */}
                 {msg.isError && (
@@ -837,30 +739,30 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
           <div className="max-w-4xl mx-auto space-y-3">
             {/* Quick Prompts */}
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px] text-slate-400 no-scrollbar">
-              <span className="shrink-0 text-slate-500 font-semibold">Try asking:</span>
+              <span className="shrink-0 text-slate-500 font-semibold">{t('hana_try_asking', 'Try asking:')}</span>
               <button
                 onClick={() => sendMessage('Tell me about Japanese Omotenashi hospitality and travel etiquette.')}
                 className="shrink-0 px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-sky-950 hover:text-sky-300 hover:border-sky-500/40 border border-slate-700/60 transition-all cursor-pointer"
               >
-                Omotenashi Hospitality
+                {t('prompt_omotenashi', 'Omotenashi Hospitality')}
               </button>
               <button
                 onClick={() => sendMessage('How does FujiNova implement the RAPTOR public transit algorithm?')}
                 className="shrink-0 px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-sky-950 hover:text-sky-300 hover:border-sky-500/40 border border-slate-700/60 transition-all cursor-pointer"
               >
-                RAPTOR Algorithm Code
+                {t('prompt_raptor', 'RAPTOR Algorithm Code')}
               </button>
               <button
                 onClick={() => sendMessage('Plan a 1-day trip from Kawaguchiko Station with great Fuji views under ¥10,000.')}
                 className="shrink-0 px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-sky-950 hover:text-sky-300 hover:border-sky-500/40 border border-slate-700/60 transition-all cursor-pointer"
               >
-                1-Day Trip under ¥10,000
+                {t('prompt_budget', '1-Day Trip under ¥10,000')}
               </button>
               <button
                 onClick={() => sendMessage('What are the best attractions around Lake Kawaguchiko for elderly visitors avoiding steep stairs?')}
                 className="shrink-0 px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-sky-950 hover:text-sky-300 hover:border-sky-500/40 border border-slate-700/60 transition-all cursor-pointer"
               >
-                Barrier-Free Highlights
+                {t('prompt_barrier', 'Barrier-Free Highlights')}
               </button>
             </div>
 
@@ -881,7 +783,7 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
                     sendMessage();
                   }
                 }}
-                placeholder="Ask Hana anything: Japanese culture, travel advice, Python code, RAPTOR, or itinerary planning..."
+                placeholder={t('hana_placeholder', 'Ask Hana anything: Japanese culture, travel advice, RAPTOR transit, cuisine...')}
                 rows={1}
                 className="flex-1 bg-transparent px-3 py-1.5 text-xs sm:text-sm text-white placeholder-slate-500 resize-none focus:outline-none max-h-32 min-h-[36px]"
               />

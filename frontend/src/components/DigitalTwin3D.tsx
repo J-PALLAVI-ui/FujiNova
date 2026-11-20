@@ -24,8 +24,14 @@ import {
   ChevronLeft,
   ChevronRight,
   List,
-  Route
+  Route,
+  Play,
+  Pause,
+  SkipForward,
+  SkipBack,
+  Square
 } from 'lucide-react';
+import { useTranslation } from '../i18n/LanguageContext';
 
 import ALL_VERIFIED_LANDMARKS from '../data/all_landmarks.json';
 import { ItineraryPlan, ItineraryStop } from '../types';
@@ -86,6 +92,7 @@ export const DigitalTwin3D: React.FC<DigitalTwin3DProps> = ({
   activeStopIndex: _activeStopIndex = 0,
   onSelectStopIndex
 }) => {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const [lightingMode, setLightingMode] = useState<'day' | 'sunset' | 'night'>('day');
   const [selectedLandmark, setSelectedLandmark] = useState<GeoLandmark | null>(null);
@@ -103,6 +110,11 @@ export const DigitalTwin3D: React.FC<DigitalTwin3DProps> = ({
     transitMinutes: number;
   }>>([]);
   const [totalRouteDistanceKm, setTotalRouteDistanceKm] = useState<number>(0);
+
+  // 3D Animated Route Tour State
+  const [isTourPlaying, setIsTourPlaying] = useState(false);
+  const [tourStopIndex, setTourStopIndex] = useState(0);
+  const tourIntervalRef = useRef<number | null>(null);
 
   // Three.js internal instances
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -777,6 +789,83 @@ export const DigitalTwin3D: React.FC<DigitalTwin3DProps> = ({
     cameraRef.current.lookAt(lookTargetRef.current);
   };
 
+  // 3D Animated Route Tour Controller
+  const startRouteTour = () => {
+    if (!itinerary) return;
+    const allStops = itinerary.days?.flatMap(d => d.stops) || [];
+    if (allStops.length === 0) return;
+
+    setIsTourPlaying(true);
+    setTourStopIndex(0);
+    focusStopWaypoint(0);
+  };
+
+  const pauseRouteTour = () => {
+    setIsTourPlaying(false);
+    if (tourIntervalRef.current) {
+      clearInterval(tourIntervalRef.current);
+      tourIntervalRef.current = null;
+    }
+  };
+
+  const resumeRouteTour = () => {
+    setIsTourPlaying(true);
+  };
+
+  const nextTourStop = () => {
+    if (!itinerary) return;
+    const allStops = itinerary.days?.flatMap(d => d.stops) || [];
+    if (allStops.length === 0) return;
+    const nextIdx = (tourStopIndex + 1) % allStops.length;
+    setTourStopIndex(nextIdx);
+    focusStopWaypoint(nextIdx);
+  };
+
+  const prevTourStop = () => {
+    if (!itinerary) return;
+    const allStops = itinerary.days?.flatMap(d => d.stops) || [];
+    if (allStops.length === 0) return;
+    const prevIdx = (tourStopIndex - 1 + allStops.length) % allStops.length;
+    setTourStopIndex(prevIdx);
+    focusStopWaypoint(prevIdx);
+  };
+
+  const exitRouteTour = () => {
+    setIsTourPlaying(false);
+    if (tourIntervalRef.current) {
+      clearInterval(tourIntervalRef.current);
+      tourIntervalRef.current = null;
+    }
+    focusEntireRoute();
+  };
+
+  useEffect(() => {
+    if (!isTourPlaying || !itinerary) {
+      if (tourIntervalRef.current) clearInterval(tourIntervalRef.current);
+      return;
+    }
+
+    const allStops = itinerary.days?.flatMap(d => d.stops) || [];
+    if (allStops.length <= 1) return;
+
+    tourIntervalRef.current = window.setInterval(() => {
+      setTourStopIndex(prev => {
+        const next = prev + 1;
+        if (next >= allStops.length) {
+          setIsTourPlaying(false);
+          focusEntireRoute();
+          return 0;
+        }
+        focusStopWaypoint(next);
+        return next;
+      });
+    }, 5500);
+
+    return () => {
+      if (tourIntervalRef.current) clearInterval(tourIntervalRef.current);
+    };
+  }, [isTourPlaying, itinerary]);
+
   // Pan / Zoom on-screen helpers
   const handleZoom = (direction: 'in' | 'out') => {
     if (!cameraRef.current) return;
@@ -1270,6 +1359,24 @@ export const DigitalTwin3D: React.FC<DigitalTwin3DProps> = ({
                 >
                   Fit Route
                 </button>
+                {!isTourPlaying ? (
+                  <button
+                    onClick={startRouteTour}
+                    className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white font-bold text-xs transition-all shadow-md cursor-pointer"
+                    title="Launch animated 3D route tour"
+                  >
+                    <Play className="w-3.5 h-3.5 fill-white" />
+                    <span>{t('twin_explore_journey', 'Explore in 3D')}</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={pauseRouteTour}
+                    className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs transition-all shadow-md cursor-pointer"
+                  >
+                    <Pause className="w-3.5 h-3.5 fill-white" />
+                    <span>{t('twin_pause_tour', 'Pause Tour')}</span>
+                  </button>
+                )}
               </div>
             </div>
 
@@ -1295,6 +1402,59 @@ export const DigitalTwin3D: React.FC<DigitalTwin3DProps> = ({
                 </React.Fragment>
               ))}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Active 3D Route Tour Floating HUD */}
+      {isTourPlaying && itinerary && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-30 pointer-events-auto bg-slate-900/95 border border-pink-500/50 backdrop-blur-xl px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-4 text-xs max-w-lg w-full animate-in fade-in zoom-in-95">
+          <div className="w-8 h-8 rounded-full bg-pink-600 text-white flex items-center justify-center font-bold text-xs shadow-md shrink-0">
+            {tourStopIndex + 1}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-pink-400">
+                {t('twin_tour_active', '3D Route Tour Active')}
+              </span>
+              <span className="text-[10px] text-slate-400 font-mono">
+                ({tourStopIndex + 1} / {itinerary.days?.flatMap(d => d.stops).length || 0})
+              </span>
+            </div>
+            <h4 className="text-sm font-bold text-white truncate">
+              {itinerary.days?.flatMap(d => d.stops)[tourStopIndex]?.name_en || itinerary.days?.flatMap(d => d.stops)[tourStopIndex]?.name_ja}
+            </h4>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <button
+              onClick={prevTourStop}
+              className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition cursor-pointer"
+              title="Previous Stop"
+            >
+              <SkipBack className="w-4 h-4" />
+            </button>
+            <button
+              onClick={resumeRouteTour}
+              className="p-1.5 rounded-lg bg-pink-600 hover:bg-pink-500 text-white transition cursor-pointer"
+              title="Play"
+            >
+              <Play className="w-4 h-4 fill-white" />
+            </button>
+            <button
+              onClick={nextTourStop}
+              className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition cursor-pointer"
+              title="Next Stop"
+            >
+              <SkipForward className="w-4 h-4" />
+            </button>
+            <button
+              onClick={exitRouteTour}
+              className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-900/60 text-rose-300 transition cursor-pointer ml-1"
+              title="Exit Tour"
+            >
+              <Square className="w-4 h-4 fill-rose-300" />
+            </button>
           </div>
         </div>
       )}

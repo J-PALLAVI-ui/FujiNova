@@ -7,12 +7,14 @@ import { YourJourneyPanel } from './components/YourJourneyPanel';
 import { TravelIntelligenceView } from './components/TravelIntelligenceView';
 import { MyTravelView } from './components/MyTravelView';
 import { ProfileSettingsView } from './components/ProfileSettingsView';
-import { TranslationWorkspace } from './components/TranslationWorkspace';
 import { FujiNovaLogo } from './components/brand/FujiNovaLogo';
 import { TripBasketDrawer } from './components/TripBasketDrawer';
 import { TripExportModal } from './components/TripExportModal';
 import { PublicTripView } from './components/PublicTripView';
 import { ExperienceModeProvider, useExperienceMode } from './context/ExperienceModeContext';
+import { LanguageProvider, useTranslation } from './i18n/LanguageContext';
+import { GlobalLanguageSelector } from './components/GlobalLanguageSelector';
+import { InteractiveSakuraBackground } from './components/InteractiveSakuraBackground';
 
 import { TravellerProfile, ItineraryPlan, Place, ItineraryStop } from './types';
 import ALL_VERIFIED_LANDMARKS from './data/all_landmarks.json';
@@ -23,7 +25,6 @@ import {
   Navigation, 
   Activity, 
   Wallet, 
-  Languages,
   Settings,
   ShoppingBag
 } from 'lucide-react';
@@ -34,7 +35,6 @@ export type WorkspaceTab =
   | 'twin' 
   | 'journey' 
   | 'intelligence' 
-  | 'translate'
   | 'mytravel' 
   | 'settings';
 
@@ -64,6 +64,7 @@ const AppInner: React.FC = () => {
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
   const [twinMode2D, setTwinMode2D] = useState(false);
 
+  const { t } = useTranslation();
   const { modeTitle, modeBadgeColor } = useExperienceMode();
 
   const [health, setHealth] = useState<{
@@ -260,74 +261,77 @@ const AppInner: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans select-none antialiased">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans select-none antialiased relative">
+      {/* Background System: Mount Fuji Silhouette + Interactive Falling Sakura Petals */}
+      <InteractiveSakuraBackground activeTab={activeTab} />
+
       {/* WCAG 2.2 AA Skip Link */}
       <a 
         href="#main-content" 
         className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:bg-sky-600 focus:text-white focus:rounded-xl focus:shadow-2xl focus:ring-2 focus:ring-white focus:outline-hidden text-xs font-bold"
       >
-        Skip to main content (Alt+1)
+        {t('skip_content', 'Skip to main content (Alt+1)')}
       </a>
 
       {/* Top Header Navigation */}
-      <header className="bg-slate-900/95 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40">
-        <div className="max-w-[1920px] mx-auto px-4 h-14 flex items-center justify-between gap-4">
+      <header className="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40">
+        <div className="max-w-[1920px] mx-auto px-4 h-14 flex items-center justify-between gap-3">
           {/* Logo & Brand Identity */}
           <button 
             onClick={() => setActiveTab('discover')}
-            className="flex items-center hover:opacity-95 transition-opacity"
+            className="flex items-center hover:opacity-95 transition-opacity shrink-0"
             aria-label="FujiNova Home"
           >
             <FujiNovaLogo variant="full-horizontal" size="sm" />
           </button>
 
-          {/* Primary Workspace Navigation Tabs */}
-          <nav className="flex items-center gap-1 bg-slate-950/80 p-1 rounded-xl border border-slate-800/80 overflow-x-auto max-w-full">
+          {/* Primary Workspace Navigation Tabs (Streamlined 7 Sections, Zero Horizontal Scrollbar) */}
+          <nav className="flex items-center gap-1 bg-slate-950/80 p-1 rounded-xl border border-slate-800/80 shrink-0">
             <button
               onClick={() => setActiveTab('discover')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'discover'
                   ? 'bg-sky-600 text-white shadow-xs'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
               }`}
             >
-              <span>Discover</span>
+              <span>{t('nav_discover', 'Discover')}</span>
             </button>
 
             <button
               onClick={() => setActiveTab('hana')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'hana'
                   ? 'bg-sky-600 text-white shadow-xs'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
               }`}
             >
               <Sparkles className="w-3.5 h-3.5 text-pink-400" />
-              <span>Hana AI</span>
+              <span>{t('nav_hana', 'Hana AI')}</span>
             </button>
 
             <button
               onClick={() => setActiveTab('twin')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'twin'
                   ? 'bg-sky-600 text-white shadow-xs'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
               }`}
             >
               <Compass className="w-3.5 h-3.5 text-sky-400" />
-              <span>3D Route</span>
+              <span>{t('nav_twin', '3D Digital Twin')}</span>
             </button>
 
             <button
               onClick={() => setActiveTab('journey')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'journey'
                   ? 'bg-sky-600 text-white shadow-xs'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
               }`}
             >
               <Navigation className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Journey Planner</span>
+              <span>{t('nav_journey', 'Journey Planner')}</span>
               {itinerary && (
                 <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />
               )}
@@ -335,59 +339,50 @@ const AppInner: React.FC = () => {
 
             <button
               onClick={() => setActiveTab('intelligence')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'intelligence'
                   ? 'bg-sky-600 text-white shadow-xs'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
               }`}
             >
               <Activity className="w-3.5 h-3.5 text-amber-400" />
-              <span>Travel Intelligence</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('translate')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${
-                activeTab === 'translate'
-                  ? 'bg-sky-600 text-white shadow-xs'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-              }`}
-            >
-              <Languages className="w-3.5 h-3.5 text-indigo-400" />
-              <span>Translation</span>
+              <span>{t('nav_intelligence', 'Travel Intelligence')}</span>
             </button>
 
             <button
               onClick={() => setActiveTab('mytravel')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'mytravel'
                   ? 'bg-sky-600 text-white shadow-xs'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
               }`}
             >
               <Wallet className="w-3.5 h-3.5 text-purple-400" />
-              <span>My Travel</span>
+              <span>{t('nav_mytravel', 'My Travel')}</span>
             </button>
 
             <button
               onClick={() => setActiveTab('settings')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'settings'
                   ? 'bg-sky-600 text-white shadow-xs'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
               }`}
             >
               <Settings className="w-3.5 h-3.5 text-slate-400" />
-              <span>Settings</span>
+              <span>{t('nav_settings', 'Settings')}</span>
             </button>
           </nav>
 
-          {/* Right Action Icons: Experience Mode, Trip Basket & Health */}
-          <div className="flex items-center gap-2.5">
+          {/* Right Action Cluster: Global Language Selector, Experience Mode, Trip Basket & Health */}
+          <div className="flex items-center gap-2">
+            {/* Global Multilingual Selector Dropdown */}
+            <GlobalLanguageSelector />
+
             {/* Experience Mode Pill */}
             <button
               onClick={() => setActiveTab('settings')}
-              className={`hidden md:inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full border transition-all ${modeBadgeColor}`}
+              className={`hidden lg:inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full border transition-all cursor-pointer ${modeBadgeColor}`}
               title="Click to change experience mode in Settings"
             >
               <Sparkles className="w-3 h-3" />
@@ -397,12 +392,12 @@ const AppInner: React.FC = () => {
             {/* Trip Basket Button */}
             <button
               onClick={() => setIsBasketOpen(true)}
-              className="relative p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700/80 transition-all flex items-center gap-1.5"
+              className="relative p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700/80 transition-all flex items-center gap-1.5 cursor-pointer"
               title="Open Trip Selection Basket"
               aria-label={`Trip basket with ${basket.length} places`}
             >
               <ShoppingBag className="w-4 h-4 text-pink-400" />
-              <span className="text-xs font-bold hidden sm:inline">Basket</span>
+              <span className="text-xs font-bold hidden sm:inline">{t('basket', 'Basket')}</span>
               {basket.length > 0 && (
                 <span className="px-1.5 py-0.2 rounded-full bg-pink-500 text-white font-bold text-[10px]">
                   {basket.length}
@@ -533,10 +528,6 @@ const AppInner: React.FC = () => {
           <TravelIntelligenceView onAskHana={handleAskHana} />
         )}
 
-        {activeTab === 'translate' && (
-          <TranslationWorkspace />
-        )}
-
         {activeTab === 'mytravel' && (
           <MyTravelView onAskHana={handleAskHana} />
         )}
@@ -570,8 +561,10 @@ const AppInner: React.FC = () => {
 
 export const App: React.FC = () => {
   return (
-    <ExperienceModeProvider>
-      <AppInner />
-    </ExperienceModeProvider>
+    <LanguageProvider>
+      <ExperienceModeProvider>
+        <AppInner />
+      </ExperienceModeProvider>
+    </LanguageProvider>
   );
 };
