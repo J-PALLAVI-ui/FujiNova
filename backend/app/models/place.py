@@ -37,6 +37,7 @@ class Place(BaseModel):
     # Environmental & Travel Context
     fuji_view_rating: int = Field(..., ge=1, le=5, description="1 to 5 rating of line-of-sight to Mt. Fuji")
     indoor_alternative: bool = Field(..., description="True if suitable during rain or zero summit visibility")
+    image_url: Optional[str] = Field(None, description="Verified high-resolution curated photography URL")
     
     # Data Governance & Provenance
     provenance_tier: Literal['OFFICIAL_GOV', 'OFFICIAL_OPERATOR', 'COMMUNITY_OSM', 'UNVERIFIED']

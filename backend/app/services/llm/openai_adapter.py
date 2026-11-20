@@ -1,7 +1,8 @@
-"""FujiNova OpenAI LLM Fallback Adapter (openai SDK)."""
+"""FujiNova OpenAI Official SDK Adapter (Modern AsyncOpenAI)."""
 import json
 import re
 import asyncio
+import logging
 from typing import AsyncIterator, List, Dict, Any, Type, TypeVar, Optional
 from pydantic import BaseModel, ValidationError
 import openai
@@ -15,26 +16,50 @@ from backend.app.services.llm.base import (
     ServerError,
     TimeoutError,
     JSONSchemaValidationError,
+    FailoverPolicyViolationError,
     LLMError
 )
 from backend.app.services.llm.gemini_adapter import clean_json_markdown
 
+logger = logging.getLogger("fujinova.llm.openai")
 T = TypeVar("T", bound=BaseModel)
 
 
 class OpenAIAdapter(BaseLLMAdapter):
-    """OpenAI Adapter using the official AsyncOpenAI SDK."""
+    """OpenAI Adapter using the official AsyncOpenAI SDK with streaming and structured generation."""
 
     def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None):
         self.api_key = api_key or settings.OPENAI_API_KEY
-        self.model = model or settings.FUJINOVA_FALLBACK_MODEL
+        self.model = model or settings.effective_openai_model
+        self.max_output_tokens = settings.OPENAI_MAX_OUTPUT_TOKENS
         self._client: Optional[AsyncOpenAI] = None
 
+    def _check_free_mode_guard(self) -> None:
+        """Enforce strict zero-cost policy: prevent paid OpenAI invocation in free mode."""
+        if settings.FREE_ONLY_MODE:
+            raise FailoverPolicyViolationError(
+                "Paid OpenAI calls are strictly prohibited in Free AI Mode (Zero Paid API Calls policy). "
+                "Hana AI is configured to operate with Google Gemini on its free tier."
+            )
+
     def _get_client(self) -> AsyncOpenAI:
-        if not self.api_key or self.api_key.strip() in ("", "YOUR_OPENAI_API_KEY"):
-            raise AuthenticationError("OPENAI_API_KEY is not configured.")
+        self._check_free_mode_guard()
+        key = self.api_key or settings.OPENAI_API_KEY
+        if not key or not key.strip():
+            raise AuthenticationError("OPENAI_API_KEY is not configured. Please add your secret key to FujiNova/.env.")
+        stripped = key.strip()
+        lower = stripped.lower()
+        if (
+            lower in ("your_openai_api_key_here", "your_api_key_here", "your_openai_key", "sk-placeholder", "placeholder")
+            or lower.startswith("your_")
+            or not (stripped.startswith("sk-") or stripped.startswith("sk-proj-"))
+        ):
+            raise AuthenticationError(
+                "OPENAI_API_KEY contains placeholder text or an invalid format. "
+                "Please replace it with a valid secret key (starting with sk- or sk-proj-) in your FujiNova/.env file."
+            )
         if not self._client:
-            self._client = AsyncOpenAI(api_key=self.api_key)
+            self._client = AsyncOpenAI(api_key=stripped)
         return self._client
 
     def _map_api_error(self, e: Exception) -> LLMError:
@@ -58,27 +83,43 @@ class OpenAIAdapter(BaseLLMAdapter):
         temperature: Optional[float] = None,
         timeout: Optional[float] = None
     ) -> AsyncIterator[str]:
-        """Stream conversational responses from OpenAI."""
+        """Stream conversational responses from OpenAI with modern AsyncOpenAI client."""
         client = self._get_client()
-        temp = temperature if temperature is not None else settings.FUJINOVA_TEMPERATURE
-        tout = timeout if timeout is not None else settings.FUJINOVA_TIMEOUT_SECONDS
+        temp = temperature if temperature is not None else settings.OPENAI_TEMPERATURE
+        tout = timeout if timeout is not None else settings.OPENAI_TIMEOUT_SECONDS
+        model_name = self.model or settings.effective_openai_model
 
-        formatted_messages = [{"role": "system", "content": system_instruction}]
-        formatted_messages.extend(messages)
+        # Ensure system instruction is the first message
+        formatted_messages = []
+        if system_instruction:
+            formatted_messages.append({"role": "system", "content": system_instruction})
+
+        for m in messages:
+            role = m.get("role", "user")
+            content = m.get("content", "")
+            if role in ("system", "user", "assistant"):
+                formatted_messages.append({"role": role, "content": content})
+            elif role == "model":
+                formatted_messages.append({"role": "assistant", "content": content})
+            else:
+                formatted_messages.append({"role": "user", "content": content})
 
         try:
             async def _stream():
+                # Chat completions streaming
                 stream = await client.chat.completions.create(
-                    model=self.model,
+                    model=model_name,
                     messages=formatted_messages,
                     temperature=temp,
+                    max_tokens=settings.OPENAI_MAX_OUTPUT_TOKENS,
                     stream=True,
                     timeout=tout
                 )
                 async for chunk in stream:
-                    content = chunk.choices[0].delta.content if chunk.choices else None
-                    if content:
-                        yield content
+                    if chunk.choices and len(chunk.choices) > 0:
+                        delta = chunk.choices[0].delta
+                        if delta and delta.content:
+                            yield delta.content
 
             async with asyncio.timeout(tout):
                 async for token in _stream():
@@ -95,21 +136,29 @@ class OpenAIAdapter(BaseLLMAdapter):
         temperature: Optional[float] = None,
         timeout: Optional[float] = None
     ) -> T:
-        """Generate typed structured output using OpenAI JSON mode / schema parse."""
+        """Generate typed structured output using OpenAI JSON mode / schema validation."""
         client = self._get_client()
-        temp = temperature if temperature is not None else settings.FUJINOVA_TEMPERATURE
-        tout = timeout if timeout is not None else settings.FUJINOVA_TIMEOUT_SECONDS
+        temp = temperature if temperature is not None else settings.OPENAI_TEMPERATURE
+        tout = timeout if timeout is not None else settings.OPENAI_TIMEOUT_SECONDS
+        model_name = self.model or settings.effective_openai_model
 
-        sys_msg = f"{system_instruction}\nYou MUST respond with valid JSON adhering to the schema: {json.dumps(response_model.model_json_schema())}"
+        sys_msg = (
+            f"{system_instruction}\n"
+            f"You MUST respond with a valid JSON object matching the schema:\n"
+            f"{json.dumps(response_model.model_json_schema())}"
+        )
         formatted_messages = [{"role": "system", "content": sys_msg}]
-        formatted_messages.extend(messages)
+        for m in messages:
+            role = "assistant" if m.get("role") in ("model", "assistant") else "user"
+            formatted_messages.append({"role": role, "content": m.get("content", "")})
 
         try:
             async with asyncio.timeout(tout):
                 response = await client.chat.completions.create(
-                    model=self.model,
+                    model=model_name,
                     messages=formatted_messages,
                     temperature=temp,
+                    max_tokens=settings.OPENAI_MAX_OUTPUT_TOKENS,
                     response_format={"type": "json_object"},
                     timeout=tout
                 )

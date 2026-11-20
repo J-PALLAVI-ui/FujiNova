@@ -37,7 +37,10 @@ def test_db():
     yield db_path
 
     if os.path.exists(db_path):
-        os.remove(db_path)
+        try:
+            os.remove(db_path)
+        except (PermissionError, OSError):
+            pass
 
 
 @pytest.fixture

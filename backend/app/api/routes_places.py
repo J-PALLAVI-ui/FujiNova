@@ -20,6 +20,14 @@ def search_places_db(
     db_path: Optional[str] = None
 ) -> List[Dict[str, Any]]:
     """Search and filter places directly from the canonical SQLite database."""
+    # Defensively normalize any FastAPI Query default objects if called directly
+    if hasattr(query, 'default'): query = None
+    if hasattr(category, 'default'): category = None
+    if hasattr(accessibility_status, 'default'): accessibility_status = None
+    if hasattr(indoor_alternative, 'default'): indoor_alternative = None
+    if hasattr(opening_status, 'default'): opening_status = None
+    if hasattr(min_fuji_view_rating, 'default'): min_fuji_view_rating = None
+
     sql = "SELECT * FROM places WHERE 1=1"
     params: List[Any] = []
 
@@ -51,20 +59,35 @@ def search_places_db(
     sql += " ORDER BY fuji_view_rating DESC, name_ja ASC LIMIT ? OFFSET ?;"
     params.extend([limit, offset])
 
+    from backend.app.services.crowd.attraction_images import get_attraction_image
     with get_db_connection(db_path) as conn:
         cursor = conn.cursor()
         cursor.execute(sql, params)
         rows = cursor.fetchall()
-        return [dict(row) for row in rows]
+        result = []
+        for row in rows:
+            d = dict(row)
+            if not d.get("image_url"):
+                img_info = get_attraction_image(d.get("place_id", ""))
+                d["image_url"] = img_info.get("url")
+            result.append(d)
+        return result
 
 
 def get_place_by_id(place_id: str, db_path: Optional[str] = None) -> Optional[Dict[str, Any]]:
     """Retrieve single place by its canonical place_id."""
+    from backend.app.services.crowd.attraction_images import get_attraction_image
     with get_db_connection(db_path) as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM places WHERE place_id = ?;", (place_id,))
         row = cursor.fetchone()
-        return dict(row) if row else None
+        if not row:
+            return None
+        d = dict(row)
+        if not d.get("image_url"):
+            img_info = get_attraction_image(d.get("place_id", ""))
+            d["image_url"] = img_info.get("url")
+        return d
 
 
 @router.get("", response_model=List[Place])

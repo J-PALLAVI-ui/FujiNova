@@ -102,6 +102,7 @@ async def test_t1_04_rate_limit_retry_with_backoff():
 @pytest.mark.asyncio
 async def test_t1_05_server_error_and_failover_when_authorized(monkeypatch):
     """T1-05: HTTP 500/503 Service Unavailable retries and fails over to secondary when authorized."""
+    monkeypatch.setattr(settings, "FREE_ONLY_MODE", False)
     monkeypatch.setattr(settings, "ENABLE_OPENAI_FALLBACK", True)
     monkeypatch.setattr(settings, "ALLOW_MULTI_VENDOR_FAILOVER", True)
 
@@ -248,6 +249,7 @@ async def test_t1_09_failover_policy_gate_blocks_cross_vendor(monkeypatch):
 @pytest.mark.asyncio
 async def test_t1_10_state_preservation_across_failover(monkeypatch):
     """T1-10: Structured extraction preserves input messages and state across failover."""
+    monkeypatch.setattr(settings, "FREE_ONLY_MODE", False)
     monkeypatch.setattr(settings, "ENABLE_OPENAI_FALLBACK", True)
     monkeypatch.setattr(settings, "ALLOW_MULTI_VENDOR_FAILOVER", True)
 
@@ -281,3 +283,54 @@ async def test_t1_10_state_preservation_across_failover(monkeypatch):
     assert result.items == ["loc_a", "loc_b"]
     assert primary.structured_calls == 1
     assert fallback.structured_calls == 1
+
+
+def test_gemini_provider_selection_even_if_openai_key_present(monkeypatch):
+    """Verify router selects GeminiAdapter when FUJINOVA_PRIMARY_PROVIDER=google, even if an OpenAI key exists."""
+    from backend.app.services.llm.gemini_adapter import GeminiAdapter
+    monkeypatch.setattr(settings, "FUJINOVA_PRIMARY_PROVIDER", "google")
+    monkeypatch.setattr(settings, "OPENAI_API_KEY", "sk-proj-some-real-looking-key-1234567890")
+    monkeypatch.setattr(settings, "FREE_ONLY_MODE", True)
+
+    router = ModelRouter()
+    assert isinstance(router.primary, GeminiAdapter)
+    assert router.fallback is None  # Zero fallback to paid OpenAI in free mode
+
+
+def test_free_only_mode_blocks_openai_adapter_invocation(monkeypatch):
+    """Explicit hard safety check: OpenAIAdapter must raise FailoverPolicyViolationError in FREE_ONLY_MODE."""
+    from backend.app.services.llm.openai_adapter import OpenAIAdapter
+    monkeypatch.setattr(settings, "FREE_ONLY_MODE", True)
+    monkeypatch.setattr(settings, "OPENAI_API_KEY", "sk-proj-some-real-looking-key-1234567890")
+
+    adapter = OpenAIAdapter(api_key="sk-proj-some-real-looking-key-1234567890")
+    with pytest.raises(FailoverPolicyViolationError) as exc:
+        adapter._get_client()
+    assert "Paid OpenAI calls are strictly prohibited in Free AI Mode" in str(exc.value)
+
+
+@pytest.mark.asyncio
+async def test_gemini_quota_exhaustion_handled_without_openai_fallback():
+    """Verify HTTP 429 / quota exhaustion from Gemini raises RateLimitError directly and never calls OpenAI."""
+    primary = MockLLMAdapter("gemini_free")
+    primary.stream_side_effects = [
+        RateLimitError("FREE AI QUOTA EXCEEDED: 429 RESOURCE_EXHAUSTED"),
+        RateLimitError("FREE AI QUOTA EXCEEDED: 429 RESOURCE_EXHAUSTED"),
+    ]
+
+    router = ModelRouter(
+        primary_adapter=primary,
+        fallback_adapter=None,
+        max_retries=1,
+        backoff_base=0.01
+    )
+
+    with pytest.raises(RateLimitError) as exc_info:
+        async for _ in router.stream_chat(
+            messages=[{"role": "user", "content": "Tell me about Mount Fuji"}],
+            system_instruction="Be helpful"
+        ):
+            pass
+
+    assert "FREE AI QUOTA EXCEEDED" in str(exc_info.value)
+    assert primary.stream_calls == 2

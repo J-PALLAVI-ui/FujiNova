@@ -10,6 +10,20 @@ from backend.app.api.routes_places import router as places_router
 from backend.app.api.routes_chat import router as chat_router
 from backend.app.api.routes_routing import router as routing_router
 from backend.app.api.routes_crowd import router as crowd_router
+from backend.app.api.routes_itinerary import router as itinerary_router, api_generate_itinerary, api_update_itinerary, ItineraryGenerateRequest, ItineraryUpdateRequest
+from backend.app.api.routes_travel import router as travel_router, travel_search, travel_weather
+from backend.app.api.routes_conversations import (
+    router as conversations_router,
+    list_conversations as api_list_conversations,
+    create_conversation as api_create_conversation,
+    get_conversation as api_get_conversation,
+    get_conversation_messages as api_get_conversation_messages,
+    update_conversation as api_update_conversation,
+    delete_conversation as api_delete_conversation,
+    CreateConversationRequest,
+    UpdateConversationRequest
+)
+from backend.app.api.routes_translation import router as translation_router
 
 
 @asynccontextmanager
@@ -62,10 +76,14 @@ app.include_router(places_router)
 app.include_router(chat_router)
 app.include_router(routing_router)
 app.include_router(crowd_router)
+app.include_router(itinerary_router)
+app.include_router(travel_router)
+app.include_router(conversations_router)
+app.include_router(translation_router)
 
 # Direct Compatibility Endpoints (as inspected in /docs)
 from backend.app.api.routes_health import health_check
-from backend.app.api.routes_places import list_places
+from backend.app.api.routes_places import list_places, search_places_db
 from backend.app.api.routes_routing import search_transit_routes
 from backend.app.api.routes_chat import chat_stream_endpoint, ChatMessageRequest
 from backend.app.services.routing.transit_models import RouteSearchRequest
@@ -79,7 +97,7 @@ async def root_health():
 
 @app.get("/api/attractions", tags=["Places Compatibility"])
 def api_attractions(limit: int = 100, offset: int = 0):
-    places = list_places(limit=limit, offset=offset)
+    places = search_places_db(limit=limit, offset=offset)
     return {"items": places, "total": len(places), "limit": limit, "offset": offset}
 
 @app.get("/api/transport", tags=["Transport Compatibility"])
@@ -97,6 +115,7 @@ def api_transport():
 def api_transit_plan(request: RouteSearchRequest):
     return search_transit_routes(request)
 
+@app.post("/api/chat", tags=["AI Compatibility"])
 @app.post("/api/ai/chat", tags=["AI Compatibility"])
 async def api_ai_chat(request: ChatMessageRequest):
     return await chat_stream_endpoint(request)
@@ -105,6 +124,22 @@ async def api_ai_chat(request: ChatMessageRequest):
 async def api_ai_adaptive_chat(request: ChatMessageRequest):
     return await chat_stream_endpoint(request)
 
+@app.post("/api/itinerary/generate", tags=["Itinerary Compatibility"])
+def api_compat_generate_itinerary(request: ItineraryGenerateRequest):
+    return api_generate_itinerary(request)
+
+@app.post("/api/itinerary/update", tags=["Itinerary Compatibility"])
+def api_compat_update_itinerary(request: ItineraryUpdateRequest):
+    return api_update_itinerary(request)
+
+@app.get("/api/travel/search", tags=["Travel Compatibility"])
+def api_compat_travel_search(q: str, limit: int = 5):
+    return travel_search(q=q, limit=limit)
+
+@app.get("/api/travel/weather", tags=["Travel Compatibility"])
+def api_compat_travel_weather(month: int = None):
+    return travel_weather(month=month)
+
 @app.get("/api/crowd/status", tags=["Crowd Compatibility"])
 def api_crowd_status(scenario: CrowdScenario = "high"):
     return crowd_service.get_system_status(active_scenario=scenario)
@@ -112,6 +147,31 @@ def api_crowd_status(scenario: CrowdScenario = "high"):
 @app.post("/api/crowd/recommendations", tags=["Crowd Compatibility"])
 def api_crowd_recommendations(request: CrowdRecommendationRequest):
     return recommendation_service.get_recommendations(request)
+
+
+@app.get("/api/conversations", tags=["Conversations Compatibility"])
+def api_compat_list_conversations(q: str = None, limit: int = 50):
+    return api_list_conversations(q=q, limit=limit)
+
+@app.post("/api/conversations", tags=["Conversations Compatibility"])
+def api_compat_create_conversation(req: CreateConversationRequest):
+    return api_create_conversation(req)
+
+@app.get("/api/conversations/{conversation_id}", tags=["Conversations Compatibility"])
+def api_compat_get_conversation(conversation_id: str):
+    return api_get_conversation(conversation_id)
+
+@app.get("/api/conversations/{conversation_id}/messages", tags=["Conversations Compatibility"])
+def api_compat_get_conversation_messages(conversation_id: str):
+    return api_get_conversation_messages(conversation_id)
+
+@app.patch("/api/conversations/{conversation_id}", tags=["Conversations Compatibility"])
+def api_compat_update_conversation(conversation_id: str, req: UpdateConversationRequest):
+    return api_update_conversation(conversation_id, req)
+
+@app.delete("/api/conversations/{conversation_id}", tags=["Conversations Compatibility"])
+def api_compat_delete_conversation(conversation_id: str):
+    return api_delete_conversation(conversation_id)
 
 
 @app.get("/")

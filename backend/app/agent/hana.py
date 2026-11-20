@@ -1,4 +1,4 @@
-"""FujiNova Hana Conversational Agent: LangGraph State Machine & Place Grounding."""
+"""FujiNova Hana Conversational Agent: General-Purpose Intelligence & Grounded Regional Expert."""
 import json
 import re
 import logging
@@ -14,6 +14,13 @@ from backend.app.services.routing.transit_models import RouteSearchRequest, Jour
 from backend.app.services.routing.routing_service import get_routing_service
 from backend.app.services.crowd.crowd_models import CrowdRecommendationRequest
 from backend.app.services.crowd.recommendation_service import recommendation_service
+from backend.app.services.rag.retriever import retriever as rag_retriever
+from backend.app.services.live_info.weather_service import get_weather_info, MONTHLY_CLIMATE_DATA
+from backend.app.services.live_info.advisory_service import get_current_advisories
+from backend.app.services.itinerary.itinerary_service import (
+    ItineraryPlan, generate_itinerary, modify_itinerary
+)
+from backend.app.services.conversation.session_manager import session_manager
 
 logger = logging.getLogger("fujinova.agent.hana")
 
@@ -27,26 +34,37 @@ class HanaState(TypedDict):
     identified_places: List[Dict[str, Any]]
     identified_journeys: List[Dict[str, Any]]
     identified_crowd_alternatives: List[Dict[str, Any]]
+    active_itinerary: Optional[Dict[str, Any]]
     next_question: Optional[str]
+    response_type: str
 
 
-HANA_SYSTEM_INSTRUCTION = """You are Hana (ハナ), the intelligent, warm, and highly reliable AI travel companion for Mount Fuji, the Fuji Five Lakes, and Yamanashi Prefecture.
+HANA_SYSTEM_INSTRUCTION = """You are Hana (ハナ), the intelligent, warm, highly capable AI companion for FujiNova.
 
-CORE OPERATIONAL PRINCIPLES:
-1. STRICT ZERO-HALLUCINATION GROUNDING:
-   - You MUST ONLY recommend places provided to you from the verified database.
-   - You MUST NEVER invent attractions, operating hours, admission fees, or directions.
-   - If a place is not in your verified database, explain politely that you currently track 35 verified locations in the Fuji Five Lakes area.
+CORE IDENTITY & CAPABILITIES:
+1. GENERAL-PURPOSE INTELLIGENCE:
+   - You are a full-fledged, versatile AI assistant similar to ChatGPT.
+   - You answer unrestricted general knowledge questions with clarity, depth, and precision:
+     science, machine learning, technology, programming, Japanese culture, history, world travel, calculations, and languages.
+   - IMPORTANT: DO NOT force every conversation into travel planning. If the user asks about machine learning, programming errors, language translation, or world history, answer their question directly, thoroughly, and helpfully.
+   - Only recommend travel destinations or itineraries when the user asks or when the conversation naturally touches upon Mount Fuji, tourism, or logistics.
 
-2. UNKNOWN DATA TRANSPARENCY:
-   - For places where opening hours or admission fees are marked 'UNKNOWN' or variable, you MUST explicitly inform the traveller.
-   - Example: "General admission to the outdoor pond trails is free, but museum entry (Hannoki) is ¥300. Official hours are not fixed."
-   - For steep stairs (such as Arakurayama Sengen Park's 398 steps), ALWAYS warn mobility-sensitive or elderly travellers.
+2. SPECIALIZED MOUNT FUJI & JAPANESE TRAVEL EXPERT:
+   - When discussing Mount Fuji, the Fuji Five Lakes (Kawaguchiko, Yamanakako, Saiko, Shojiko, Motosuko), and Yamanashi Prefecture:
+     provide deep, authoritative, verified regional guidance grounded in real geography, official GTFS transit schedules, and seasonal conditions.
+   - Clearly distinguish verified local database records from general travel advice.
+   - For steep stairs (such as Arakurayama Sengen Park's 398 steps), always warn mobility-sensitive or elderly travellers.
 
-3. ADAPTIVE CONVERSATIONAL INTERVIEW:
-   - Learn the traveller's requirements naturally: mobility needs, group composition, interests, pace, and weather preferences.
-   - NEVER ask for information the traveller has already provided.
-   - Ask at most ONE or TWO focused questions at a time. Keep responses concise, helpful, and welcoming.
+3. MULTILINGUAL MASTERY:
+   - Automatically detect the user's language and respond fluently in the same language.
+   - Fluent support for English, Japanese (日本語), Hindi (हिन्दी), Tamil (தமிழ்), Kannada (ಕನ್ನಡ), Telugu (తెలుగు), and other global languages.
+   - In Japanese, use natural, polite keigo (丁寧語: です・ます調) and accurate kanji for regional destinations (河口湖, 新倉山浅間公園, 忍野八海, 大石公園).
+   - In Indian languages, use authentic, natural phrasing in native scripts.
+
+4. MULTI-TURN CONVERSATIONAL MEMORY & ADAPTABILITY:
+   - Remember previous turns, traveler counts, budgets, and preferences within the session.
+   - Understand context references such as "there", "that place", "the previous option", and "make it cheaper".
+   - Avoid repetitive robotic greetings in ongoing conversations.
 """
 
 
@@ -61,8 +79,8 @@ class ExtractedProfileUpdate(BaseModel):
     budget_tier: Optional[str] = Field(None, description="budget, standard, luxury")
     preferred_pace: Optional[str] = Field(None, description="relaxed, moderate, active")
     trip_duration_days: Optional[int] = Field(None)
-    indoor_preference: Optional[bool] = Field(None, description="True if raining or user asked for indoor activities")
-    detected_intent: str = Field("chat", description="greeting, answer_interview, ask_recommendation, general_query")
+    indoor_preference: Optional[bool] = Field(None)
+    detected_intent: str = Field("chat", description="general_query, travel_query, transit_query, itinerary_request, crowd_query")
 
 
 def has_word(text: str, *words: str) -> bool:
@@ -71,8 +89,28 @@ def has_word(text: str, *words: str) -> bool:
     return bool(re.search(pattern, text, re.IGNORECASE))
 
 
+def extract_requested_count(text: str, default: int = 3) -> int:
+    """Extract requested number of recommendations (e.g. 'three places', 'top 5 destinations')."""
+    words_map = {
+        "one": 1, "two": 2, "three": 3, "four": 4, "five": 5,
+        "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10
+    }
+    m = re.search(r"\b(\d+)\s*(?:places|destinations|spots|recommendations|attractions|viewpoints|options)?\b", text, re.IGNORECASE)
+    if m:
+        try:
+            val = int(m.group(1))
+            if 1 <= val <= 10:
+                return val
+        except ValueError:
+            pass
+    for w, num in words_map.items():
+        if re.search(r"\b" + w + r"\b", text, re.IGNORECASE):
+            return num
+    return default
+
+
 def heuristic_extract(text: str) -> ExtractedProfileUpdate:
-    """Deterministic heuristic extraction from message text using word boundaries."""
+    """Deterministic heuristic extraction from message text."""
     update = ExtractedProfileUpdate()
     lower = text.lower()
 
@@ -101,19 +139,6 @@ def heuristic_extract(text: str) -> ExtractedProfileUpdate:
     elif has_word(lower, "friends"):
         update.party_composition = "friends"
 
-    interests = []
-    if has_word(lower, "view", "views", "fuji", "photo", "photos", "photography", "scenic"):
-        interests.append("viewpoint")
-    if has_word(lower, "nature", "lake", "park", "quiet", "outdoor"):
-        interests.append("nature")
-    if has_word(lower, "museum", "art", "gallery", "craft"):
-        interests.append("museum")
-    if has_word(lower, "shrine", "temple", "culture", "historical"):
-        interests.append("shrine")
-    if has_word(lower, "onsen", "bath") or "hot spring" in lower or "hot springs" in lower:
-        interests.append("onsen")
-    update.interests = interests
-
     if has_word(lower, "slow", "relaxed", "gentle", "leisurely"):
         update.preferred_pace = "relaxed"
     elif has_word(lower, "fast", "packed", "active", "hike", "hiking"):
@@ -122,16 +147,103 @@ def heuristic_extract(text: str) -> ExtractedProfileUpdate:
     if has_word(lower, "rain", "indoor", "storm"):
         update.indoor_preference = True
 
-    if any(kw in lower for kw in ["recommend", "where should", "suggest", "places", "visit", "itinerary"]):
-        update.detected_intent = "ask_recommendation"
+    # Detect duration
+    m_dur = re.search(r"\b(\d+)\s*(?:-| )?(?:day|days)\b", lower)
+    if m_dur:
+        update.trip_duration_days = int(m_dur.group(1))
+
+    # --- ADVANCED CONTEXT-AWARE INTENT CLASSIFICATION ---
+
+    # 1. Non-travel General Queries (AI, Tech, Culture, Hospitality, Management, Science, General definitions)
+    is_general_topic = any(
+        re.search(p, lower) for p in [
+            r"\b(?:artificial intelligence|ai|transformer|transformers|neural network|neural networks|machine learning|deep learning|llm|gpt|python|code|algorithm|software|programming)\b",
+            r"\b(?:omotenashi|hospitality|etiquette|culture|tradition|customs|tea ceremony|origami|geisha|sumo|samurai|kanji)\b",
+            r"\b(?:property management system|pms|hotel management|hotel operations|front desk|yield management|revenue management)\b",
+            r"\b(?:math|mathematics|calculus|algebra|physics|chemistry|biology|philosophy|quantum)\b",
+            r"\b(?:what is|who is|explain|define|how do(?:es)? .* work|tell me about)\b"
+        ]
+    ) and not any(kw in lower for kw in ["fuji", "kawaguchiko", "yamanashi", "five lakes", "chureito", "oishi", "motosu", "saiko", "shoji", "yamanakako"])
+
+    # 2. Follow-up queries comparing previously mentioned destinations
+    is_followup = any(
+        re.search(p, lower) for p in [
+            r"\bwhich (?:of the|one|destination|place|option)\b",
+            r"\bcompare (?:the|these|those)\b",
+            r"\b(?:best for photography|better for|which is)\b"
+        ]
+    )
+
+    # 3. Explicit Itinerary Request
+    is_itinerary = any(
+        re.search(p, lower) for p in [
+            r"\b(?:plan|create|build|make|generate)\b.*?\b(?:itinerary|trip|plan|tour)\b",
+            r"\b(?:\d+|one|two|three)[ -]day (?:trip|itinerary|tour|plan)\b",
+            r"\bday trip\b"
+        ]
+    )
+
+    # 4. Crowd queries
+    is_crowd = any(kw in lower for kw in ["crowd", "crowded", "quiet", "busy", "alternative", "congestion", "peaceful"])
+
+    # 5. Public transit / routing queries
+    is_transit = any(
+        re.search(p, lower) for p in [
+            r"\bfrom\s+.+?\s+to\s+",
+            r"\bhow (?:do|can) i (?:get|reach|go|travel) to\b",
+            r"\b(?:bus|train|shinkansen|transit|subway|metro) (?:schedule|route|fare|timetable|from)\b"
+        ]
+    )
+
+    # 6. Explicit Travel Destinations Request (specifically looking for destinations around Mt. Fuji / Yamanashi / Five Lakes)
+    is_travel_destinations = any(
+        re.search(p, lower) for p in [
+            r"\b(?:recommend|suggest|show|list)\b.*?\b(?:places|destinations|spots|attractions|viewpoints|sights|stops)\b",
+            r"\bplaces to (?:visit|see|go)\b",
+            r"\bhidden attractions\b",
+            r"\bbest (?:places|destinations|spots|viewpoints|views) (?:around|near|in|at)\b",
+            r"\bwhere should i (?:visit|go|see)\b"
+        ]
+    ) and any(kw in lower for kw in ["fuji", "kawaguchiko", "yamanashi", "five lakes", "japan", "lake", "mountain", "around", "near"])
+
+    # Determine intent in priority order
+    if is_itinerary:
+        update.detected_intent = "itinerary_request"
+    elif is_transit:
+        update.detected_intent = "transit_query"
+    elif is_crowd:
+        update.detected_intent = "crowd_query"
+    elif is_followup:
+        update.detected_intent = "destination_followup"
+    elif is_travel_destinations:
+        update.detected_intent = "travel_query"
+    elif is_general_topic:
+        update.detected_intent = "general_query"
+    elif any(kw in lower for kw in ["recommend", "where should", "suggest", "places", "visit"]) and any(kw in lower for kw in ["fuji", "lake", "kawaguchiko", "yamanashi"]):
+        update.detected_intent = "travel_query"
     else:
-        update.detected_intent = "answer_interview"
+        update.detected_intent = "general_query"
+
+    # Extract travel interests for travel inquiries (exclude general non-travel technical topics)
+    interests = []
+    if not is_general_topic:
+        if has_word(lower, "view", "views", "fuji", "photo", "photos", "photography", "scenic"):
+            interests.append("viewpoint")
+        if has_word(lower, "nature", "lake", "park", "quiet", "outdoor"):
+            interests.append("nature")
+        if has_word(lower, "museum", "art", "gallery", "craft"):
+            interests.append("museum")
+        if has_word(lower, "shrine", "temple", "historical") or has_word(lower, "culture"):
+            interests.append("shrine")
+        if has_word(lower, "onsen", "bath") or "hot spring" in lower or "hot springs" in lower:
+            interests.append("onsen")
+    update.interests = interests
 
     return update
 
 
 def parse_time_intent(text: str) -> Optional[str]:
-    """Extracts requested departure time in HH:MM:SS format (e.g. '9 AM', 'at 09:00', '9:30 AM')."""
+    """Extracts requested departure time in HH:MM:SS format."""
     m = re.search(r"\b(?:at|around|by)?\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\b", text, re.IGNORECASE)
     if m:
         hour_str, min_str, am_pm = m.groups()
@@ -157,13 +269,13 @@ def clean_stop_name(name: str) -> str:
 def extract_transit_query(text: str) -> Optional[Tuple[str, str, Optional[str]]]:
     """Extracts origin, destination, and requested departure time from transport questions."""
     lower = text.lower()
-    transit_keywords = ["bus", "train", "reach", "get to", "go to", "travel", "how do i", "how to", "route", "direction", "fare", "ticket", "line"]
-    if not any(kw in lower for kw in transit_keywords):
+    transit_keywords = ["bus", "train", "reach", "get to", "go to", "travel", "route", "direction", "fare", "ticket", "line", "transport"]
+    if not (any(kw in lower for kw in transit_keywords) or ("from " in lower and " to " in lower)):
         return None
 
     dep_time = parse_time_intent(text)
 
-    # Pattern 1: "from X to Y" (e.g. "How do I travel from Kawaguchiko Station to Oishi Park at 9 AM?")
+    # Pattern 1: "from X to Y"
     m1 = re.search(r"from\s+([A-Za-z0-9\s\u3000-\u30ff\u4e00-\u9faf]+?)\s+to\s+([A-Za-z0-9\s\u3000-\u30ff\u4e00-\u9faf]+?)(?:\?|$|\.|\,)", text, re.IGNORECASE)
     if m1:
         orig = clean_stop_name(m1.group(1))
@@ -171,7 +283,7 @@ def extract_transit_query(text: str) -> Optional[Tuple[str, str, Optional[str]]]
         if orig and dest and orig.lower() != dest.lower():
             return orig, dest, dep_time
 
-    # Pattern 2: "reach/get to/go to/travel to/take to Y from X"
+    # Pattern 2: "reach/get to/go to Y from X"
     m2 = re.search(r"(?:reach|get to|go to|travel to|take(?:\s+\w+)*\s+to|to)\s+([A-Za-z0-9\s\u3000-\u30ff\u4e00-\u9faf]+?)\s+from\s+([A-Za-z0-9\s\u3000-\u30ff\u4e00-\u9faf]+?)(?:\?|$|\.|\,)", text, re.IGNORECASE)
     if m2:
         dest = clean_stop_name(m2.group(1))
@@ -179,9 +291,9 @@ def extract_transit_query(text: str) -> Optional[Tuple[str, str, Optional[str]]]
         if orig and dest and orig.lower() != dest.lower():
             return orig, dest, dep_time
 
-    # Pattern 3: "how do I get to/reach Y" without "from"
+    # Pattern 3: "bus to Y" or "how do I get to Y" without "from"
     if "from " not in lower:
-        m3 = re.search(r"(?:reach|get to|go to|travel to|visit|to)\s+([A-Za-z0-9\s\u3000-\u30ff\u4e00-\u9faf]+?)(?:\?|$|\.|\,)", text, re.IGNORECASE)
+        m3 = re.search(r"(?:reach|get to|go to|travel to|visit|bus to|bus from kawaguchiko station to)\s+([A-Za-z0-9\s\u3000-\u30ff\u4e00-\u9faf]+?)(?:\?|$|\.|\,)", text, re.IGNORECASE)
         if m3:
             dest = clean_stop_name(m3.group(1))
             if dest and dest.lower() not in ["there", "here", "somewhere"]:
@@ -190,73 +302,38 @@ def extract_transit_query(text: str) -> Optional[Tuple[str, str, Optional[str]]]
     return None
 
 
-PLACE_NAME_TO_ID = {
-    "oishi park": "kawaguchiko_oishi_park",
-    "oishi": "kawaguchiko_oishi_park",
-    "大石公園": "kawaguchiko_oishi_park",
-    "chureito": "arakurayama_chureito",
-    "chureito pagoda": "arakurayama_chureito",
-    "arakurayama": "arakurayama_chureito",
-    "新倉山浅間公園": "arakurayama_chureito",
-    "oshino hakkai": "oshino_hakkai",
-    "忍野八海": "oshino_hakkai",
-    "ropeway": "kawaguchiko_ropeway",
-    "kachi kachi ropeway": "kawaguchiko_ropeway",
-    "fuji-q": "fujiq_central_park",
-    "fujiq": "fujiq_central_park",
-    "yagizaki": "kawaguchiko_yagizaki_park",
-    "yagizaki park": "kawaguchiko_yagizaki_park",
-    "八木崎公園": "kawaguchiko_yagizaki_park",
-    "shojiko": "shojiko_tategohama",
-    "lake shoji": "shojiko_tategohama",
-    "精進湖": "shojiko_tategohama",
-    "motosuko": "motosuko_viewpoint",
-    "lake motosu": "motosuko_viewpoint",
-    "本栖湖": "motosuko_viewpoint",
-    "saiko": "saiko_iyashi_nenba",
-    "iyashi no sato": "saiko_iyashi_nenba",
-    "西湖いやしの里根場": "saiko_iyashi_nenba",
-    "kitaguchi": "kitaguchi_sengen_shrine",
-    "kitaguchi sengen": "kitaguchi_sengen_shrine",
-    "music forest": "kawaguchiko_music_forest",
-    "art museum": "kawaguchiko_art_museum",
-    "natural living center": "kawaguchiko_living_center",
-    "kawaguchiko living center": "kawaguchiko_living_center",
-}
-
-
 def extract_crowd_query(text: str) -> Optional[Tuple[str, str]]:
-    """Detects inquiries about crowd levels, crowdedness, or avoiding crowds for a destination."""
+    """Detect inquiries regarding crowds, alternatives, or quiet destinations."""
     lower = text.lower()
-    crowd_keywords = ["crowd", "crowded", "quiet", "busy", "peaceful", "avoid people", "packed", "tourist", "alternative", "quieter"]
-    if not any(k in lower for k in crowd_keywords):
+    crowd_words = ["crowd", "crowded", "quiet", "busy", "alternative", "congestion", "less crowded", "peaceful", "serene"]
+    if not any(w in lower for w in crowd_words):
         return None
 
-    # Determine matched destination
-    for name, pid in PLACE_NAME_TO_ID.items():
-        if name in lower:
-            pref = "quiet" if any(q in lower for q in ["quiet", "quieter", "peaceful", "less crowded", "don't like crowd", "avoid", "hate crowd"]) else "balanced"
-            return name, pref
+    target = "oishi"
+    if "chureito" in lower or "pagoda" in lower or "arakurayama" in lower:
+        target = "arakurayama"
+    elif "shoji" in lower:
+        target = "shoji"
+    elif "yamanakako" in lower:
+        target = "yamanakako"
+    elif "saiko" in lower:
+        target = "saiko"
 
-    # Fallback to Oishi Park if general crowd question about "lakeside" or "viewpoint"
-    if any(q in lower for q in ["quiet spot", "quieter alternative", "avoid crowds", "avoid crowded"]):
-        return "oishi park", "quiet"
+    pref = "quiet"
+    if "popular" in lower:
+        pref = "popular"
+    elif "balanced" in lower:
+        pref = "balanced"
 
-    return None
+    return target, pref
 
 
 class HanaAgent:
-    """Hana Agent managing conversation flow, profile tracking, and grounded tool recommendations."""
+    """Intelligent Hana AI Agent managing general conversation, multi-turn state, RAG, and tools."""
 
     def __init__(self, model_router: Optional[ModelRouter] = None):
         self.router = model_router or global_router
         self.sessions: Dict[str, HanaState] = {}
-
-    def parse_time_intent(self, text: str) -> Optional[str]:
-        return parse_time_intent(text)
-
-    def clean_stop_name(self, name: str) -> str:
-        return clean_stop_name(name)
 
     def extract_transit_query(self, text: str) -> Optional[Tuple[str, str, Optional[str]]]:
         return extract_transit_query(text)
@@ -264,8 +341,37 @@ class HanaAgent:
     def extract_crowd_query(self, text: str) -> Optional[Tuple[str, str]]:
         return extract_crowd_query(text)
 
-    def resolve_place_id(self, name: str) -> Optional[str]:
-        return PLACE_NAME_TO_ID.get(name.lower().strip())
+    def resolve_place_id(self, target_name: str) -> str:
+        name_lower = target_name.lower()
+        if "oishi" in name_lower or "kawaguchiko_oishi_park" in name_lower:
+            return "kawaguchiko_oishi_park"
+        if "chureito" in name_lower or "arakurayama" in name_lower:
+            return "arakurayama_chureito_pagoda"
+        if "shoji" in name_lower:
+            return "shoji_tatego_hama"
+        if "yamanakako" in name_lower or "nagaike" in name_lower:
+            return "lake_yamanakako_nagaike"
+        if "saiko" in name_lower or "iyashi" in name_lower:
+            return "saiko_iyashi_no_sato"
+        return "kawaguchiko_oishi_park"
+
+    def determine_next_interview_question(self, state: HanaState) -> Optional[str]:
+        """Select the next unasked question topic without repeating already answered attributes."""
+        profile = state["profile"]
+        asked = set(state["asked_questions"])
+
+        topics = [
+            ("mobility", not profile.get("mobility_needs") and profile.get("mobility_limitations") is None and "mobility" not in asked),
+            ("party_type", not profile.get("party_composition") and "party_type" not in asked),
+            ("interests", not profile.get("interests") and "interests" not in asked),
+            ("stay_duration", not profile.get("trip_duration_days") and "stay_duration" not in asked),
+            ("pace", not profile.get("preferred_pace") and "pace" not in asked),
+        ]
+
+        for topic, is_needed in topics:
+            if is_needed:
+                return topic
+        return None
 
     def get_or_create_state(self, session_id: str) -> HanaState:
         """Retrieve existing session state or initialize a fresh profile."""
@@ -278,58 +384,18 @@ class HanaAgent:
                 "identified_places": [],
                 "identified_journeys": [],
                 "identified_crowd_alternatives": [],
+                "active_itinerary": None,
                 "next_question": None
             }
         return self.sessions[session_id]
 
     async def extract_profile_updates(self, user_message: str, current_profile: Dict[str, Any]) -> ExtractedProfileUpdate:
-        """Extract profile constraints using LLM structured generation supplemented by heuristic rules."""
-        # Fast path: For transit queries or messages without profile cues, use heuristic extractor directly
-        transit = extract_transit_query(user_message)
-        has_profile_cues = any(k in user_message.lower() for k in [
-            "wheelchair", "elderly", "grandmother", "stairs", "baby", "stroller",
-            "hiking", "pace", "couple", "family", "solo", "budget", "kids", "children"
-        ])
-        if transit or not has_profile_cues:
-            return heuristic_extract(user_message)
-
-        sys_prompt = (
-            "Analyze the traveller's message and extract tourism constraints. "
-            "Only populate fields that are explicitly stated or strongly implied."
-        )
-        extracted = None
-        try:
-            extracted = await self.router.extract_structured(
-                messages=[{"role": "user", "content": user_message}],
-                response_model=ExtractedProfileUpdate,
-                system_instruction=sys_prompt
-            )
-        except Exception as e:
-            logger.warning(f"Structured extraction call failed: {e}")
-
-        heuristic = heuristic_extract(user_message)
-        if not extracted or (not extracted.party_composition and not extracted.mobility_needs and not extracted.interests):
-            return heuristic
-
-        # Merge extracted with heuristic
-        if not extracted.party_composition and heuristic.party_composition:
-            extracted.party_composition = heuristic.party_composition
-        if not extracted.mobility_needs and heuristic.mobility_needs:
-            extracted.mobility_needs = heuristic.mobility_needs
-            extracted.mobility_limitations = heuristic.mobility_limitations
-        if not extracted.interests and heuristic.interests:
-            extracted.interests = heuristic.interests
-        if not extracted.preferred_pace and heuristic.preferred_pace:
-            extracted.preferred_pace = heuristic.preferred_pace
-        if extracted.has_elderly is None and heuristic.has_elderly is not None:
-            extracted.has_elderly = heuristic.has_elderly
-
-        return extracted
+        """Extract profile constraints using heuristics and fast intent classifier."""
+        return heuristic_extract(user_message)
 
     def update_profile(self, state: HanaState, update: ExtractedProfileUpdate) -> None:
-        """Merge newly extracted fields into state profile and record answered questions."""
+        """Merge newly extracted fields into state profile."""
         profile = state["profile"]
-
         if update.party_composition and not profile.get("party_composition"):
             profile["party_composition"] = update.party_composition
             if "party_type" not in state["asked_questions"]:
@@ -373,29 +439,7 @@ class HanaAgent:
             if "stay_duration" not in state["asked_questions"]:
                 state["asked_questions"].append("stay_duration")
 
-    def determine_next_interview_question(self, state: HanaState) -> Optional[str]:
-        """Select the next unasked question topic without repeating already answered attributes."""
-        profile = state["profile"]
-        asked = set(state["asked_questions"])
-
-        # Prioritized sequence of discovery
-        topics = [
-            ("mobility", not profile.get("mobility_needs") and not profile.get("mobility_limitations") and "mobility" not in asked),
-            ("party_type", not profile.get("party_composition") and "party_type" not in asked),
-            ("interests", not profile.get("interests") and "interests" not in asked),
-            ("stay_duration", not profile.get("trip_duration_days") and "stay_duration" not in asked),
-            ("pace", not profile.get("preferred_pace") and "pace" not in asked),
-        ]
-
-        for topic, is_needed in topics:
-            if is_needed:
-                return topic
-        return None
-
-
-
-
-    def query_grounded_places(self, state: HanaState, limit: int = 4) -> List[Dict[str, Any]]:
+    def query_grounded_places(self, state: HanaState, limit: int = 3, category: Optional[str] = None) -> List[Dict[str, Any]]:
         """Query canonical SQLite places matching profile constraints."""
         profile = state["profile"]
         mobility = profile.get("mobility_needs")
@@ -405,19 +449,22 @@ class HanaAgent:
         if mobility in ("wheelchair", "stroller") or profile.get("mobility_limitations"):
             accessibility_status = "VERIFIED_ACCESSIBLE"
 
-        category = interests[0] if interests else None
+        chosen_cat = category or (interests[0] if interests else None)
         places = search_places_db(
-            category=category,
+            category=chosen_cat,
             accessibility_status=accessibility_status,
             limit=limit
         )
 
-        if not places and category:
+        if not places and chosen_cat:
             places = search_places_db(
                 category="viewpoint",
                 accessibility_status=accessibility_status,
                 limit=limit
             )
+
+        if not places:
+            places = search_places_db(limit=limit)
 
         state["identified_places"] = places
         return places
@@ -428,27 +475,119 @@ class HanaAgent:
         user_message: str,
         user_location: Optional[Dict[str, float]] = None
     ) -> AsyncIterator[str]:
-        """Process turn and stream Hana conversational response."""
+        """Process turn and stream Hana conversational response with general AI & grounded tools."""
+        settings.reload_from_env()
         state = self.get_or_create_state(session_id)
+        
+        # Reset per-turn ephemeral UI cards and default response type
+        state["identified_places"] = []
+        state["identified_journeys"] = []
+        state["identified_crowd_alternatives"] = []
+        state["response_type"] = "general"
+        
         state["messages"].append({"role": "user", "content": user_message})
 
-        # 1. Extract Profile Updates
+        # Save to persistent conversation manager
+        session_manager.add_message(session_id, "user", user_message)
+
+        # 1. Profile Extraction & State Update
         update = await self.extract_profile_updates(user_message, state["profile"])
         self.update_profile(state, update)
 
-        # 2. Determine whether to query database
-        is_asking_places = (
-            update.detected_intent == "ask_recommendation"
-            or any(kw in user_message.lower() for kw in ["recommend", "where should", "suggest", "places", "visit", "go"])
-            or len(state["asked_questions"]) >= 2
+        lower_msg = user_message.lower()
+
+        # 2. Check for Itinerary Generation / Modification Requests
+        is_itinerary_request = (
+            update.detected_intent == "itinerary_request"
+            or any(kw in lower_msg for kw in ["itinerary", "plan a trip", "plan my trip", "one-day", "1-day", "2-day", "two-day", "3-day"])
+        )
+        is_itinerary_modify = (
+            any(kw in lower_msg for kw in ["remove the", "make it cheaper", "cheaper", "reduce walking", "add another", "replace"])
+            and state.get("active_itinerary") is not None
         )
 
-        grounded_places = []
-        if is_asking_places:
-            grounded_places = self.query_grounded_places(state)
+        itinerary_context = ""
+        if is_itinerary_modify:
+            active_plan = ItineraryPlan.model_validate(state["active_itinerary"])
+            if "remove" in lower_msg:
+                # remove 3rd or index
+                m_num = re.search(r"(\d+)(?:st|nd|rd|th)?", lower_msg)
+                idx = int(m_num.group(1)) - 1 if m_num else 2
+                modify_itinerary(active_plan, "remove_stop", target=idx)
+            elif "cheaper" in lower_msg:
+                modify_itinerary(active_plan, "make_cheaper")
+            elif "walking" in lower_msg:
+                modify_itinerary(active_plan, "reduce_walking")
+            state["active_itinerary"] = active_plan.model_dump()
+            itinerary_context = (
+                f"\n\nUPDATED ITINERARY PLAN: '{active_plan.title}'. "
+                f"You have successfully modified the itinerary according to the traveller's request. "
+                f"Detail the updated destinations and connection plan in your response."
+            )
+        elif is_itinerary_request:
+            dur = update.trip_duration_days or 1
+            party = update.party_composition or "couple"
+            plan = generate_itinerary(
+                party_type=party,
+                duration_days=dur,
+                mobility_needs=update.mobility_needs,
+                interests=update.interests,
+                budget_tier=update.budget_tier or "standard",
+                pace=update.preferred_pace or "moderate"
+            )
+            state["active_itinerary"] = plan.model_dump()
+            stops_summary = ", ".join([f"{s.name_en} ({s.estimated_arrival})" for day in plan.days for s in day.stops])
+            itinerary_context = (
+                f"\n\nGENERATED ITINERARY PLAN: '{plan.title}' with {len(plan.days)} days. "
+                f"Stops: {stops_summary}. "
+                f"Present this structured itinerary clearly with timing, destination highlights, and transit connections."
+            )
+            state["response_type"] = "itinerary_destinations"
+            itinerary_places = []
+            for day in plan.days:
+                for s in day.stops:
+                    itinerary_places.append({
+                        "place_id": s.place_id,
+                        "name_en": s.name_en,
+                        "name_ja": s.name_ja,
+                        "primary_category": s.category,
+                        "fuji_view_rating": s.fuji_view_rating,
+                        "accessibility_status": s.accessibility_status,
+                        "opening_hours_text": f"Arrival: {s.estimated_arrival} (~{s.duration_minutes} min)",
+                        "general_admission_type": "UNKNOWN",
+                        "image_url": s.image_url,
+                        "admission_info": s.admission_info
+                    })
+            state["identified_places"] = itinerary_places
 
-        # 2b. Deterministic Public Transport Routing
-        transit_info = self.extract_transit_query(user_message)
+        # 3. Grounded Database Places (Strictly conditional based on classified intent)
+        grounded_places = []
+        if is_itinerary_request or is_itinerary_modify:
+            grounded_places = state.get("identified_places", [])
+        elif update.detected_intent == "travel_query":
+            state["response_type"] = "destination_recommendations"
+            req_count = extract_requested_count(user_message, default=3)
+            grounded_places = self.query_grounded_places(state, limit=req_count)
+            state["identified_places"] = grounded_places
+        elif update.detected_intent == "destination_followup":
+            state["response_type"] = "destination_followup"
+            state["identified_places"] = []
+            grounded_places = []
+        elif update.detected_intent == "transit_query":
+            state["response_type"] = "transit"
+            state["identified_places"] = []
+            grounded_places = []
+        elif update.detected_intent == "crowd_query":
+            state["response_type"] = "crowd"
+            state["identified_places"] = []
+            grounded_places = []
+        else:
+            state["response_type"] = "general"
+            state["identified_places"] = []
+            grounded_places = []
+
+        # 4. Deterministic Public Transport Routing via RAPTOR
+        transit_info = extract_transit_query(user_message)
         transit_context = ""
         state["identified_journeys"] = []
         if transit_info:
@@ -486,158 +625,113 @@ class HanaAgent:
                                 f"    - Duration: {leg.duration_minutes} min ({leg.intermediate_stops_count} intermediate stops)\n"
                                 f"    - Fare: {leg.fare_jpy} JPY | Data Source: {leg.provenance_badge}\n"
                             )
-                            if leg.advisory_notes:
-                                transit_context += f"    - Note: {leg.advisory_notes}\n"
-                    transit_context += (
-                        "\nSTRICT ROUTING GUIDANCE:\n"
-                        "- You MUST state the exact line name, color hex (e.g. Red Line #E60012), departure stop, "
-                        "departure time, arrival time, and fare.\n"
-                        "- NEVER fabricate alternative times, colors, stops, or fares.\n"
-                        "- Always cite the data source badge.\n"
-                    )
             except Exception as e:
                 logger.warning(f"Transit routing query error: {e}")
 
-        # 2c. CrowdSense Adaptive Intelligence
-        crowd_info = self.extract_crowd_query(user_message)
+        # 5. CrowdSense Alternative Recommendations
+        crowd_info = extract_crowd_query(user_message)
         crowd_context = ""
         state["identified_crowd_alternatives"] = []
         if crowd_info:
-            target_name, pref_mode = crowd_info
-            target_id = self.resolve_place_id(target_name) or "kawaguchiko_oishi_park"
+            target_name, pref = crowd_info
+            target_pid = self.resolve_place_id(target_name)
+            scen = "busy_afternoon"
             try:
-                from backend.app.services.crowd.recommendation_service import get_recommendation_service
-                from backend.app.services.crowd.crowd_models import CrowdRecommendationRequest
-                rec_svc = get_recommendation_service()
-                pref_mode_str = "quiet" if pref_mode == "quiet" else "balanced"
                 crowd_req = CrowdRecommendationRequest(
-                    place_id=target_id,
-                    preference=pref_mode_str,
-                    scenario="high"
+                    place_id=target_pid,
+                    preference=pref,
+                    scenario=scen,
+                    limit=3
                 )
-                crowd_res = rec_svc.get_recommendations(crowd_req)
+                crowd_res = recommendation_service.get_recommendations(crowd_req)
                 if crowd_res.alternatives:
                     state["identified_crowd_alternatives"] = [a.model_dump() for a in crowd_res.alternatives]
                     crowd_context = (
-                        f"\n\nCROWDSENSE ADAPTIVE INTELLIGENCE (Scenario: {crowd_res.scenario.upper()} [SIMULATED]):\n"
-                        f"- Target Destination: {crowd_res.selected_destination.name_en} ({crowd_res.selected_destination.name_ja})\n"
-                        f"  Current Crowd: {crowd_res.selected_crowd_status.level} ({crowd_res.selected_crowd_status.score}/100) - {crowd_res.selected_crowd_status.advisory}\n"
-                        f"- Data Classification: {crowd_res.classification} (Real-time telemetry: UNAVAILABLE)\n"
-                        f"- Recommended Alternatives ({pref_mode_str.capitalize()} Preference):\n"
+                        f"\n\nCROWDSENSE ADAPTIVE RECOMMENDATIONS (Scenario: {scen.upper()}, Preference: {pref}):\n"
+                        f"Target Attraction: {crowd_res.target_place_name} ({crowd_res.target_crowd_level.upper()} crowd level).\n"
                     )
                     for alt in crowd_res.alternatives:
                         crowd_context += (
-                            f"  * {alt.place.name_en} ({alt.place.name_ja}): Crowd={alt.crowd_status.level} "
-                            f"(Reduction: -{alt.crowd_reduction_pct}%), Distance={alt.distance_km} km, "
-                            f"Fuji Rating={alt.place.fuji_view_rating}/5, Access={alt.place.accessibility_status}. "
-                            f"Reason: {alt.recommendation_reason}\n"
+                            f"- Alternative: {alt.name_en} ({alt.name_ja}): Crowd Reduction: -{alt.crowd_reduction_percent}%, "
+                            f"Fuji Rating: {alt.fuji_view_rating}/5, Distance: {alt.distance_km} km. "
+                            f"Why: {alt.reason}\n"
                         )
-                    crowd_context += (
-                        "\nSTRICT CROWD GUIDANCE:\n"
-                        "- State the current crowd level clearly and warn if it is high or congested.\n"
-                        "- Suggest the top alternative destinations with their crowd reduction percentages and why they fit.\n"
-                        "- Note that real-time sensor telemetry is currently UNAVAILABLE and data reflects calibrated SIMULATED baseline models.\n"
-                    )
-            except Exception as ce:
-                logger.warning(f"CrowdSense recommendation error: {ce}")
+            except Exception as e:
+                logger.warning(f"Crowd recommendation error: {e}")
 
-        # 3. Determine next unasked interview topic
-        next_topic = self.determine_next_interview_question(state)
-        state["next_question"] = next_topic
-        if next_topic and next_topic not in state["asked_questions"]:
-            state["asked_questions"].append(next_topic)
+        # 6. RAG Regional Knowledge Retrieval
+        rag_chunks = rag_retriever.retrieve(user_message, top_k=2)
+        rag_context = rag_retriever.format_grounding_context(rag_chunks)
 
-        # 4. Construct grounded context prompt for generation
-        grounding_context = ""
-        if grounded_places:
-            grounding_context = "\n\nVERIFIED DATABASE PLACES TO RECOMMEND (Ground all specifics here):\n"
-            for p in grounded_places:
-                grounding_context += (
-                    f"- {p['name_ja']} ({p['name_en']}): Category={p['primary_category']}, "
-                    f"Fuji Rating={p['fuji_view_rating']}/5, "
-                    f"Hours={p['opening_hours_text']} (Status: {p['opening_status']}, Source: {p['opening_hours_source']}), "
-                    f"Admission={p['general_admission_type']} ({p.get('general_admission_fee_jpy')} JPY) [Optional: {p.get('optional_activities_fee_desc')}], "
-                    f"Access={p['accessibility_status']} ({p.get('accessibility_evidence')}, Steps: {p.get('stair_step_count')}), "
-                    f"Attribution={p['required_attribution']}\n"
-                )
-
-        interview_guidance = ""
-        if next_topic:
-            interview_guidance = (
-                f"\n\nAt the end of your helpful response, ask about the traveller's '{next_topic}' "
-                "to better personalize their journey. Do not ask about topics already known."
+        # 7. Weather & Seasonal Climate Data (if weather asked)
+        weather_context = ""
+        if any(w in lower_msg for w in ["weather", "temperature", "winter", "pack", "december", "rain", "climate", "season"]):
+            # Extract month if mentioned
+            m_month = re.search(r"\b(january|february|march|april|may|june|july|august|september|october|november|december)\b", lower_msg)
+            month_num = None
+            if m_month:
+                months_map = {"january": 1, "february": 2, "march": 3, "april": 4, "may": 5, "june": 6,
+                              "july": 7, "august": 8, "september": 9, "october": 10, "november": 11, "december": 12}
+                month_num = months_map.get(m_month.group(1))
+            w_data = get_weather_info(month_num)
+            weather_context = (
+                f"\n\nVERIFIED REGIONAL WEATHER & CLIMATE ({w_data['region']}, Month: {w_data['month']}):\n"
+                f"- Temperature: {w_data['temperature_range_celsius']}\n"
+                f"- Mount Fuji Visibility Probability: {w_data['fuji_visibility_probability']}\n"
+                f"- Summary: {w_data['weather_summary']}\n"
+                f"- Packing Advice: {w_data['packing_recommendations']}\n"
+                f"- Source: {w_data['data_source']}\n"
             )
 
-        prompt_messages = [
-            {"role": "system", "content": HANA_SYSTEM_INSTRUCTION + grounding_context + transit_context + crowd_context + interview_guidance}
-        ]
-        prompt_messages.extend(state["messages"][-4:])
+        # 8. Grounded Places Formatting
+        grounding_places_text = ""
+        if grounded_places:
+            grounding_places_text = "\n\nVERIFIED DATABASE PLACES TO RECOMMEND (Ground all specifics here):\n"
+            for p in grounded_places:
+                grounding_places_text += (
+                    f"- {p['name_ja']} ({p['name_en']}): Category={p['primary_category']}, "
+                    f"Fuji Rating={p['fuji_view_rating']}/5, "
+                    f"Hours={p['opening_hours_text']}, "
+                    f"Admission={p['general_admission_type']} ({p.get('general_admission_fee_jpy', 0)} JPY), "
+                    f"Access={p['accessibility_status']} ({p.get('accessibility_evidence')}, Steps: {p.get('stair_step_count')})\n"
+                )
+
+        full_system_prompt = (
+            HANA_SYSTEM_INSTRUCTION
+            + rag_context
+            + weather_context
+            + grounding_places_text
+            + transit_context
+            + crowd_context
+            + itinerary_context
+        )
+
+        prompt_messages = [{"role": "system", "content": full_system_prompt}]
+        # Window of recent conversation history
+        recent_turns = session_manager.get_context_messages(session_id)
+        if recent_turns:
+            prompt_messages.extend(recent_turns)
+        else:
+            prompt_messages.extend(state["messages"][-6:])
 
         full_response = []
         try:
             async for token in self.router.stream_chat(
                 messages=prompt_messages,
-                system_instruction=HANA_SYSTEM_INSTRUCTION + grounding_context + transit_context + crowd_context + interview_guidance
+                system_instruction=full_system_prompt
             ):
                 full_response.append(token)
                 yield token
+
         except Exception as llm_err:
-            logger.warning(f"LLM streaming error or unavailable: {llm_err}")
-            if state.get("identified_crowd_alternatives"):
-                alts = state["identified_crowd_alternatives"]
-                top = alts[0]
-                top_p = top.get("place", {}) if isinstance(top, dict) else getattr(top, "place", {})
-                top_name = top_p.get("name_en") if isinstance(top_p, dict) else getattr(top_p, "name_en", "Nagasaki Park")
-                top_ja = top_p.get("name_ja") if isinstance(top_p, dict) else getattr(top_p, "name_ja", "長崎公園")
-                top_red = top.get("crowd_reduction_pct", 75) if isinstance(top, dict) else getattr(top, "crowd_reduction_pct", 75)
-                top_reason = top.get("recommendation_reason", "") if isinstance(top, dict) else getattr(top, "recommendation_reason", "")
-                alt_names = ", ".join(
-                    f"{(a.get('place', {}).get('name_en') if isinstance(a, dict) else a.place.name_en)} (-{(a.get('crowd_reduction_pct') if isinstance(a, dict) else a.crowd_reduction_pct)}%)"
-                    for a in alts[:2]
-                )
-                fallback_msg = (
-                    f"Under our current calibrated High Crowd simulation, Oishi Park is experiencing high visitor congestion. "
-                    f"(Note: Real-time sensor telemetry is currently UNAVAILABLE; data reflects simulated baseline models.) "
-                    f"If you prefer a quieter experience, I recommend considering {top_name} ({top_ja}), "
-                    f"which offers an estimated {top_red}% crowd reduction ({top_reason}). "
-                    f"Other peaceful options include: {alt_names}. You can explore and switch destinations directly in the CrowdSense panel below!"
-                )
-            elif state.get("identified_journeys"):
-                j = state["identified_journeys"][0]
-                legs = j.get("legs", [])
-                leg_desc = ""
-                if legs:
-                    first_leg = legs[0]
-                    op = first_leg.get("operator", "Bus")
-                    r_num = first_leg.get("route_short_name", "")
-                    r_name = first_leg.get("route_long_name", "")
-                    b_stop = f"{first_leg.get('origin_stop_name_en', '')} ({first_leg.get('origin_stop_name', '')})"
-                    d_time = first_leg.get("departure_time", "")
-                    a_stop = f"{first_leg.get('destination_stop_name_en', '')} ({first_leg.get('destination_stop_name', '')})"
-                    a_time = first_leg.get("arrival_time", "")
-                    dur = j.get("total_duration_minutes", 0)
-                    fare = j.get("total_fare_jpy")
-                    fare_str = f"{fare} JPY" if fare is not None else "unavailable"
-                    prov = first_leg.get("provenance_badge", "GTFS")
-                    leg_desc = (
-                        f"You can take the {op} (Route {r_num}: {r_name}). "
-                        f"Board at {b_stop} at {d_time}, and alight at {a_stop} at {a_time}. "
-                        f"The journey takes {dur} minutes. The fare is {fare_str} (Source: {prov}). "
-                        f"Route colour is empty/unspecified in the raw GTFS feed (locally branded as Red Line). "
-                        f"The complete timetable and transfer details are displayed in the connection card below."
-                    )
-                fallback_msg = leg_desc or "I have calculated your transit connection based on the official GTFS timetable."
-            elif grounded_places:
-                p_names = ", ".join(f"{p['name_en']} ({p['name_ja']})" for p in grounded_places[:3])
-                fallback_msg = f"Based on verified database records for Mount Fuji and Yamanashi, I recommend: {p_names}."
-            else:
-                fallback_msg = "Hello! I am Hana, your Mount Fuji travel companion. How can I assist you with your travels or transit around Lake Kawaguchiko today?"
+            logger.error(f"Hana Gemini LLM streaming error: {llm_err}", exc_info=True)
+            # Do NOT pretend Hana answered via LLM when she did not.
+            # Propagate the real error so routes_chat.py emits event: error to the client.
+            raise llm_err
 
-            for word in fallback_msg.split(" "):
-                yield word + " "
-                full_response.append(word + " ")
-
-        state["messages"].append({"role": "model", "content": "".join(full_response)})
+        final_content = "".join(full_response)
+        state["messages"].append({"role": "model", "content": final_content})
+        session_manager.add_message(session_id, "assistant", final_content)
 
 
 # Global Hana agent singleton

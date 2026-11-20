@@ -12,6 +12,19 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow flex flex-col justify-between">
+      {place.image_url && (
+        <div className="relative h-36 w-full overflow-hidden bg-slate-100">
+          <img
+            src={place.image_url}
+            alt={place.name_en || place.name_ja}
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).src =
+                'https://images.unsplash.com/photo-1490806843957-31f4c9a91c65?auto=format&fit=crop&w=800&q=80';
+            }}
+            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+          />
+        </div>
+      )}
       <div className="p-4">
         {/* Header: Name and Fuji Rating */}
         <div className="flex items-start justify-between gap-2">

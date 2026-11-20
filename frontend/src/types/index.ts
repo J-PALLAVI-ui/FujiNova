@@ -20,6 +20,7 @@ export interface Place {
   accessibility_source: string;
   fuji_view_rating: number;
   indoor_alternative: boolean;
+  image_url?: string;
   provenance_tier: 'OFFICIAL_GOV' | 'OFFICIAL_OPERATOR' | 'COMMUNITY_OSM' | 'UNVERIFIED';
   source_url: string;
   required_attribution: string;
@@ -82,14 +83,27 @@ export interface Journey {
   warnings: string[];
 }
 
+export type HanaResponseType = 
+  | 'general' 
+  | 'destination_recommendations' 
+  | 'itinerary_destinations' 
+  | 'transit' 
+  | 'crowd'
+  | 'destination_followup';
+
 export interface ChatMessage {
   id: string;
   sender: 'user' | 'hana';
   text: string;
   places?: Place[];
+  response_type?: HanaResponseType;
   journeys?: Journey[];
   crowd_alternatives?: CrowdAlternativeCard[];
   timestamp: string;
+  isError?: boolean;
+  errorCode?: string;
+  errorMessage?: string;
+  errorDetail?: string;
 }
 
 export type CrowdLevel = 'low' | 'moderate' | 'high' | 'packed' | 'LOW' | 'MODERATE' | 'HIGH';
@@ -164,3 +178,47 @@ export interface CrowdSystemStatusResponse {
   hero_image_url?: string;
   hero_image_attribution?: string;
 }
+
+export interface ItineraryStop {
+  stop_id: string;
+  place_id: string;
+  name_en: string;
+  name_ja: string;
+  category: string;
+  fuji_view_rating: number;
+  accessibility_status: string;
+  estimated_arrival: string;
+  duration_minutes: number;
+  image_url: string;
+  admission_info: string;
+  notes?: string;
+  transit_to_next?: {
+    departure_time: string;
+    arrival_time: string;
+    duration_minutes: number;
+    fare_jpy: number;
+    transfers: number;
+    operator: string;
+    route_name: string;
+    route_color: string;
+  } | null;
+}
+
+export interface ItineraryDay {
+  day_number: number;
+  title: string;
+  stops: ItineraryStop[];
+}
+
+export interface ItineraryPlan {
+  plan_id: string;
+  title: string;
+  total_days: number;
+  party_composition: string;
+  mobility_needs?: string;
+  budget_tier: string;
+  pace: string;
+  days: ItineraryDay[];
+  summary_notes?: string;
+}
+

@@ -71,6 +71,35 @@ def init_db(db_path: Optional[str] = None) -> None:
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_places_indoor ON places (indoor_alternative);")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_places_access ON places (accessibility_status);")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_places_status ON places (opening_status);")
+
+        # Persistent Conversations and Messages Schema (Phase 5)
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS conversations (
+            conversation_id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            last_message_at TEXT NOT NULL,
+            archived INTEGER DEFAULT 0,
+            pinned INTEGER DEFAULT 0
+        );
+        """)
+
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS messages (
+            message_id TEXT PRIMARY KEY,
+            conversation_id TEXT NOT NULL,
+            role TEXT NOT NULL,
+            content TEXT NOT NULL,
+            timestamp TEXT NOT NULL,
+            metadata TEXT DEFAULT '{}',
+            FOREIGN KEY (conversation_id) REFERENCES conversations(conversation_id) ON DELETE CASCADE
+        );
+        """)
+
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_messages_conv ON messages (conversation_id, timestamp);")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_conv_updated ON conversations (updated_at DESC);")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_conv_pinned ON conversations (pinned DESC, updated_at DESC);")
         conn.commit()
 
 

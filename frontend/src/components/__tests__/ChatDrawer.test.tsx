@@ -89,4 +89,40 @@ describe('ChatDrawer Component (Acceptance Test T1-15)', () => {
       expect(screen.getByText(/Fuji 5\/5/i)).toBeInTheDocument();
     });
   });
+
+  it('does NOT render place cards for general questions (response_type: general)', async () => {
+    const ssePayload = [
+      'event: token\ndata: {"token": "Omotenashi is the Japanese philosophy of selfless hospitality."}\n\n',
+      'event: done\ndata: {"session_id": "test_session", "response_type": "general"}\n\n'
+    ].join('');
+
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(encoder.encode(ssePayload));
+        controller.close();
+      }
+    });
+
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      body: stream
+    } as any);
+
+    render(<ChatDrawer sessionId="test_session" />);
+
+    const input = screen.getByPlaceholderText(/Ask Hana/i);
+    const sendBtn = screen.getByLabelText('Send message');
+
+    fireEvent.change(input, { target: { value: 'Explain Omotenashi hospitality.' } });
+    fireEvent.click(sendBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Omotenashi is the Japanese philosophy of selfless hospitality/i)).toBeInTheDocument();
+    });
+
+    // Ensure NO place cards are rendered
+    expect(screen.queryByText('大石公園')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Verified Places Grounding/i)).not.toBeInTheDocument();
+  });
 });
