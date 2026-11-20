@@ -523,5 +523,20 @@
     "steps": 0,
     "image_url": "https://images.unsplash.com/photo-1490806843957-31f4c9a91c65?auto=format&fit=crop&w=800&q=80",
     "image_alt": "Kawaguchiko Station Tourist Information Center"
+  },
+  {
+    "id": "hokuto_jindai_zakura",
+    "name_ja": "山高神代桜（実相寺）",
+    "name_en": "Yamataka Jindai Cherry Blossom (Jissoji Temple)",
+    "lat": 35.7825,
+    "lon": 138.3664,
+    "category": "park",
+    "fuji_rating": 4,
+    "hours": "08:00-17:00 (Temple grounds open 24h during sakura season)",
+    "admission": "Free",
+    "accessibility": "Flat paved paths through Jissoji temple grounds, gentle ramps, barrier-free accessible restrooms nearby",
+    "steps": 0,
+    "image_url": "https://images.unsplash.com/photo-1522383225653-ed111181a951?auto=format&fit=crop&w=800&q=80",
+    "image_alt": "2,000-year-old Yamataka Jindai Cherry Blossom tree at Jissoji Temple, Hokuto"
   }
 ]

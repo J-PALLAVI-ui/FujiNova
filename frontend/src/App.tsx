@@ -8,18 +8,24 @@ import { TravelIntelligenceView } from './components/TravelIntelligenceView';
 import { MyTravelView } from './components/MyTravelView';
 import { ProfileSettingsView } from './components/ProfileSettingsView';
 import { TranslationWorkspace } from './components/TranslationWorkspace';
+import { FujiNovaLogo } from './components/brand/FujiNovaLogo';
+import { TripBasketDrawer } from './components/TripBasketDrawer';
+import { TripExportModal } from './components/TripExportModal';
+import { PublicTripView } from './components/PublicTripView';
+import { ExperienceModeProvider, useExperienceMode } from './context/ExperienceModeContext';
 
 import { TravellerProfile, ItineraryPlan, Place, ItineraryStop } from './types';
+import ALL_VERIFIED_LANDMARKS from './data/all_landmarks.json';
 import { apiUrl } from './config';
 import { 
-  Mountain, 
   Sparkles, 
   Compass, 
   Navigation, 
   Activity, 
   Wallet, 
   Languages,
-  Settings
+  Settings,
+  ShoppingBag
 } from 'lucide-react';
 
 export type WorkspaceTab = 
@@ -32,7 +38,17 @@ export type WorkspaceTab =
   | 'mytravel' 
   | 'settings';
 
-export const App: React.FC = () => {
+const AppInner: React.FC = () => {
+  // Check if opening a public shared trip via URL
+  const [publicShareToken, setPublicShareToken] = useState<string | null>(() => {
+    const path = window.location.pathname;
+    if (path.startsWith('/trip/')) {
+      return path.replace('/trip/', '').trim();
+    }
+    const params = new URLSearchParams(window.location.search);
+    return params.get('trip');
+  });
+
   // Persist current active session ID
   const [sessionId, setSessionId] = useState<string>(() => {
     return localStorage.getItem('fujinova_active_session') || `fn_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
@@ -41,8 +57,15 @@ export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<WorkspaceTab>('discover');
   const [_profile, setProfile] = useState<TravellerProfile>({});
   const [itinerary, setItinerary] = useState<ItineraryPlan | null>(null);
+  const [basket, setBasket] = useState<Place[]>([]);
+  const [isBasketOpen, setIsBasketOpen] = useState<boolean>(false);
+  const [isExportOpen, setIsExportOpen] = useState<boolean>(false);
   const [externalPrompt, setExternalPrompt] = useState<string | undefined>(undefined);
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
+  const [twinMode2D, setTwinMode2D] = useState(false);
+
+  const { modeTitle, modeBadgeColor } = useExperienceMode();
+
   const [health, setHealth] = useState<{
     status: string;
     primary_model: string;
@@ -52,7 +75,6 @@ export const App: React.FC = () => {
     free_only_mode?: boolean;
     openai_fallback_disabled?: boolean;
   } | null>(null);
-  const [twinMode2D, setTwinMode2D] = useState(false);
 
   // Sync session ID to localStorage
   useEffect(() => {
@@ -69,10 +91,10 @@ export const App: React.FC = () => {
           const data = await res.json();
           setHealth(data);
         } else {
-          setHealth({ status: 'offline', primary_model: 'gemini-2.0-flash', active_model: 'gemini-2.0-flash', active_provider: 'google' });
+          setHealth({ status: 'offline', primary_model: 'gemini-3.5-flash-lite', active_model: 'gemini-3.5-flash-lite', active_provider: 'google' });
         }
       } catch (_) {
-        setHealth({ status: 'offline', primary_model: 'gemini-2.0-flash', active_model: 'gemini-2.0-flash', active_provider: 'google' });
+        setHealth({ status: 'offline', primary_model: 'gemini-3.5-flash-lite', active_model: 'gemini-3.5-flash-lite', active_provider: 'google' });
       }
     };
     checkHealth();
@@ -107,7 +129,7 @@ export const App: React.FC = () => {
       accessibility_status: place.accessibility_status,
       estimated_arrival: '14:00',
       duration_minutes: 90,
-      image_url: 'https://images.unsplash.com/photo-1578637387939-43c525550085?auto=format&fit=crop&w=600&q=80',
+      image_url: place.image_url || 'https://images.unsplash.com/photo-1578637387939-43c525550085?auto=format&fit=crop&w=600&q=80',
       admission_info: place.general_admission_type === 'FREE' ? 'Free Entry' : `¥${place.general_admission_fee_jpy || 1000}`
     };
 
@@ -135,6 +157,11 @@ export const App: React.FC = () => {
         ]
       });
     }
+
+    // Also add to basket for seamless curation
+    if (!basket.some(p => p.place_id === place.place_id)) {
+      setBasket(prev => [...prev, place]);
+    }
   };
 
   const handleReorderStop = (dayNumber: number, stopIndex: number, direction: 'up' | 'down') => {
@@ -155,6 +182,83 @@ export const App: React.FC = () => {
     setItinerary({ ...itinerary, days: newDays });
   };
 
+  // Trip Basket Actions
+  const handleRemoveFromBasket = (placeId: string) => {
+    setBasket(prev => prev.filter(p => p.place_id !== placeId));
+  };
+
+  const handleClearBasket = () => {
+    setBasket([]);
+  };
+
+  const handleReorderBasket = (index: number, direction: 'up' | 'down') => {
+    const newBasket = [...basket];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex >= 0 && targetIndex < newBasket.length) {
+      const temp = newBasket[index];
+      newBasket[index] = newBasket[targetIndex];
+      newBasket[targetIndex] = temp;
+      setBasket(newBasket);
+    }
+  };
+
+  const handleGenerateWithHana = (places: Place[]) => {
+    const names = places.map(p => p.name_en || p.name_ja).join(', ');
+    const prompt = `Plan a personalized, connected Mount Fuji itinerary including these stops in order: ${names}. Ensure optimal transit routes, step-free barrier advice, and prime Fuji viewing times.`;
+    setIsBasketOpen(false);
+    handleAskHana(prompt);
+  };
+
+  const handleViewBasketIn3D = (places: Place[]) => {
+    const stops: ItineraryStop[] = places.map((place, idx) => ({
+      stop_id: `basket_stop_${Date.now()}_${idx}`,
+      place_id: place.place_id,
+      name_en: place.name_en || place.name_ja,
+      name_ja: place.name_ja,
+      category: place.primary_category,
+      fuji_view_rating: place.fuji_view_rating,
+      accessibility_status: place.accessibility_status,
+      estimated_arrival: `${9 + idx * 2}:00`,
+      duration_minutes: 90,
+      image_url: place.image_url || 'https://images.unsplash.com/photo-1578637387939-43c525550085?auto=format&fit=crop&w=600&q=80',
+      admission_info: place.general_admission_type === 'FREE' ? 'Free Entry' : `¥${place.general_admission_fee_jpy || 1000}`
+    }));
+
+    setItinerary({
+      plan_id: `basket_plan_${Date.now()}`,
+      title: 'Curated Fuji Destination Route',
+      total_days: 1,
+      budget_tier: 'standard',
+      pace: 'moderate',
+      party_composition: 'traveller',
+      days: [
+        {
+          day_number: 1,
+          title: 'Day 1: Curated Stops',
+          stops: stops
+        }
+      ]
+    });
+
+    setIsBasketOpen(false);
+    setActiveTab('twin');
+  };
+
+  // If viewing a public shared trip via link
+  if (publicShareToken) {
+    return (
+      <PublicTripView
+        shareToken={publicShareToken}
+        onOpenInApp={(importedItin) => {
+          setItinerary(importedItin);
+          setPublicShareToken(null);
+          setActiveTab('twin');
+          window.history.pushState({}, '', '/');
+        }}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans select-none antialiased">
       {/* WCAG 2.2 AA Skip Link */}
@@ -168,23 +272,16 @@ export const App: React.FC = () => {
       {/* Top Header Navigation */}
       <header className="bg-slate-900/95 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40">
         <div className="max-w-[1920px] mx-auto px-4 h-14 flex items-center justify-between gap-4">
-          {/* Logo */}
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => setActiveTab('discover')}
-              className="flex items-center gap-2.5 font-black text-white tracking-tight text-lg hover:opacity-90 transition-opacity"
-            >
-              <span className="w-8 h-8 rounded-lg bg-gradient-to-tr from-sky-600 to-indigo-600 text-white flex items-center justify-center shadow-md">
-                <Mountain className="w-5 h-5" />
-              </span>
-              <span className="hidden sm:inline">FujiNova</span>
-            </button>
-            <span className="text-[10px] font-bold text-sky-300 bg-sky-500/20 border border-sky-500/30 px-1.5 py-0.5 rounded uppercase tracking-wider">
-              6.0
-            </span>
-          </div>
+          {/* Logo & Brand Identity */}
+          <button 
+            onClick={() => setActiveTab('discover')}
+            className="flex items-center hover:opacity-95 transition-opacity"
+            aria-label="FujiNova Home"
+          >
+            <FujiNovaLogo variant="full-horizontal" size="sm" />
+          </button>
 
-          {/* 7 Primary Workspace Tabs */}
+          {/* Primary Workspace Navigation Tabs */}
           <nav className="flex items-center gap-1 bg-slate-950/80 p-1 rounded-xl border border-slate-800/80 overflow-x-auto max-w-full">
             <button
               onClick={() => setActiveTab('discover')}
@@ -205,7 +302,7 @@ export const App: React.FC = () => {
                   : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5 text-sky-400" />
+              <Sparkles className="w-3.5 h-3.5 text-pink-400" />
               <span>Hana AI</span>
             </button>
 
@@ -218,7 +315,7 @@ export const App: React.FC = () => {
               }`}
             >
               <Compass className="w-3.5 h-3.5 text-sky-400" />
-              <span>3D Digital Twin</span>
+              <span>3D Route</span>
             </button>
 
             <button
@@ -256,7 +353,7 @@ export const App: React.FC = () => {
                   : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
               }`}
             >
-              <Languages className="w-3.5 h-3.5 text-pink-400" />
+              <Languages className="w-3.5 h-3.5 text-indigo-400" />
               <span>Translation</span>
             </button>
 
@@ -285,27 +382,47 @@ export const App: React.FC = () => {
             </button>
           </nav>
 
-          {/* Model Status Indicator */}
-          <div className="hidden lg:flex items-center gap-3 shrink-0">
-            <div className="flex items-center gap-2 text-xs text-slate-300 bg-slate-800/90 border border-slate-700/80 px-2.5 py-1 rounded-lg">
+          {/* Right Action Icons: Experience Mode, Trip Basket & Health */}
+          <div className="flex items-center gap-2.5">
+            {/* Experience Mode Pill */}
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={`hidden md:inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full border transition-all ${modeBadgeColor}`}
+              title="Click to change experience mode in Settings"
+            >
+              <Sparkles className="w-3 h-3" />
+              <span>{modeTitle.split(' ')[0]}</span>
+            </button>
+
+            {/* Trip Basket Button */}
+            <button
+              onClick={() => setIsBasketOpen(true)}
+              className="relative p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700/80 transition-all flex items-center gap-1.5"
+              title="Open Trip Selection Basket"
+              aria-label={`Trip basket with ${basket.length} places`}
+            >
+              <ShoppingBag className="w-4 h-4 text-pink-400" />
+              <span className="text-xs font-bold hidden sm:inline">Basket</span>
+              {basket.length > 0 && (
+                <span className="px-1.5 py-0.2 rounded-full bg-pink-500 text-white font-bold text-[10px]">
+                  {basket.length}
+                </span>
+              )}
+            </button>
+
+            {/* Live Free Tier Engine Telemetry */}
+            <div className="hidden xl:flex items-center gap-2 px-3 py-1 rounded-xl bg-slate-950/80 border border-slate-800/90 text-xs">
               <span
-                className={`w-2 h-2 rounded-full ${
-                  health?.gemini_configured
-                    ? 'bg-emerald-500 animate-pulse'
-                    : 'bg-amber-400'
+                className={`w-2 h-2 rounded-full shrink-0 ${
+                  health?.status === 'ok' ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
                 }`}
-                title={
-                  health?.gemini_configured
-                    ? 'Google Gemini Free Tier Active (₹0 Cost)'
-                    : 'GEMINI_API_KEY required in FujiNova/.env (Free from Google AI Studio)'
-                }
               />
               <span className="text-[10px] uppercase font-bold text-sky-400 tracking-wider">
                 Google Gemini
               </span>
               <span className="text-slate-600">|</span>
               <span className="font-mono text-[11px] font-medium text-slate-200">
-                {health?.active_model || health?.primary_model || 'gemini-2.0-flash'}
+                {health?.active_model || health?.primary_model || 'gemini-3.5-flash-lite'}
               </span>
               <span className="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.2 rounded font-semibold">
                 Free Tier (₹0)
@@ -363,33 +480,37 @@ export const App: React.FC = () => {
             </div>
           ) : (
             <DigitalTwin3D
+              itinerary={itinerary}
               onAskHana={handleAskHana}
               onSelectPlace={(pid) => setSelectedPlaceId(pid)}
               selectedPlaceId={selectedPlaceId}
               onSwitchTo2D={() => setTwinMode2D(true)}
               onAddToItinerary={(pid) => {
-                handleAddStop({
-                  place_id: pid,
-                  name_ja: pid,
-                  name_en: pid.replace(/_/g, ' '),
-                  latitude: 35.5,
-                  longitude: 138.7,
-                  coords_source: 'MLIT',
-                  primary_category: 'viewpoint',
-                  opening_status: 'ALWAYS_OPEN',
-                  opening_hours_source: 'official',
-                  general_admission_type: 'FREE',
-                  admission_fee_source: 'official',
-                  accessibility_status: 'VERIFIED_ACCESSIBLE',
-                  accessibility_source: 'official',
-                  fuji_view_rating: 5,
-                  indoor_alternative: false,
-                  provenance_tier: 'OFFICIAL_GOV',
-                  source_url: '',
-                  required_attribution: '',
-                  source_retrieval_date: '',
-                  last_verified_date: ''
-                });
+                const matched = ALL_VERIFIED_LANDMARKS.find(l => l.id === pid);
+                if (matched) {
+                  handleAddStop({
+                    place_id: matched.id,
+                    name_ja: matched.name_ja,
+                    name_en: matched.name_en,
+                    latitude: matched.lat,
+                    longitude: matched.lon,
+                    coords_source: 'MLIT',
+                    primary_category: matched.category,
+                    opening_status: 'ALWAYS_OPEN',
+                    opening_hours_source: 'official',
+                    general_admission_type: matched.admission.toLowerCase().includes('free') ? 'FREE' : 'PAID',
+                    admission_fee_source: 'official',
+                    accessibility_status: (matched.accessibility.toLowerCase().includes('barrier-free') || matched.accessibility.toLowerCase().includes('paved')) ? 'VERIFIED_ACCESSIBLE' : 'PARTIAL_STEPS',
+                    accessibility_source: 'official',
+                    fuji_view_rating: matched.fuji_rating,
+                    indoor_alternative: false,
+                    provenance_tier: 'OFFICIAL_GOV',
+                    source_url: '',
+                    required_attribution: '',
+                    source_retrieval_date: '',
+                    last_verified_date: ''
+                  });
+                }
               }}
             />
           )
@@ -402,6 +523,8 @@ export const App: React.FC = () => {
               onAskHana={handleAskHana}
               onRemoveStop={handleRemoveStop}
               onReorderStop={handleReorderStop}
+              onOpenExport={() => setIsExportOpen(true)}
+              onViewIn3D={() => setActiveTab('twin')}
             />
           </div>
         )}
@@ -422,6 +545,33 @@ export const App: React.FC = () => {
           <ProfileSettingsView activeModel={health?.active_model || health?.primary_model || 'gemini-3.5-flash-lite'} />
         )}
       </main>
+
+      {/* Slide-out Trip Basket Drawer */}
+      <TripBasketDrawer
+        isOpen={isBasketOpen}
+        onClose={() => setIsBasketOpen(false)}
+        basket={basket}
+        onRemoveFromBasket={handleRemoveFromBasket}
+        onClearBasket={handleClearBasket}
+        onReorderBasket={handleReorderBasket}
+        onGenerateWithHana={handleGenerateWithHana}
+        onViewIn3D={handleViewBasketIn3D}
+      />
+
+      {/* Share & Export Itinerary Modal (QR + PDF) */}
+      <TripExportModal
+        isOpen={isExportOpen}
+        onClose={() => setIsExportOpen(false)}
+        itinerary={itinerary}
+      />
     </div>
+  );
+};
+
+export const App: React.FC = () => {
+  return (
+    <ExperienceModeProvider>
+      <AppInner />
+    </ExperienceModeProvider>
   );
 };

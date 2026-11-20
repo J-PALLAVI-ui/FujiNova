@@ -187,6 +187,11 @@ ATTRACTION_IMAGES: Dict[str, Dict[str, str]] = {
         "url": "https://images.unsplash.com/photo-1490806843957-31f4c9a91c65?auto=format&fit=crop&w=800&q=80",
         "attribution": "Photo by David Emrich on Unsplash (Kawaguchiko Station plaza)",
         "alt": "Kawaguchiko Station Tourist Information Center"
+    },
+    "hokuto_jindai_zakura": {
+        "url": "https://images.unsplash.com/photo-1522383225653-ed111181a951?auto=format&fit=crop&w=800&q=80",
+        "attribution": "Photo by Sora Sagano on Unsplash (Ancient Jindai-zakura cherry tree in full bloom)",
+        "alt": "2,000-year-old Yamataka Jindai Cherry Blossom tree at Jissoji Temple, Hokuto"
     }
 }
 

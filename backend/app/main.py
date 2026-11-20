@@ -24,6 +24,7 @@ from backend.app.api.routes_conversations import (
     UpdateConversationRequest
 )
 from backend.app.api.routes_translation import router as translation_router
+from backend.app.api.routes_export import router as export_router
 
 
 @asynccontextmanager
@@ -80,6 +81,7 @@ app.include_router(itinerary_router)
 app.include_router(travel_router)
 app.include_router(conversations_router)
 app.include_router(translation_router)
+app.include_router(export_router)
 
 # Direct Compatibility Endpoints (as inspected in /docs)
 from backend.app.api.routes_health import health_check

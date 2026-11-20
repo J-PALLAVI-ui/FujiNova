@@ -4,8 +4,13 @@ import {
   Eye, 
   Globe, 
   Cpu, 
-  Database
+  Database,
+  Sparkles,
+  Smile,
+  Compass,
+  Check
 } from 'lucide-react';
+import { useExperienceMode } from '../context/ExperienceModeContext';
 
 interface ProfileSettingsViewProps {
   activeModel?: string;
@@ -14,6 +19,7 @@ interface ProfileSettingsViewProps {
 export const ProfileSettingsView: React.FC<ProfileSettingsViewProps> = ({
   activeModel = 'gemini-3.5-flash-lite'
 }) => {
+  const { mode: currentExperienceMode, setMode: setExperienceMode } = useExperienceMode();
   const [highContrast, setHighContrast] = useState(() => {
     return localStorage.getItem('fujinova_high_contrast') === 'true';
   });
@@ -79,6 +85,101 @@ export const ProfileSettingsView: React.FC<ProfileSettingsViewProps> = ({
           <p className="text-xs text-slate-400">
             WCAG 2.2 AA accessibility preferences, multilingual fluency, and AI engine telemetry.
           </p>
+        </div>
+      </div>
+
+      {/* 0. Multi-Age Experience Modes */}
+      <div className="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-5 shadow-lg space-y-4">
+        <div className="flex items-center gap-2 text-sm font-bold text-white border-b border-slate-700 pb-3">
+          <Sparkles className="w-4 h-4 text-pink-400" />
+          <span>Multi-Age Experience Modes (FujiNova 7.0 Adaptive UI)</span>
+        </div>
+
+        <p className="text-xs text-slate-300">
+          Tailor FujiNova’s interface, tone, and recommendations to who is travelling. Switch instantly at any time.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+          {/* Adult Mode */}
+          <button
+            onClick={() => setExperienceMode('adult')}
+            className={`p-4 rounded-xl border text-left transition-all relative ${
+              currentExperienceMode === 'adult'
+                ? 'bg-slate-900 border-sky-500 ring-2 ring-sky-500/30 shadow-md'
+                : 'bg-slate-900/60 border-slate-800 hover:border-slate-700 text-slate-300'
+            }`}
+          >
+            {currentExperienceMode === 'adult' && (
+              <span className="absolute top-3 right-3 w-5 h-5 rounded-full bg-sky-500 text-white flex items-center justify-center">
+                <Check className="w-3 h-3" />
+              </span>
+            )}
+            <div className="w-9 h-9 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center mb-3">
+              <Compass className="w-5 h-5" />
+            </div>
+            <h3 className="text-sm font-bold text-white">Standard Explorer (Adult)</h3>
+            <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+              Professional tables, detailed RAPTOR transit timetables, budget breakdowns & full accessibility controls.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-1 text-[10px] text-sky-300">
+              <span className="px-1.5 py-0.5 rounded bg-sky-500/10 border border-sky-500/20">Transit Times</span>
+              <span className="px-1.5 py-0.5 rounded bg-sky-500/10 border border-sky-500/20">Exact Costs</span>
+            </div>
+          </button>
+
+          {/* Teen Mode */}
+          <button
+            onClick={() => setExperienceMode('teen')}
+            className={`p-4 rounded-xl border text-left transition-all relative ${
+              currentExperienceMode === 'teen'
+                ? 'bg-slate-900 border-pink-500 ring-2 ring-pink-500/30 shadow-md'
+                : 'bg-slate-900/60 border-slate-800 hover:border-slate-700 text-slate-300'
+            }`}
+          >
+            {currentExperienceMode === 'teen' && (
+              <span className="absolute top-3 right-3 w-5 h-5 rounded-full bg-pink-500 text-white flex items-center justify-center">
+                <Check className="w-3 h-3" />
+              </span>
+            )}
+            <div className="w-9 h-9 rounded-lg bg-pink-500/20 text-pink-400 flex items-center justify-center mb-3">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <h3 className="text-sm font-bold text-white">Trendsetter (Teenager)</h3>
+            <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+              Vibrant sakura gradients, viral photography ratings, social travel summaries & Japanese pop culture cues.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-1 text-[10px] text-pink-300">
+              <span className="px-1.5 py-0.5 rounded bg-pink-500/10 border border-pink-500/20">Photo Spots</span>
+              <span className="px-1.5 py-0.5 rounded bg-pink-500/10 border border-pink-500/20">Trending</span>
+            </div>
+          </button>
+
+          {/* Family Mode */}
+          <button
+            onClick={() => setExperienceMode('family')}
+            className={`p-4 rounded-xl border text-left transition-all relative ${
+              currentExperienceMode === 'family'
+                ? 'bg-slate-900 border-emerald-500 ring-2 ring-emerald-500/30 shadow-md'
+                : 'bg-slate-900/60 border-slate-800 hover:border-slate-700 text-slate-300'
+            }`}
+          >
+            {currentExperienceMode === 'family' && (
+              <span className="absolute top-3 right-3 w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center">
+                <Check className="w-3 h-3" />
+              </span>
+            )}
+            <div className="w-9 h-9 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-3">
+              <Smile className="w-5 h-5" />
+            </div>
+            <h3 className="text-sm font-bold text-white">Family & Junior Explorer</h3>
+            <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+              Friendly playful badges, gentle stroller-friendly paths, restroom proximity alerts & explorer scavenger badges.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-1 text-[10px] text-emerald-300">
+              <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">Kid-Friendly</span>
+              <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">Step-Free</span>
+            </div>
+          </button>
         </div>
       </div>
 

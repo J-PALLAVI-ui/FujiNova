@@ -100,6 +100,26 @@ def init_db(db_path: Optional[str] = None) -> None:
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_messages_conv ON messages (conversation_id, timestamp);")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_conv_updated ON conversations (updated_at DESC);")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_conv_pinned ON conversations (pinned DESC, updated_at DESC);")
+
+        # Saved & Exported Trips Schema (Phase 6 / Stage 8)
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS saved_trips (
+            trip_id TEXT PRIMARY KEY,
+            share_token TEXT UNIQUE NOT NULL,
+            title TEXT NOT NULL,
+            total_days INTEGER NOT NULL DEFAULT 1,
+            budget_tier TEXT DEFAULT 'standard',
+            pace TEXT DEFAULT 'moderate',
+            party_composition TEXT DEFAULT 'traveller',
+            itinerary_json TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            is_private INTEGER DEFAULT 0,
+            is_revoked INTEGER DEFAULT 0
+        );
+        """)
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_saved_trips_token ON saved_trips (share_token);")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_saved_trips_created ON saved_trips (created_at DESC);")
         conn.commit()
 
 

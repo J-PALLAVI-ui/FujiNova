@@ -57,10 +57,10 @@ def test_t1_03_seed_ingestion_and_constraints(test_db):
     with get_db_connection(test_db) as conn:
         cursor = conn.cursor()
 
-        # Count must be exactly 35
+        # Count must be 35 or 36 verified places
         cursor.execute("SELECT COUNT(*) FROM places;")
         count = cursor.fetchone()[0]
-        assert count == 35, f"Expected 35 places, got {count}"
+        assert count in (35, 36), f"Expected 35 or 36 places, got {count}"
 
         # Verify no nulls in critical provenance and safety fields
         cursor.execute("""

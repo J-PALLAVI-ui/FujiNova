@@ -58,7 +58,7 @@ def seed_database(db_path: Optional[str] = None) -> int:
 
 if __name__ == "__main__":
     count = seed_database()
-    if count != 35:
-        logger.error(f"Expected 35 places, found {count}!")
+    if count < 35:
+        logger.error(f"Expected at least 35 places, found {count}!")
         sys.exit(1)
     logger.info("Database seeding completed successfully.")

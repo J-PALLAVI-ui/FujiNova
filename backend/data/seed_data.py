@@ -981,5 +981,33 @@ PLACES_SEED_DATA: List[Dict[str, Any]] = [
         "required_attribution": "出典：日本政府観光局（JNTO）認定案内所",
         "source_retrieval_date": "2026-11-08",
         "last_verified_date": "2026-11-08"
+    },
+    {
+        "place_id": "hokuto_jindai_zakura",
+        "name_ja": "山高神代桜（実相寺）",
+        "name_en": "Yamataka Jindai Cherry Blossom (Jissoji Temple)",
+        "latitude": 35.7825,
+        "longitude": 138.3664,
+        "coords_source": "GSI_JAPAN",
+        "primary_category": "park",
+        "sub_category": "historic_nature",
+        "opening_status": "ALWAYS_OPEN",
+        "opening_hours_text": "08:00-17:00 (Temple grounds open 24h during sakura season)",
+        "opening_hours_source": "Hokuto City Tourism Association",
+        "general_admission_type": "FREE",
+        "general_admission_fee_jpy": None,
+        "optional_activities_fee_desc": "Free admission to temple grounds and national monument tree; voluntary donation for tree preservation",
+        "admission_fee_source": "Hokuto City Tourism Association",
+        "accessibility_status": "VERIFIED_ACCESSIBLE",
+        "accessibility_evidence": "Flat paved paths through Jissoji temple grounds, gentle ramps, barrier-free accessible restrooms nearby",
+        "stair_step_count": 0,
+        "accessibility_source": "Yamanashi Barrier-Free Tourism Directory",
+        "fuji_view_rating": 4,
+        "indoor_alternative": False,
+        "provenance_tier": "OFFICIAL_GOV",
+        "source_url": "https://www.city.hokuto.yamanashi.jp/",
+        "required_attribution": "出典：北杜市観光協会・国指定天然記念物",
+        "source_retrieval_date": "2026-11-20",
+        "last_verified_date": "2026-11-20"
     }
 ]

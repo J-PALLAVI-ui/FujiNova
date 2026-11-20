@@ -23,10 +23,12 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  List
+  List,
+  Route
 } from 'lucide-react';
 
 import ALL_VERIFIED_LANDMARKS from '../data/all_landmarks.json';
+import { ItineraryPlan, ItineraryStop } from '../types';
 
 interface DigitalTwin3DProps {
   onAskHana: (prompt: string) => void;
@@ -34,6 +36,9 @@ interface DigitalTwin3DProps {
   selectedPlaceId?: string | null;
   onSwitchTo2D?: () => void;
   onAddToItinerary?: (placeId: string) => void;
+  itinerary?: ItineraryPlan | null;
+  activeStopIndex?: number;
+  onSelectStopIndex?: (index: number) => void;
 }
 
 // Geographic Bounding Box & Coordinate Conversion for Mt. Fuji Region
@@ -76,17 +81,28 @@ export const DigitalTwin3D: React.FC<DigitalTwin3DProps> = ({
   onSelectPlace,
   selectedPlaceId: _selectedPlaceId,
   onSwitchTo2D,
-  onAddToItinerary
+  onAddToItinerary,
+  itinerary,
+  activeStopIndex: _activeStopIndex = 0,
+  onSelectStopIndex
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [lightingMode, setLightingMode] = useState<'day' | 'sunset' | 'night'>('day');
   const [selectedLandmark, setSelectedLandmark] = useState<GeoLandmark | null>(null);
   const [showTransitLayer, setShowTransitLayer] = useState(true);
   const [showLandmarkPins, setShowLandmarkPins] = useState(true);
+  const [showItineraryRoute, setShowItineraryRoute] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [accessibleListView, setAccessibleListView] = useState(false);
   const [landmarkSearch, setLandmarkSearch] = useState('');
   const [activePreset, setActivePreset] = useState<string | null>(null);
+  const [routeSegments, setRouteSegments] = useState<Array<{
+    fromName: string;
+    toName: string;
+    distanceKm: number;
+    transitMinutes: number;
+  }>>([]);
+  const [totalRouteDistanceKm, setTotalRouteDistanceKm] = useState<number>(0);
 
   // Three.js internal instances
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -96,6 +112,7 @@ export const DigitalTwin3D: React.FC<DigitalTwin3DProps> = ({
   const hemiLightRef = useRef<THREE.HemisphereLight | null>(null);
   const pinsGroupRef = useRef<THREE.Group | null>(null);
   const transitGroupRef = useRef<THREE.Group | null>(null);
+  const itineraryRouteGroupRef = useRef<THREE.Group | null>(null);
   const sphericalRef = useRef<THREE.Spherical>(new THREE.Spherical(80, Math.PI / 3.2, 0.4));
   const lookTargetRef = useRef<THREE.Vector3>(new THREE.Vector3(0, 7, 0));
 
@@ -566,6 +583,200 @@ export const DigitalTwin3D: React.FC<DigitalTwin3DProps> = ({
     }
   }, [showTransitLayer]);
 
+  // Haversine Distance Helper with Mountain Winding Factor
+  const calculateHaversineKm = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371; // Earth radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return Number((R * c * 1.25).toFixed(1)); // 1.25x mountain road factor
+  };
+
+  // Connected 3D Itinerary Route Spline & Waypoints
+  useEffect(() => {
+    if (!sceneRef.current) return;
+    const scene = sceneRef.current;
+
+    // Cleanup previous itinerary route group
+    if (itineraryRouteGroupRef.current) {
+      scene.remove(itineraryRouteGroupRef.current);
+      itineraryRouteGroupRef.current.traverse((child) => {
+        if ((child as THREE.Mesh).geometry) (child as THREE.Mesh).geometry.dispose();
+        if ((child as THREE.Mesh).material) {
+          const mat = (child as THREE.Mesh).material;
+          if (Array.isArray(mat)) mat.forEach(m => m.dispose());
+          else (mat as THREE.Material).dispose();
+        }
+      });
+      itineraryRouteGroupRef.current = null;
+    }
+
+    if (!itinerary || !showItineraryRoute) {
+      setRouteSegments([]);
+      setTotalRouteDistanceKm(0);
+      return;
+    }
+
+    const allStops = itinerary.days?.flatMap(d => d.stops) || [];
+    if (allStops.length === 0) {
+      setRouteSegments([]);
+      setTotalRouteDistanceKm(0);
+      return;
+    }
+
+    const routeGroup = new THREE.Group();
+    itineraryRouteGroupRef.current = routeGroup;
+    scene.add(routeGroup);
+
+    // Map each stop to 3D world coordinates
+    const stopPoints3D: Array<{
+      p3d: { x: number; z: number };
+      y: number;
+      stop: ItineraryStop;
+      lat: number;
+      lon: number;
+    }> = [];
+
+    for (const s of allStops) {
+      const matched = ALL_VERIFIED_LANDMARKS.find(l => l.id === s.place_id) || {
+        lat: 35.4981, lon: 138.7692
+      };
+      const p3d = geoTo3D(matched.lat, matched.lon);
+      const elev = getElevation(p3d.x, p3d.z) + 1.2;
+      stopPoints3D.push({ p3d, y: elev, stop: s, lat: matched.lat, lon: matched.lon });
+    }
+
+    // Calculate segment distances
+    const segments: Array<{ fromName: string; toName: string; distanceKm: number; transitMinutes: number }> = [];
+    let totalKm = 0;
+
+    for (let i = 0; i < stopPoints3D.length - 1; i++) {
+      const s1 = stopPoints3D[i];
+      const s2 = stopPoints3D[i + 1];
+      const dist = calculateHaversineKm(s1.lat, s1.lon, s2.lat, s2.lon);
+      const estMin = Math.max(8, Math.round(dist * 2.2));
+      totalKm += dist;
+      segments.push({
+        fromName: s1.stop.name_en || s1.stop.name_ja,
+        toName: s2.stop.name_en || s2.stop.name_ja,
+        distanceKm: dist,
+        transitMinutes: estMin
+      });
+    }
+
+    setRouteSegments(segments);
+    setTotalRouteDistanceKm(Number(totalKm.toFixed(1)));
+
+    // If 2 or more stops, construct the 3D spline tube
+    if (stopPoints3D.length >= 2) {
+      const curvePoints = stopPoints3D.map(sp => new THREE.Vector3(sp.p3d.x, sp.y, sp.p3d.z));
+      const spline = new THREE.CatmullRomCurve3(curvePoints, false, 'centripetal');
+      const tubeGeo = new THREE.TubeGeometry(spline, curvePoints.length * 28, 0.55, 12, false);
+      const tubeMat = new THREE.MeshStandardMaterial({
+        color: '#F59E0B',
+        emissive: '#D96C98',
+        emissiveIntensity: 0.85,
+        roughness: 0.25,
+        metalness: 0.65
+      });
+      const tubeMesh = new THREE.Mesh(tubeGeo, tubeMat);
+      routeGroup.add(tubeMesh);
+    }
+
+    // Numbered Waypoint Badges
+    stopPoints3D.forEach((sp, idx) => {
+      // Ring pedestal
+      const ringGeo = new THREE.TorusGeometry(1.4, 0.2, 8, 24);
+      const ringMat = new THREE.MeshStandardMaterial({
+        color: '#F59E0B',
+        emissive: '#F59E0B',
+        emissiveIntensity: 0.7
+      });
+      const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+      ringMesh.rotation.x = Math.PI / 2;
+      ringMesh.position.set(sp.p3d.x, sp.y + 0.5, sp.p3d.z);
+      routeGroup.add(ringMesh);
+
+      // Number Canvas Sprite
+      const canvas = document.createElement('canvas');
+      canvas.width = 128;
+      canvas.height = 128;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.beginPath();
+        ctx.arc(64, 64, 56, 0, Math.PI * 2);
+        ctx.fillStyle = '#D96C98';
+        ctx.fill();
+        ctx.lineWidth = 6;
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.stroke();
+
+        ctx.font = 'bold 54px sans-serif';
+        ctx.fillStyle = '#FFFFFF';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(String(idx + 1), 64, 66);
+      }
+      const texture = new THREE.CanvasTexture(canvas);
+      const spriteMat = new THREE.SpriteMaterial({ map: texture, depthTest: false });
+      const sprite = new THREE.Sprite(spriteMat);
+      sprite.scale.set(4, 4, 1);
+      sprite.position.set(sp.p3d.x, sp.y + 4.5, sp.p3d.z);
+      routeGroup.add(sprite);
+    });
+  }, [itinerary, showItineraryRoute]);
+
+  const focusStopWaypoint = (stopIndex: number) => {
+    if (!itinerary || !cameraRef.current) return;
+    const allStops = itinerary.days?.flatMap(d => d.stops) || [];
+    const targetStop = allStops[stopIndex];
+    if (!targetStop) return;
+
+    const matched = ALL_VERIFIED_LANDMARKS.find(l => l.id === targetStop.place_id);
+    if (!matched) return;
+
+    const p3d = geoTo3D(matched.lat, matched.lon);
+    const elev = getElevation(p3d.x, p3d.z);
+    lookTargetRef.current.set(p3d.x, elev, p3d.z);
+    sphericalRef.current.radius = 45;
+    sphericalRef.current.theta = Math.atan2(p3d.x, p3d.z) + 0.35;
+    cameraRef.current.position.setFromSpherical(sphericalRef.current).add(lookTargetRef.current);
+    cameraRef.current.lookAt(lookTargetRef.current);
+    if (onSelectStopIndex) onSelectStopIndex(stopIndex);
+  };
+
+  const focusEntireRoute = () => {
+    if (!itinerary || !cameraRef.current) return;
+    const allStops = itinerary.days?.flatMap(d => d.stops) || [];
+    if (allStops.length === 0) return;
+
+    let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
+    allStops.forEach(s => {
+      const matched = ALL_VERIFIED_LANDMARKS.find(l => l.id === s.place_id);
+      if (matched) {
+        const p = geoTo3D(matched.lat, matched.lon);
+        minX = Math.min(minX, p.x);
+        maxX = Math.max(maxX, p.x);
+        minZ = Math.min(minZ, p.z);
+        maxZ = Math.max(maxZ, p.z);
+      }
+    });
+
+    const midX = (minX + maxX) / 2;
+    const midZ = (minZ + maxZ) / 2;
+    const span = Math.max(maxX - minX, maxZ - minZ, 20);
+
+    lookTargetRef.current.set(midX, getElevation(midX, midZ) + 2, midZ);
+    sphericalRef.current.radius = Math.min(180, Math.max(65, span * 1.8));
+    sphericalRef.current.phi = Math.PI / 3.4;
+    sphericalRef.current.theta = 0.4;
+    cameraRef.current.position.setFromSpherical(sphericalRef.current).add(lookTargetRef.current);
+    cameraRef.current.lookAt(lookTargetRef.current);
+  };
+
   // Pan / Zoom on-screen helpers
   const handleZoom = (direction: 'in' | 'out') => {
     if (!cameraRef.current) return;
@@ -692,6 +903,16 @@ export const DigitalTwin3D: React.FC<DigitalTwin3DProps> = ({
           >
             Pins
           </button>
+
+          {itinerary && (
+            <button
+              onClick={() => setShowItineraryRoute(!showItineraryRoute)}
+              className={`px-2 py-1 rounded-xl text-[11px] font-semibold transition ${showItineraryRoute ? 'bg-pink-500/20 text-pink-300' : 'text-slate-400 hover:text-white'}`}
+              title="Toggle Connected 3D Itinerary Route"
+            >
+              3D Route
+            </button>
+          )}
 
           <div className="w-px h-4 bg-slate-700 mx-1" />
 
@@ -1012,6 +1233,67 @@ export const DigitalTwin3D: React.FC<DigitalTwin3DProps> = ({
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Connected 3D Itinerary Route HUD */}
+      {itinerary && showItineraryRoute && itinerary.days && itinerary.days.some(d => d.stops && d.stops.length > 0) && (
+        <div className="absolute bottom-4 left-4 right-4 z-20 pointer-events-none flex justify-center">
+          <div className="pointer-events-auto bg-slate-900/95 backdrop-blur-md border border-slate-700/80 rounded-2xl p-3 shadow-2xl max-w-4xl w-full flex flex-col gap-2">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <span className="w-7 h-7 rounded-lg bg-pink-500/20 text-pink-400 border border-pink-500/30 flex items-center justify-center">
+                  <Route className="w-4 h-4" />
+                </span>
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-pink-400">
+                    Connected 3D Travel Route
+                  </span>
+                  <h4 className="text-xs font-bold text-white truncate max-w-sm">
+                    {itinerary.title}
+                  </h4>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 text-xs">
+                <span className="px-2.5 py-1 rounded-full bg-slate-800 text-sky-300 border border-slate-700 font-mono font-bold">
+                  {totalRouteDistanceKm} km total
+                </span>
+                <span className="px-2.5 py-1 rounded-full bg-slate-800 text-emerald-300 border border-slate-700 font-mono">
+                  ~{Math.round(totalRouteDistanceKm * 2.2)}m transit
+                </span>
+                <button
+                  onClick={focusEntireRoute}
+                  className="px-3 py-1 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs transition-colors shadow-xs"
+                >
+                  Fit Route
+                </button>
+              </div>
+            </div>
+
+            {/* Stop Waypoints Sequence */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-0.5 scrollbar-thin">
+              {itinerary.days.flatMap(d => d.stops).map((stop, sIdx, arr) => (
+                <React.Fragment key={stop.stop_id || sIdx}>
+                  <button
+                    onClick={() => focusStopWaypoint(sIdx)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950/80 hover:bg-slate-800 border border-slate-800 hover:border-pink-500/50 text-xs font-semibold text-slate-200 transition-all shrink-0 cursor-pointer"
+                  >
+                    <span className="w-5 h-5 rounded-full bg-pink-500/20 text-pink-300 text-[10px] font-bold flex items-center justify-center">
+                      {sIdx + 1}
+                    </span>
+                    <span className="truncate max-w-[130px]">{stop.name_en || stop.name_ja}</span>
+                  </button>
+
+                  {sIdx < arr.length - 1 && routeSegments[sIdx] && (
+                    <span className="text-[10px] text-slate-400 font-mono shrink-0 flex items-center gap-0.5">
+                      → {routeSegments[sIdx].distanceKm} km →
+                    </span>
+                  )}
+                </React.Fragment>
+              ))}
             </div>
           </div>
         </div>
