@@ -29,6 +29,8 @@ from backend.app.api.routes_essentials import router as essentials_router
 from backend.app.api.routes_disruptions import router as disruptions_router
 from backend.app.api.routes_expenses import router as expenses_router
 from backend.app.api.routes_business import router as business_router
+from backend.app.api.routes_live_intel import router as live_intel_router
+from backend.app.services.sync.sync_manager import SyncManager
 
 
 @asynccontextmanager
@@ -40,6 +42,11 @@ async def lifespan(app: FastAPI):
         from backend.data.seed_fujinova9 import seed_fujinova9_data
         seed_database()
         seed_fujinova9_data()
+        
+        # Initialize FujiNova 10.0 Sync Manager and health diagnostics
+        sync_mgr = SyncManager.get_instance()
+        sync_mgr.initialize_health_table()
+        sync_mgr.wikimedia_adapter.seed_initial_gallery()
     except Exception as e:
         print(f"Startup seed notice: {e}")
     yield
@@ -92,6 +99,7 @@ app.include_router(essentials_router)
 app.include_router(disruptions_router)
 app.include_router(expenses_router)
 app.include_router(business_router)
+app.include_router(live_intel_router)
 
 # Direct Compatibility Endpoints (as inspected in /docs)
 from backend.app.api.routes_health import health_check

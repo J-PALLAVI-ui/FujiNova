@@ -211,6 +211,86 @@ def init_db(db_path: Optional[str] = None) -> None:
         );
         """)
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_business_cat ON business_listings (category);")
+
+        # Real-Time Weather Snapshots across Elevations & Lakes (FujiNova 10.0)
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS live_weather_snapshots (
+            location_id TEXT PRIMARY KEY,
+            location_name TEXT NOT NULL,
+            latitude REAL NOT NULL,
+            longitude REAL NOT NULL,
+            elevation_m INTEGER NOT NULL,
+            temperature_c REAL NOT NULL,
+            apparent_temperature_c REAL,
+            humidity_pct INTEGER,
+            rain_probability_pct INTEGER,
+            wind_speed_kmh REAL,
+            wind_direction_deg INTEGER,
+            cloud_cover_pct INTEGER,
+            visibility_m INTEGER,
+            uv_index REAL,
+            weather_code INTEGER,
+            weather_description TEXT,
+            fuji_visibility_probability INTEGER,
+            warning_level TEXT,
+            data_source TEXT NOT NULL,
+            observed_at TEXT NOT NULL,
+            is_stale INTEGER DEFAULT 0
+        );
+        """)
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_weather_loc ON live_weather_snapshots (location_id);")
+
+        # Natural Hazard & Volcanic Intelligence (FujiNova 10.0)
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS natural_hazard_alerts (
+            alert_id TEXT PRIMARY KEY,
+            hazard_type TEXT NOT NULL CHECK(hazard_type IN ('volcanic', 'earthquake', 'weather_warning', 'flood', 'landslide', 'typhoon')),
+            severity TEXT NOT NULL CHECK(severity IN ('normal', 'advisory', 'warning', 'emergency')),
+            title_en TEXT NOT NULL,
+            title_ja TEXT NOT NULL,
+            details_en TEXT NOT NULL,
+            details_ja TEXT NOT NULL,
+            official_url TEXT NOT NULL,
+            issued_by TEXT NOT NULL,
+            issued_at TEXT NOT NULL,
+            is_active INTEGER DEFAULT 1
+        );
+        """)
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_hazard_active ON natural_hazard_alerts (is_active, issued_at DESC);")
+
+        # Destination Verified Media Gallery & Wikimedia Attribution (FujiNova 10.0)
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS destination_media_gallery (
+            media_id TEXT PRIMARY KEY,
+            place_id TEXT NOT NULL,
+            image_url TEXT NOT NULL,
+            thumbnail_url TEXT NOT NULL,
+            title TEXT NOT NULL,
+            author TEXT NOT NULL,
+            license_name TEXT NOT NULL,
+            license_url TEXT,
+            source_url TEXT NOT NULL,
+            is_verified_location INTEGER DEFAULT 1,
+            created_at TEXT NOT NULL
+        );
+        """)
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_media_place ON destination_media_gallery (place_id);")
+
+        # Central Provider Sync Health & Diagnostics (FujiNova 10.0)
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS provider_sync_health (
+            provider_name TEXT PRIMARY KEY,
+            category TEXT NOT NULL,
+            status TEXT NOT NULL CHECK(status IN ('HEALTHY', 'DEGRADED', 'OUTAGE', 'RATE_LIMITED', 'INITIALIZING')),
+            last_sync_success TEXT,
+            last_sync_attempt TEXT,
+            last_error TEXT,
+            response_time_ms INTEGER,
+            total_calls_today INTEGER DEFAULT 0,
+            quota_limit_daily INTEGER,
+            is_free_tier INTEGER DEFAULT 1
+        );
+        """)
         conn.commit()
 
 

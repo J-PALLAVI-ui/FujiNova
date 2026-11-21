@@ -11,6 +11,9 @@ import {
   Check
 } from 'lucide-react';
 import { useExperienceMode } from '../context/ExperienceModeContext';
+import { SUPPORTED_LANGUAGES } from '../i18n/translations';
+import { useTranslation } from '../i18n/LanguageContext';
+import { ProviderStatusPanel } from './ProviderStatusPanel';
 
 interface ProfileSettingsViewProps {
   activeModel?: string;
@@ -20,6 +23,7 @@ export const ProfileSettingsView: React.FC<ProfileSettingsViewProps> = ({
   activeModel = 'gemini-3.5-flash-lite'
 }) => {
   const { mode: currentExperienceMode, setMode: setExperienceMode } = useExperienceMode();
+  const { language, setLanguage } = useTranslation();
   const [highContrast, setHighContrast] = useState(() => {
     return localStorage.getItem('fujinova_high_contrast') === 'true';
   });
@@ -28,9 +32,6 @@ export const ProfileSettingsView: React.FC<ProfileSettingsViewProps> = ({
   });
   const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xlarge'>(() => {
     return (localStorage.getItem('fujinova_font_size') as any) || 'normal';
-  });
-  const [selectedLanguage, setSelectedLanguage] = useState(() => {
-    return localStorage.getItem('fujinova_lang') || 'en';
   });
 
   // Apply WCAG preferences directly to DOM
@@ -60,18 +61,8 @@ export const ProfileSettingsView: React.FC<ProfileSettingsViewProps> = ({
     else document.documentElement.classList.add('text-scale-100');
   }, [fontSize]);
 
-  useEffect(() => {
-    localStorage.setItem('fujinova_lang', selectedLanguage);
-  }, [selectedLanguage]);
 
-  const languages = [
-    { code: 'en', name: 'English', native: 'English' },
-    { code: 'ja', name: 'Japanese', native: '日本語' },
-    { code: 'hi', name: 'Hindi', native: 'हिन्दी' },
-    { code: 'ta', name: 'Tamil', native: 'தமிழ்' },
-    { code: 'kn', name: 'Kannada', native: 'ಕನ್ನಡ' },
-    { code: 'te', name: 'Telugu', native: 'తెలుగు' }
-  ];
+
 
   return (
     <div className="h-full overflow-y-auto bg-transparent text-[#29252B] p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto space-y-8 select-text">
@@ -250,24 +241,24 @@ export const ProfileSettingsView: React.FC<ProfileSettingsViewProps> = ({
 
       {/* 2. Multilingual Fluency */}
       <div className="bg-white border border-[#EAE0D0] rounded-3xl p-6 shadow-sm space-y-4">
-        <div className="flex items-center gap-2 text-sm font-bold text-[#29252B] border-b border-[#EAE0D0] pb-3">
+        <div className="flex items-center gap-2 text-sm font-bold text-[#29232B] border-b border-[#EAE0D0] pb-3">
           <Globe className="w-4 h-4 text-[#789477]" />
-          <span>Language & Multilingual Fluency</span>
+          <span>Language & Global Multilingual Fluency (20 Languages)</span>
         </div>
 
         <p className="text-xs text-[#5A525E]">
-          Guide Hana communicates naturally in English, Japanese with polite keigo, Hindi, Tamil, Kannada, and Telugu.
+          FujiNova 10.0 provides complete localization across European, Asian, Middle Eastern (with bidirectional RTL support), and Indian languages.
         </p>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          {languages.map((l) => (
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-2.5 max-h-80 overflow-y-auto p-1">
+          {SUPPORTED_LANGUAGES.map((l) => (
             <button
               key={l.code}
-              onClick={() => setSelectedLanguage(l.code)}
-              className={`p-3.5 rounded-2xl border text-center transition-all cursor-pointer ${
-                selectedLanguage === l.code
+              onClick={() => setLanguage(l.code)}
+              className={`p-3 rounded-2xl border text-center transition-all cursor-pointer ${
+                language === l.code
                   ? 'bg-[#C66B4E] border-[#C66B4E] text-white shadow-xs'
-                  : 'bg-white border-[#EAE0D0] text-[#29252B] hover:border-[#C66B4E]/40 hover:bg-[#FAF6F0]'
+                  : 'bg-white border-[#EAE0D0] text-[#29232B] hover:border-[#C66B4E]/40 hover:bg-[#FAF6F0]'
               }`}
             >
               <span className="text-sm font-bold block">{l.native}</span>
@@ -276,6 +267,9 @@ export const ProfileSettingsView: React.FC<ProfileSettingsViewProps> = ({
           ))}
         </div>
       </div>
+
+      {/* 3. FujiNova 10.0 Live Providers Telemetry */}
+      <ProviderStatusPanel />
 
       {/* 3. AI Engine Configuration & System Health Diagnostics */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -312,7 +306,7 @@ export const ProfileSettingsView: React.FC<ProfileSettingsViewProps> = ({
             </li>
             <li className="flex justify-between">
               <span>Multilingual Engine:</span>
-              <strong className="text-[#29252B] font-mono">EN, JA (Keigo), HI, TA, KN, TE</strong>
+              <strong className="text-[#29252B] font-mono">20 World Languages (EN, JA, ES, DE, FR, IT, PT, RU, NL, ZH, KO, TH, VI, ID, AR, HE, HI, TA, KN, TE)</strong>
             </li>
           </ul>
         </div>
@@ -330,7 +324,7 @@ export const ProfileSettingsView: React.FC<ProfileSettingsViewProps> = ({
             </li>
             <li className="flex justify-between border-b border-[#EAE0D0] pb-1">
               <span>Canonical Places:</span>
-              <strong className="text-[#29252B] font-mono">35 Individually Verified Records</strong>
+              <strong className="text-[#29252B] font-mono">36 Verified Destination Records</strong>
             </li>
             <li className="flex justify-between border-b border-[#EAE0D0] pb-1">
               <span>Public Transit Algorithm:</span>
@@ -342,7 +336,7 @@ export const ProfileSettingsView: React.FC<ProfileSettingsViewProps> = ({
             </li>
             <li className="flex justify-between">
               <span>Crowd Simulation:</span>
-              <strong className="text-[#4F734E] font-mono">CrowdSense (Low/Mod/High)</strong>
+              <strong className="text-[#4F734E] font-mono">CrowdSense 2.0 (Multi-Evidence Model)</strong>
             </li>
           </ul>
         </div>

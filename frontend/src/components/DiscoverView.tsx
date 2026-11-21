@@ -1,3 +1,7 @@
+import { NaturalHazardBanner } from './NaturalHazardBanner';
+import { LiveWeatherVisibilityMonitor } from './LiveWeatherVisibilityMonitor';
+import { WikimediaGalleryModal } from './WikimediaGalleryModal';
+import { Image as ImageIcon } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { Place } from '../types';
 import { apiUrl } from '../config';
@@ -226,6 +230,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedDetailPlace, setSelectedDetailPlace] = useState<Place | null>(null);
+  const [galleryPlace, setGalleryPlace] = useState<{ id: string; name: string } | null>(null);
   const [favorites, setFavorites] = useState<string[]>(() => {
     try {
       return JSON.parse(localStorage.getItem('fujinova_favorites') || '[]');
@@ -340,6 +345,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
       )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+        <NaturalHazardBanner />
 
         {/* ========================================================
             ADAPTIVE MULTI-AGE EXPERIENCE SWITCHER (Top 3 Cards)
@@ -751,6 +757,8 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
           </section>
         )}
 
+        <LiveWeatherVisibilityMonitor />
+
         {/* ========================================================
             EXPLORATION SECTION: "Explore your next destination"
            ======================================================== */}
@@ -912,8 +920,33 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
                       </div>
                     </div>
 
+                    {/* CrowdSense 2.0 Evidence Badge */}
+                    <div className="flex flex-wrap items-center gap-1.5 pt-1 text-[10px]">
+                      {place.place_id === 'kawaguchiko_oishi_park' ? (
+                        <span className="px-2 py-0.5 rounded-full bg-[#FFF8E1] text-[#B45309] border border-[#FFE082] font-bold">
+                          ⚡ Live Notice: Heavy Congestion
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-full bg-[#EFF5EE] text-[#4F734E] border border-[#789477]/30 font-semibold">
+                          🌿 CrowdSense: Optimal Window
+                        </span>
+                      )}
+                    </div>
+
                     {/* Action Bar */}
                     <div className="pt-2.5 border-t border-[#E5DDD2] flex items-center justify-between">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setGalleryPlace({ id: place.place_id, name: place.name_en || place.name_ja });
+                        }}
+                        className="inline-flex items-center gap-1 text-[11px] font-bold text-[#87365E] hover:text-[#A83F70] px-2 py-1 rounded-lg bg-[#FAF3EC] border border-[#E9A5B5] transition-all cursor-pointer"
+                        title="View verified Wikimedia Commons photography"
+                      >
+                        <ImageIcon className="w-3 h-3" />
+                        <span>Photos</span>
+                      </button>
                       <button
                         onClick={(e) => handleAddStopToJourney(place, e)}
                         className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${
@@ -1039,6 +1072,13 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
           </div>
         )}
 
+        {/* Wikimedia Gallery Modal */}
+        <WikimediaGalleryModal
+          isOpen={!!galleryPlace}
+          placeId={galleryPlace?.id || null}
+          placeName={galleryPlace?.name || ''}
+          onClose={() => setGalleryPlace(null)}
+        />
       </div>
     </div>
   );

@@ -39,11 +39,15 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     try {
       localStorage.setItem('fujinova_lang', lang);
       document.documentElement.lang = lang;
+      const targetLang = SUPPORTED_LANGUAGES.find(l => l.code === lang);
+      document.documentElement.dir = targetLang?.dir || 'ltr';
     } catch (_) {}
   };
 
   useEffect(() => {
     document.documentElement.lang = language;
+    const targetLang = SUPPORTED_LANGUAGES.find(l => l.code === language);
+    document.documentElement.dir = targetLang?.dir || 'ltr';
   }, [language]);
 
   const currentLanguageInfo = SUPPORTED_LANGUAGES.find(l => l.code === language) || SUPPORTED_LANGUAGES[0];

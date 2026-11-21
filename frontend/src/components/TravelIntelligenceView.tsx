@@ -1,3 +1,5 @@
+import { LiveWeatherVisibilityMonitor } from './LiveWeatherVisibilityMonitor';
+import { NaturalHazardBanner } from './NaturalHazardBanner';
 import React, { useState, useEffect } from 'react';
 import { 
   Compass, 
@@ -100,7 +102,7 @@ export const TravelIntelligenceView: React.FC<TravelIntelligenceViewProps> = ({ 
               activeTab === 'crowds' ? 'bg-[#C66B4E] text-white shadow-xs' : 'text-[#5A525E] hover:text-[#29252B]'
             }`}
           >
-            CrowdSense Simulation
+            CrowdSense 2.0 Live Intelligence
           </button>
           <button
             onClick={() => setActiveTab('safety')}
@@ -116,6 +118,7 @@ export const TravelIntelligenceView: React.FC<TravelIntelligenceViewProps> = ({ 
       {/* 1. Tab: Weather & Visibility */}
       {activeTab === 'weather' && (
         <div className="space-y-8">
+          <LiveWeatherVisibilityMonitor />
           {/* Section: Live Observational Weather */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -247,7 +250,7 @@ export const TravelIntelligenceView: React.FC<TravelIntelligenceViewProps> = ({ 
         </div>
       )}
 
-      {/* 2. Tab: CrowdSense Simulation */}
+      {/* 2. Tab: CrowdSense 2.0 Live Intelligence */}
       {activeTab === 'crowds' && (
         <div className="space-y-4">
           {/* Simulation Disclosure Banner */}
@@ -258,7 +261,7 @@ export const TravelIntelligenceView: React.FC<TravelIntelligenceViewProps> = ({ 
                 Demonstration Simulation Notice
               </span>
               <p className="text-[#5A525E] leading-relaxed">
-                Crowd scores, congestion indicators, and alternative recommendations shown below are calibrated against historical peak-season tour bus schedules and festival visitor flows for demonstration purposes. Direct IoT/cellular visitor telemetry will be integrated in production.
+                CrowdSense 2.0 Multi-Evidence Model: Combines real-time official operator disruption bulletins (e.g. Fujikyu bus crowding), meteorological impact modifiers (precipitation & temperature suppression), and time-of-day temporal baselines with intelligent scenic diversion recommendations.
               </p>
             </div>
           </div>
@@ -270,6 +273,7 @@ export const TravelIntelligenceView: React.FC<TravelIntelligenceViewProps> = ({ 
       {/* 3. Tab: Emergency & Safety */}
       {activeTab === 'safety' && (
         <div className="space-y-6">
+          <NaturalHazardBanner />
           {/* Climbing Notice */}
           <div className="rounded-3xl border border-rose-300 bg-rose-50 p-6 space-y-3">
             <div className="flex items-center gap-2 text-rose-800 font-bold text-sm">

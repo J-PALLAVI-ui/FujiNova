@@ -44,7 +44,7 @@ export const GlobalLanguageSelector: React.FC = () => {
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         aria-label={`Select language, currently ${currentLanguageInfo.native}`}
-        title="Change application language (English, 日本語, हिन्दी, தமிழ், ಕನ್ನಡ, తెలుగు)"
+        title="Change application language (20 global languages: EN, JA, ES, DE, FR, IT, PT, RU, NL, ZH, KO, TH, VI, ID, AR, HE, HI, TA, KN, TE)"
       >
         <Languages className="w-3.5 h-3.5 text-sky-400 shrink-0" />
         <span className="font-bold tracking-tight">{currentLanguageInfo.native}</span>
@@ -55,10 +55,10 @@ export const GlobalLanguageSelector: React.FC = () => {
         <div
           role="listbox"
           aria-label="Available languages"
-          className="absolute right-0 mt-1.5 w-48 rounded-xl bg-slate-900/95 backdrop-blur-md border border-slate-700/80 shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
+          className="absolute right-0 mt-1.5 w-56 max-h-80 overflow-y-auto rounded-xl bg-slate-900/95 backdrop-blur-md border border-slate-700/80 shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
         >
-          <div className="px-3 py-1 text-[10px] uppercase font-bold tracking-wider text-slate-400 border-b border-slate-800/80 mb-1">
-            Global Language / 言語
+          <div className="sticky top-0 bg-slate-900/95 backdrop-blur px-3 py-1 text-[10px] uppercase font-bold tracking-wider text-slate-400 border-b border-slate-800/80 mb-1 z-10">
+            Global Language / 言語 (20)
           </div>
           {languages.map((lang) => {
             const isSelected = lang.code === language;
