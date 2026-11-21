@@ -64,43 +64,43 @@ export const MyTravelView: React.FC<MyTravelViewProps> = ({ onAskHana }) => {
   };
 
   return (
-    <div className="h-full overflow-y-auto bg-slate-900 text-slate-100 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8">
+    <div className="h-full overflow-y-auto bg-transparent text-[#29252B] p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8 select-text">
       {/* Workspace Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#EAE0D0] pb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center">
-              <Wallet className="w-5 h-5" />
+            <span className="w-8 h-8 rounded-xl bg-[#EFF5EE] text-[#4F734E] flex items-center justify-center font-bold">
+              <Wallet className="w-5 h-5 text-[#789477]" />
             </span>
-            <h1 className="text-xl sm:text-2xl font-black text-white">My Travel Dashboard</h1>
+            <h1 className="text-xl sm:text-2xl font-black text-[#29252B]">My Travel Dashboard</h1>
           </div>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-[#5A525E]">
             Smart budget management in Japanese Yen, trip wishlists, and offline emergency companion.
           </p>
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex items-center gap-1 bg-slate-800 p-1 rounded-xl self-start sm:self-auto">
+        <div className="flex items-center gap-1 bg-white border border-[#EAE0D0] p-1 rounded-2xl self-start sm:self-auto shadow-2xs">
           <button
             onClick={() => setActiveTab('budget')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              activeTab === 'budget' ? 'bg-sky-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'budget' ? 'bg-[#C66B4E] text-white shadow-xs' : 'text-[#5A525E] hover:text-[#29252B]'
             }`}
           >
             Budget Manager
           </button>
           <button
             onClick={() => setActiveTab('wishlist')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              activeTab === 'wishlist' ? 'bg-sky-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'wishlist' ? 'bg-[#C66B4E] text-white shadow-xs' : 'text-[#5A525E] hover:text-[#29252B]'
             }`}
           >
             Saved Wishlist ({wishlist.length})
           </button>
           <button
             onClick={() => setActiveTab('offline')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              activeTab === 'offline' ? 'bg-sky-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'offline' ? 'bg-[#C66B4E] text-white shadow-xs' : 'text-[#5A525E] hover:text-[#29252B]'
             }`}
           >
             Offline Companion
@@ -113,57 +113,57 @@ export const MyTravelView: React.FC<MyTravelViewProps> = ({ onAskHana }) => {
         <div className="space-y-6">
           {/* Summary KPIs */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div className="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-5 shadow-lg">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+            <div className="bg-white border border-[#EAE0D0] rounded-3xl p-6 shadow-sm">
+              <span className="text-[11px] font-bold text-[#8A808F] uppercase tracking-wider block mb-1">
                 Total Budget ({partySize} travelers)
               </span>
-              <span className="text-3xl font-black text-white font-mono">
+              <span className="text-3xl font-black text-[#29252B] font-mono">
                 ¥{(totalTargetBudget * partySize).toLocaleString()}
               </span>
               <div className="mt-3 flex items-center gap-3">
-                <span className="text-xs text-slate-400">Target per person:</span>
+                <span className="text-xs text-[#5A525E]">Target per person:</span>
                 <input
                   type="number"
                   step="5000"
                   value={totalTargetBudget}
                   onChange={(e) => setTotalTargetBudget(Math.max(5000, Number(e.target.value)))}
-                  className="w-28 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white font-mono focus:outline-none focus:border-sky-500"
+                  className="w-28 bg-[#FAF6F0] border border-[#EAE0D0] rounded-xl px-2.5 py-1 text-xs text-[#29252B] font-mono focus:outline-none focus:border-[#C66B4E]"
                 />
               </div>
             </div>
 
-            <div className="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-5 shadow-lg">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+            <div className="bg-white border border-[#EAE0D0] rounded-3xl p-6 shadow-sm">
+              <span className="text-[11px] font-bold text-[#8A808F] uppercase tracking-wider block mb-1">
                 Estimated Total Expenses
               </span>
-              <span className="text-3xl font-black text-amber-400 font-mono">
+              <span className="text-3xl font-black text-[#C66B4E] font-mono">
                 ¥{totalEstimatedExpense.toLocaleString()}
               </span>
-              <p className="text-xs text-slate-400 mt-3">
+              <p className="text-xs text-[#5A525E] mt-3">
                 Approx. ¥{Math.round(totalEstimatedExpense / partySize).toLocaleString()} per traveler.
               </p>
             </div>
 
-            <div className="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-5 shadow-lg">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+            <div className="bg-white border border-[#EAE0D0] rounded-3xl p-6 shadow-sm">
+              <span className="text-[11px] font-bold text-[#8A808F] uppercase tracking-wider block mb-1">
                 Remaining Surplus
               </span>
-              <span className={`text-3xl font-black font-mono ${remainingBudget >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+              <span className={`text-3xl font-black font-mono ${remainingBudget >= 0 ? 'text-[#4F734E]' : 'text-rose-600'}`}>
                 ¥{remainingBudget.toLocaleString()}
               </span>
-              <p className="text-xs text-slate-400 mt-3">
+              <p className="text-xs text-[#5A525E] mt-3">
                 {remainingBudget >= 0 ? 'On track within your target financial plan.' : 'Exceeding target; consider free viewpoints.'}
               </p>
             </div>
           </div>
 
           {/* Category Expense Breakdown */}
-          <div className="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-5 shadow-lg space-y-4">
-            <h3 className="text-sm font-bold text-white flex items-center justify-between">
+          <div className="bg-white border border-[#EAE0D0] rounded-3xl p-6 shadow-sm space-y-4">
+            <h3 className="text-sm font-bold text-[#29252B] flex items-center justify-between">
               <span>Category Breakdown (Per Person Estimates)</span>
               <button
                 onClick={() => onAskHana('Can you help me reduce my Mount Fuji travel expenses with free attractions and budget passes?')}
-                className="text-xs font-semibold text-sky-400 hover:text-sky-300 flex items-center gap-1"
+                className="text-xs font-bold text-[#C66B4E] hover:text-[#B2583D] flex items-center gap-1 cursor-pointer"
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Ask Hana to optimize budget</span>
@@ -172,17 +172,17 @@ export const MyTravelView: React.FC<MyTravelViewProps> = ({ onAskHana }) => {
 
             <div className="space-y-3">
               {budgetItems.map((item, idx) => (
-                <div key={idx} className="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between gap-3">
+                <div key={idx} className="p-3.5 rounded-2xl bg-[#FAF6F0] border border-[#EAE0D0] flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
                     <span className="text-xl">{item.icon}</span>
                     <div>
-                      <h4 className="text-xs font-bold text-white">{item.category}</h4>
-                      <p className="text-[11px] text-slate-400">{item.notes}</p>
+                      <h4 className="text-xs font-bold text-[#29252B]">{item.category}</h4>
+                      <p className="text-[11px] text-[#5A525E]">{item.notes}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="text-sm font-bold text-white font-mono">¥{item.amount.toLocaleString()}</span>
-                    <span className="text-[10px] text-slate-500 block">per traveler</span>
+                    <span className="text-sm font-bold text-[#29252B] font-mono">¥{item.amount.toLocaleString()}</span>
+                    <span className="text-[10px] text-[#8A808F] block">per traveler</span>
                   </div>
                 </div>
               ))}
@@ -192,34 +192,34 @@ export const MyTravelView: React.FC<MyTravelViewProps> = ({ onAskHana }) => {
       ) : activeTab === 'wishlist' ? (
         /* Saved Wishlist */
         <div className="space-y-4">
-          <h3 className="text-sm font-bold text-white flex items-center justify-between">
+          <h3 className="text-sm font-bold text-[#29252B] flex items-center justify-between">
             <span>Saved Places for Next Trip</span>
-            <span className="text-xs text-slate-400">{wishlist.length} places saved</span>
+            <span className="text-xs text-[#8A808F]">{wishlist.length} places saved</span>
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {wishlist.map((id) => (
-              <div key={id} className="p-4 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-between gap-3">
+              <div key={id} className="p-4 rounded-2xl bg-white border border-[#EAE0D0] shadow-sm flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold">
-                    <MapPin className="w-5 h-5" />
+                  <div className="w-10 h-10 rounded-xl bg-[#EFF5EE] text-[#4F734E] flex items-center justify-center font-bold">
+                    <MapPin className="w-5 h-5 text-[#789477]" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-white capitalize">{id.replace(/_/g, ' ')}</h4>
-                    <span className="text-[10px] text-slate-400">Verified Destination</span>
+                    <h4 className="text-xs font-bold text-[#29252B] capitalize">{id.replace(/_/g, ' ')}</h4>
+                    <span className="text-[10px] text-[#789477] font-semibold">Verified Destination</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => onAskHana(`Tell me about ${id.replace(/_/g, ' ')} and how to visit.`)}
-                    className="p-1.5 text-slate-400 hover:text-sky-400 rounded hover:bg-slate-700"
+                    className="p-1.5 text-[#5A525E] hover:text-[#C66B4E] rounded-lg hover:bg-[#FAF6F0] cursor-pointer"
                     title="Ask Hana"
                   >
                     <MessageSquare className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleRemoveWishlist(id)}
-                    className="p-1.5 text-slate-400 hover:text-rose-400 rounded hover:bg-slate-700"
+                    className="p-1.5 text-[#8A808F] hover:text-rose-600 rounded-lg hover:bg-rose-50 cursor-pointer"
                     title="Remove"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -235,14 +235,14 @@ export const MyTravelView: React.FC<MyTravelViewProps> = ({ onAskHana }) => {
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={handlePrint}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold border border-slate-700 transition-colors"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white hover:bg-[#FAF6F0] text-[#29252B] text-xs font-bold border border-[#EAE0D0] transition-colors shadow-xs cursor-pointer"
             >
-              <Printer className="w-4 h-4" />
+              <Printer className="w-4 h-4 text-[#789477]" />
               <span>Print Itinerary Schedule</span>
             </button>
             <button
               onClick={() => setShowQrModal(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold transition-colors"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#C66B4E] hover:bg-[#B2583D] text-white text-xs font-bold transition-colors shadow-xs cursor-pointer"
             >
               <QrCode className="w-4 h-4" />
               <span>Share Trip via QR Code</span>
@@ -250,18 +250,18 @@ export const MyTravelView: React.FC<MyTravelViewProps> = ({ onAskHana }) => {
           </div>
 
           {/* Essential Travel Phrasebook */}
-          <div className="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-5 shadow-lg space-y-4">
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-sky-400" />
+          <div className="bg-white border border-[#EAE0D0] rounded-3xl p-6 shadow-sm space-y-4">
+            <h3 className="text-sm font-bold text-[#29252B] flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-[#C66B4E]" />
               <span>Essential Mount Fuji Travel Phrases (Offline Ready)</span>
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {ESSENTIAL_PHRASES.map((phrase, idx) => (
-                <div key={idx} className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
-                  <span className="text-sm font-bold text-white block">{phrase.ja}</span>
-                  <span className="text-xs text-sky-300 font-mono block">{phrase.romaji}</span>
-                  <span className="text-xs text-slate-400 block">{phrase.en}</span>
+                <div key={idx} className="p-3.5 rounded-2xl bg-[#FAF6F0] border border-[#EAE0D0] space-y-1">
+                  <span className="text-sm font-bold text-[#29252B] block">{phrase.ja}</span>
+                  <span className="text-xs text-[#C66B4E] font-mono block">{phrase.romaji}</span>
+                  <span className="text-xs text-[#5A525E] block">{phrase.en}</span>
                 </div>
               ))}
             </div>
@@ -271,18 +271,18 @@ export const MyTravelView: React.FC<MyTravelViewProps> = ({ onAskHana }) => {
 
       {/* QR Modal */}
       {showQrModal && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-sm w-full text-center space-y-4">
-            <h3 className="text-base font-bold text-white">Scan to Open FujiNova Trip</h3>
-            <div className="w-48 h-48 bg-white rounded-xl mx-auto flex items-center justify-center p-2 shadow-inner">
-              <QrCode className="w-36 h-36 text-slate-900" />
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div className="bg-white border border-[#EAE0D0] rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl">
+            <h3 className="text-base font-bold text-[#29252B]">Scan to Open FujiNova Trip</h3>
+            <div className="w-48 h-48 bg-[#FAF6F0] border border-[#EAE0D0] rounded-2xl mx-auto flex items-center justify-center p-3 shadow-inner">
+              <QrCode className="w-36 h-36 text-[#29252B]" />
             </div>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[#5A525E]">
               Point your phone camera to instantly access your synced itinerary and offline phrases.
             </p>
             <button
               onClick={() => setShowQrModal(false)}
-              className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl"
+              className="w-full py-2.5 bg-[#C66B4E] hover:bg-[#B2583D] text-white text-xs font-bold rounded-2xl cursor-pointer shadow-xs"
             >
               Close
             </button>

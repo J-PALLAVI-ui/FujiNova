@@ -60,7 +60,7 @@ describe('FujiNova 7.0 Ecosystem Components', () => {
     const { rerender } = render(<FujiNovaLogo variant="full-horizontal" size="md" showTagline={true} />);
     expect(screen.getByText('Fuji')).toBeInTheDocument();
     expect(screen.getByText('Nova')).toBeInTheDocument();
-    expect(screen.getByText('7.0')).toBeInTheDocument();
+    expect(screen.getByText(/7\.0|8\.0/)).toBeInTheDocument();
 
     rerender(<FujiNovaLogo variant="square-icon" size="sm" />);
     expect(screen.getByLabelText('FujiNova Mount Fuji and Sakura Emblem')).toBeInTheDocument();

@@ -20,16 +20,35 @@ html.text-scale-130 {
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, 'Noto Sans JP', sans-serif;
   -webkit-font-smoothing: antialiased;
-  background-color: #020617;
-  color: #f8fafc;
+  background-color: #F7EFE5;
+  color: #29252B;
 }
 
 /* WCAG 2.2 AA Focus Indicators */
 :focus-visible {
-  outline: 2px solid #38bdf8 !important;
+  outline: 2px solid #C66B4E !important;
   outline-offset: 2px !important;
+}
+
+/* Custom Scrollbars in Sakura Garden Ivory/Charcoal */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F7EFE5;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D5C1A3;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #B99BCB;
 }
 
 /* WCAG High Contrast Mode */
@@ -37,20 +56,9 @@ html.high-contrast {
   filter: contrast(115%);
 }
 
-html.high-contrast .bg-slate-900,
-html.high-contrast .bg-slate-950 {
-  background-color: #000000 !important;
-}
-
-html.high-contrast .border-slate-800,
-html.high-contrast .border-slate-700 {
-  border-color: #ffffff !important;
-  border-width: 1.5px !important;
-}
-
-html.high-contrast .text-slate-400,
-html.high-contrast .text-slate-500 {
-  color: #e2e8f0 !important;
+html.high-contrast body {
+  background-color: #FFFFFF !important;
+  color: #000000 !important;
 }
 
 /* WCAG Reduced Motion */

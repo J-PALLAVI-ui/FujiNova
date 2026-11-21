@@ -444,14 +444,14 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
   };
 
   return (
-    <div className="flex h-full w-full bg-slate-950 text-slate-100 overflow-hidden select-text">
-      {/* 1. Left Persistent Conversation History Sidebar */}
-      <aside className="w-64 border-r border-slate-800/80 bg-slate-900/50 flex flex-col h-full shrink-0 hidden md:flex">
+    <div className="flex h-full w-full bg-[#F7EFE5] text-[#29252B] overflow-hidden select-text">
+      {/* 1. Left Persistent Conversation History Sidebar - Sakura Garden Warm Ivory */}
+      <aside className="w-64 border-r border-[#EAE0D0] bg-[#FAF6F0] flex flex-col h-full shrink-0 hidden md:flex">
         {/* Sidebar Header */}
-        <div className="p-3 border-b border-slate-800 space-y-2">
+        <div className="p-3 border-b border-[#EAE0D0] space-y-2">
           <button
             onClick={handleNewConversation}
-            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer"
+            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-[#C66B4E] hover:bg-[#B2583D] text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>{t('hana_new_chat', 'New Journey Chat')}</span>
@@ -459,13 +459,13 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
 
           {/* Search conversations */}
           <div className="relative">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-3.5 h-3.5 text-[#8A808F] absolute left-2.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder={t('hana_search_history', 'Search chat history...')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
+              className="w-full bg-white border border-[#EAE0D0] rounded-xl pl-8 pr-3 py-1.5 text-xs text-[#29252B] placeholder-[#8A808F] focus:outline-none focus:border-[#C66B4E] shadow-2xs"
             />
           </div>
         </div>
@@ -473,7 +473,7 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
         {/* Conversation List with independent scrolling */}
         <div className="flex-1 overflow-y-auto p-2 space-y-1">
           {conversations.length === 0 ? (
-            <div className="p-4 text-center text-xs text-slate-500">
+            <div className="p-4 text-center text-xs text-[#8A808F]">
               No conversations found.
             </div>
           ) : (
@@ -487,12 +487,12 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
                   onClick={() => onSelectSession(conv.conversation_id)}
                   className={`group flex items-center justify-between p-2 rounded-xl text-xs cursor-pointer transition-all ${
                     isActive
-                      ? 'bg-sky-950/60 border border-sky-500/40 text-white shadow-xs'
-                      : 'hover:bg-slate-800/60 text-slate-400 hover:text-slate-200'
+                      ? 'bg-white border-l-4 border-l-[#C66B4E] border border-[#EAE0D0] text-[#29252B] shadow-xs'
+                      : 'hover:bg-[#F3ECE1] text-[#5A525E] border border-transparent'
                   }`}
                 >
                   <div className="flex items-center gap-2 overflow-hidden flex-1">
-                    <MessageSquare className={`w-3.5 h-3.5 shrink-0 ${conv.pinned ? 'text-amber-400' : 'text-slate-500'}`} />
+                    <MessageSquare className={`w-3.5 h-3.5 shrink-0 ${conv.pinned ? 'text-[#C66B4E]' : 'text-[#8A808F]'}`} />
                     
                     {isEditing ? (
                       <input
@@ -502,7 +502,7 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
                         onBlur={() => handleSaveTitle(conv.conversation_id)}
                         onKeyDown={(e) => e.key === 'Enter' && handleSaveTitle(conv.conversation_id)}
                         autoFocus
-                        className="bg-slate-950 border border-sky-500 px-1 py-0.5 rounded text-white text-xs w-full focus:outline-none"
+                        className="bg-white border border-[#C66B4E] px-1 py-0.5 rounded text-[#29252B] text-xs w-full focus:outline-none"
                         onClick={(e) => e.stopPropagation()}
                       />
                     ) : (
@@ -511,7 +511,7 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
                           {conv.title}
                         </span>
                         {conv.preview && (
-                          <span className="text-[10px] text-slate-500 block truncate">
+                          <span className="text-[10px] text-[#8A808F] block truncate">
                             {conv.preview}
                           </span>
                         )}
@@ -524,7 +524,7 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
                     <button
                       onClick={(e) => handleTogglePin(conv, e)}
                       title={conv.pinned ? 'Unpin' : 'Pin conversation'}
-                      className={`p-1 rounded hover:bg-slate-700 ${conv.pinned ? 'text-amber-400' : 'text-slate-500'}`}
+                      className={`p-1 rounded hover:bg-[#FAF6F0] ${conv.pinned ? 'text-[#C66B4E]' : 'text-[#8A808F]'}`}
                     >
                       <Pin className="w-3 h-3" />
                     </button>
@@ -535,14 +535,14 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
                         setEditTitle(conv.title);
                       }}
                       title="Rename"
-                      className="p-1 text-slate-500 hover:text-slate-200 hover:bg-slate-700 rounded"
+                      className="p-1 text-[#8A808F] hover:text-[#29252B] hover:bg-[#FAF6F0] rounded"
                     >
                       <Edit2 className="w-3 h-3" />
                     </button>
                     <button
                       onClick={(e) => handleDeleteConversation(conv.conversation_id, e)}
                       title="Delete"
-                      className="p-1 text-slate-500 hover:text-rose-400 hover:bg-slate-700 rounded"
+                      className="p-1 text-[#8A808F] hover:text-rose-500 hover:bg-[#FAF6F0] rounded"
                     >
                       <Trash2 className="w-3 h-3" />
                     </button>
@@ -554,26 +554,26 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
         </div>
       </aside>
 
-      {/* 2. Main ChatGPT-grade Conversation Workspace */}
-      <main className="flex-1 flex flex-col h-full bg-slate-950 relative min-w-0">
+      {/* 2. Main Conversation Workspace */}
+      <main className="flex-1 flex flex-col h-full bg-[#F7EFE5] relative min-w-0">
         {/* Fixed Header */}
-        <div className="p-3 border-b border-slate-800 bg-slate-900/80 backdrop-blur-md flex items-center justify-between shrink-0 z-10">
+        <div className="p-3 border-b border-[#EAE0D0] bg-[#FAF6F0]/90 backdrop-blur-md flex items-center justify-between shrink-0 z-10 text-[#29252B]">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-sky-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
+            <div className="w-8 h-8 rounded-full bg-[#C66B4E] text-white flex items-center justify-center font-bold text-xs shadow-xs">
               ハ
             </div>
             <div>
-              <h2 className="text-xs font-bold text-white flex items-center gap-1.5">
+              <h2 className="text-xs font-bold text-[#29252B] flex items-center gap-1.5">
                 <span>Guide Hana (ハナ)</span>
-                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse" title="Google Gemini Free Tier Enabled (₹0 Cost)" />
+                <span className="w-2 h-2 rounded-full bg-[#789477] inline-block animate-pulse" title="Google Gemini Free Tier Enabled (₹0 Cost)" />
               </h2>
-              <p className="text-[10px] text-slate-400">Conversational Travel Companion & Technical Guide</p>
+              <p className="text-[10px] text-[#5A525E]">Conversational Travel Companion & Technical Guide</p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 text-[10px] text-sky-300 bg-sky-500/10 border border-sky-500/30 px-2 py-0.5 rounded-lg font-mono">
-              <Cpu className="w-3 h-3 text-sky-400" />
+            <div className="flex items-center gap-1 text-[10px] text-[#4F734E] bg-[#EFF5EE] border border-[#789477]/40 px-2.5 py-0.5 rounded-lg font-mono font-bold">
+              <Cpu className="w-3 h-3 text-[#789477]" />
               <span>{activeModel}</span>
             </div>
           </div>
@@ -591,15 +591,15 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
               className={`flex gap-3 max-w-4xl mx-auto ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               {msg.sender === 'hana' && (
-                <div className="w-7 h-7 rounded-full bg-sky-600 text-white flex items-center justify-center text-xs shrink-0 mt-1 shadow-xs">
+                <div className="w-7 h-7 rounded-full bg-[#E9A5B5] text-white flex items-center justify-center text-xs shrink-0 mt-1 shadow-xs">
                   <Bot className="w-4 h-4" />
                 </div>
               )}
 
               <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-xs sm:text-sm relative group shadow-xs ${
                 msg.sender === 'user'
-                  ? 'bg-sky-600 text-white rounded-br-xs'
-                  : 'bg-slate-900 border border-slate-800 text-slate-200 rounded-bl-xs'
+                  ? 'bg-[#C66B4E] text-white rounded-br-xs'
+                  : 'bg-white border border-[#EAE0D0] text-[#29252B] rounded-bl-xs'
               }`}>
                 {/* Render formatted markdown message with headers, bold, code, tables */}
                 <MarkdownMessage
@@ -610,16 +610,16 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
 
                 {/* Visible Error Card (Prevent empty bubble) */}
                 {msg.isError && (
-                  <div className="rounded-xl border border-rose-500/40 bg-rose-950/40 p-3.5 my-2 text-rose-200">
+                  <div className="rounded-xl border border-rose-300 bg-rose-50 p-3.5 my-2 text-rose-800">
                     <div className="flex items-start gap-2.5">
-                      <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                      <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                       <div className="flex-1 space-y-1.5">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-bold uppercase tracking-wider bg-rose-500/20 text-rose-300 px-1.5 py-0.5 rounded border border-rose-500/30">
+                          <span className="text-[10px] font-bold uppercase tracking-wider bg-rose-200 text-rose-800 px-1.5 py-0.5 rounded border border-rose-300">
                             {msg.errorCode || 'Service Error'}
                           </span>
                         </div>
-                        <p className="text-xs text-rose-200 leading-relaxed font-medium">
+                        <p className="text-xs text-rose-800 leading-relaxed font-medium">
                           {msg.errorMessage}
                         </p>
                         {lastUserPrompt && (
@@ -639,8 +639,8 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
                 {/* Verified Transit Connections */}
                 {msg.journeys && msg.journeys.length > 0 && (
                   <div className="mt-3">
-                    <div className="text-xs font-semibold text-slate-400 flex items-center gap-1 mb-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-sky-400" />
+                    <div className="text-xs font-semibold text-[#5A525E] flex items-center gap-1 mb-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-[#C66B4E]" />
                       <span>Verified Transit Timetables (RAPTOR):</span>
                     </div>
                     <JourneyDisplay journeys={msg.journeys} />
@@ -649,8 +649,8 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
 
                 {/* CrowdSense Quieter Alternatives */}
                 {msg.crowd_alternatives && msg.crowd_alternatives.length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-slate-800 space-y-2">
-                    <div className="text-xs font-semibold text-emerald-400 flex items-center gap-1">
+                  <div className="mt-3 pt-3 border-t border-[#EAE0D0] space-y-2">
+                    <div className="text-xs font-semibold text-[#4F734E] flex items-center gap-1">
                       <Users className="w-3.5 h-3.5" />
                       <span>CrowdSense Quieter Alternatives (Simulation):</span>
                     </div>
@@ -658,22 +658,22 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
                       {msg.crowd_alternatives.map((alt) => (
                         <div
                           key={alt.place_id}
-                          className="bg-slate-800/80 border border-emerald-500/30 rounded-xl p-2.5 flex items-center gap-2.5"
+                          className="bg-[#FAF6F0] border border-[#789477]/30 rounded-xl p-2.5 flex items-center gap-2.5"
                         >
                           <img
                             src={alt.image_url}
                             alt={alt.name_en}
-                            className="w-12 h-12 rounded-lg object-cover bg-slate-700 shrink-0"
+                            className="w-12 h-12 rounded-lg object-cover bg-[#EAE0D0] shrink-0"
                           />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-1">
-                              <h4 className="text-xs font-bold text-white truncate">{alt.name_en}</h4>
-                              <span className="text-[10px] font-bold text-emerald-300 bg-emerald-500/20 border border-emerald-500/30 px-1.5 py-0.5 rounded-full shrink-0">
+                              <h4 className="text-xs font-bold text-[#29252B] truncate">{alt.name_en}</h4>
+                              <span className="text-[10px] font-bold text-[#4F734E] bg-[#EFF5EE] border border-[#789477]/30 px-1.5 py-0.5 rounded-full shrink-0">
                                 -{alt.crowd_reduction_percent}%
                               </span>
                             </div>
-                            <p className="text-[10px] text-slate-400 truncate">{alt.name_ja}</p>
-                            <p className="text-[10px] text-slate-300 line-clamp-1">{alt.recommendation_reason}</p>
+                            <p className="text-[10px] text-[#5A525E] truncate">{alt.name_ja}</p>
+                            <p className="text-[10px] text-[#29252B] line-clamp-1">{alt.recommendation_reason}</p>
                           </div>
                         </div>
                       ))}
@@ -683,8 +683,8 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
 
                 {/* Recommended Place Cards (Strictly conditional: never shown for general questions) */}
                 {msg.places && msg.places.length > 0 && msg.response_type !== 'general' && (
-                  <div className="mt-3 space-y-2 pt-3 border-t border-slate-800">
-                    <div className="text-xs font-semibold text-amber-400 flex items-center gap-1">
+                  <div className="mt-3 space-y-2 pt-3 border-t border-[#EAE0D0]">
+                    <div className="text-xs font-semibold text-[#C66B4E] flex items-center gap-1">
                       <Sparkles className="w-3.5 h-3.5" />
                       <span>
                         {msg.response_type === 'itinerary_destinations'
@@ -700,13 +700,13 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
                   </div>
                 )}
 
-                <div className="text-[10px] text-slate-500 mt-2 text-right">
+                <div className="text-[10px] text-[#8A808F] mt-2 text-right">
                   {msg.timestamp}
                 </div>
               </div>
 
               {msg.sender === 'user' && (
-                <div className="w-7 h-7 rounded-full bg-slate-800 text-slate-300 flex items-center justify-center text-xs shrink-0 mt-1 shadow-xs">
+                <div className="w-7 h-7 rounded-full bg-[#C66B4E] text-white flex items-center justify-center text-xs shrink-0 mt-1 shadow-xs">
                   <User className="w-4 h-4" />
                 </div>
               )}
@@ -714,8 +714,8 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
           ))}
 
           {isStreaming && (
-            <div className="flex items-center gap-2 text-xs text-sky-400 p-2 max-w-4xl mx-auto">
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            <div className="flex items-center gap-2 text-xs text-[#C66B4E] p-2 max-w-4xl mx-auto font-semibold">
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-[#C66B4E]" />
               <span>Hana is thinking and composing response...</span>
             </div>
           )}
@@ -727,7 +727,7 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
         {showScrollBottom && (
           <button
             onClick={() => scrollToBottom('smooth')}
-            className="absolute bottom-24 right-8 z-20 w-8 h-8 rounded-full bg-sky-600 hover:bg-sky-500 text-white flex items-center justify-center shadow-lg transition-all cursor-pointer"
+            className="absolute bottom-24 right-8 z-20 w-8 h-8 rounded-full bg-[#C66B4E] hover:bg-[#B2583D] text-white flex items-center justify-center shadow-lg transition-all cursor-pointer"
             title="Scroll to latest message"
           >
             <ArrowDown className="w-4 h-4" />
@@ -735,32 +735,32 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
         )}
 
         {/* 3. Fixed Bottom Input Composer */}
-        <div className="p-4 border-t border-slate-800 bg-slate-900/90 backdrop-blur-md shrink-0">
+        <div className="p-4 border-t border-[#EAE0D0] bg-[#FAF6F0]/95 backdrop-blur-md shrink-0">
           <div className="max-w-4xl mx-auto space-y-3">
             {/* Quick Prompts */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px] text-slate-400 no-scrollbar">
-              <span className="shrink-0 text-slate-500 font-semibold">{t('hana_try_asking', 'Try asking:')}</span>
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px] text-[#5A525E] no-scrollbar">
+              <span className="shrink-0 text-[#8A808F] font-bold">{t('hana_try_asking', 'Try asking:')}</span>
               <button
                 onClick={() => sendMessage('Tell me about Japanese Omotenashi hospitality and travel etiquette.')}
-                className="shrink-0 px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-sky-950 hover:text-sky-300 hover:border-sky-500/40 border border-slate-700/60 transition-all cursor-pointer"
+                className="shrink-0 px-2.5 py-1 rounded-xl bg-white hover:bg-[#FDF2F4] hover:text-[#C66B4E] hover:border-[#E9A5B5] border border-[#EAE0D0] text-[#5A525E] font-semibold transition-all cursor-pointer shadow-2xs"
               >
                 {t('prompt_omotenashi', 'Omotenashi Hospitality')}
               </button>
               <button
                 onClick={() => sendMessage('How does FujiNova implement the RAPTOR public transit algorithm?')}
-                className="shrink-0 px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-sky-950 hover:text-sky-300 hover:border-sky-500/40 border border-slate-700/60 transition-all cursor-pointer"
+                className="shrink-0 px-2.5 py-1 rounded-xl bg-white hover:bg-[#FDF2F4] hover:text-[#C66B4E] hover:border-[#E9A5B5] border border-[#EAE0D0] text-[#5A525E] font-semibold transition-all cursor-pointer shadow-2xs"
               >
                 {t('prompt_raptor', 'RAPTOR Algorithm Code')}
               </button>
               <button
                 onClick={() => sendMessage('Plan a 1-day trip from Kawaguchiko Station with great Fuji views under ¥10,000.')}
-                className="shrink-0 px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-sky-950 hover:text-sky-300 hover:border-sky-500/40 border border-slate-700/60 transition-all cursor-pointer"
+                className="shrink-0 px-2.5 py-1 rounded-xl bg-white hover:bg-[#FDF2F4] hover:text-[#C66B4E] hover:border-[#E9A5B5] border border-[#EAE0D0] text-[#5A525E] font-semibold transition-all cursor-pointer shadow-2xs"
               >
                 {t('prompt_budget', '1-Day Trip under ¥10,000')}
               </button>
               <button
                 onClick={() => sendMessage('What are the best attractions around Lake Kawaguchiko for elderly visitors avoiding steep stairs?')}
-                className="shrink-0 px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-sky-950 hover:text-sky-300 hover:border-sky-500/40 border border-slate-700/60 transition-all cursor-pointer"
+                className="shrink-0 px-2.5 py-1 rounded-xl bg-white hover:bg-[#FDF2F4] hover:text-[#C66B4E] hover:border-[#E9A5B5] border border-[#EAE0D0] text-[#5A525E] font-semibold transition-all cursor-pointer shadow-2xs"
               >
                 {t('prompt_barrier', 'Barrier-Free Highlights')}
               </button>
@@ -772,7 +772,7 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
                 e.preventDefault();
                 sendMessage();
               }}
-              className="flex items-end gap-2 bg-slate-950 border border-slate-800 focus-within:border-sky-500 rounded-2xl p-2 shadow-inner transition-all"
+              className="flex items-end gap-2 bg-white border border-[#EAE0D0] focus-within:border-[#C66B4E] rounded-2xl p-2 shadow-2xs transition-all"
             >
               <textarea
                 value={input}
@@ -785,7 +785,7 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
                 }}
                 placeholder={t('hana_placeholder', 'Ask Hana anything: Japanese culture, travel advice, RAPTOR transit, cuisine...')}
                 rows={1}
-                className="flex-1 bg-transparent px-3 py-1.5 text-xs sm:text-sm text-white placeholder-slate-500 resize-none focus:outline-none max-h-32 min-h-[36px]"
+                className="flex-1 bg-transparent px-3 py-1.5 text-xs sm:text-sm text-[#29252B] placeholder-[#8A808F] resize-none focus:outline-none max-h-32 min-h-[36px]"
               />
 
               {isStreaming ? (
@@ -801,7 +801,7 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
                 <button
                   type="submit"
                   disabled={!input.trim()}
-                  className="p-2 rounded-xl bg-sky-600 hover:bg-sky-500 disabled:opacity-40 disabled:hover:bg-sky-600 text-white transition-all shrink-0 cursor-pointer"
+                  className="p-2 rounded-xl bg-[#C66B4E] hover:bg-[#B2583D] disabled:opacity-40 disabled:hover:bg-[#C66B4E] text-white transition-all shrink-0 cursor-pointer shadow-xs"
                   title="Send message"
                 >
                   <Send className="w-4 h-4" />

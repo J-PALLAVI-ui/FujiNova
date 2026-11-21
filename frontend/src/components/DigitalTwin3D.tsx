@@ -920,66 +920,66 @@ export const DigitalTwin3D: React.FC<DigitalTwin3DProps> = ({
       {/* Top Floating Controls Bar */}
       <div className="absolute top-4 left-4 right-4 z-20 flex flex-wrap items-center justify-between gap-3 pointer-events-none">
         {/* Title & Elevation Badge */}
-        <div className="pointer-events-auto flex items-center gap-2.5 bg-slate-900/90 border border-slate-800 backdrop-blur-md px-3.5 py-2 rounded-2xl shadow-xl">
-          <div className="w-7 h-7 rounded-xl bg-sky-600 text-white flex items-center justify-center shadow-xs">
+        <div className="pointer-events-auto flex items-center gap-2.5 bg-white/95 border border-[#EAE0D0] backdrop-blur-md px-3.5 py-2 rounded-2xl shadow-xl text-[#29252B]">
+          <div className="w-7 h-7 rounded-xl bg-[#C66B4E] text-white flex items-center justify-center shadow-xs">
             <Compass className="w-4 h-4" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-xs font-bold text-white leading-tight">Mount Fuji 3D Digital Twin</h2>
-              <span className="text-[9px] bg-sky-500/20 text-sky-300 border border-sky-500/30 px-1.5 py-0.2 rounded font-semibold uppercase">
+              <h2 className="text-xs font-black text-[#29252B] leading-tight">Mount Fuji 3D Digital Twin</h2>
+              <span className="text-[9px] bg-[#FAF6F0] text-[#C66B4E] border border-[#EAE0D0] px-1.5 py-0.2 rounded font-bold uppercase">
                 DEM 3,776m
               </span>
             </div>
-            <p className="text-[10px] text-slate-400">Calibrated Topography • Five Lakes Basins • 35 Verified Landmarks</p>
+            <p className="text-[10px] text-[#5A525E]">Calibrated Topography • Five Lakes Basins • 35 Verified Landmarks</p>
           </div>
         </div>
 
         {/* View Controls & Accessibility Toggle */}
-        <div className="pointer-events-auto flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 backdrop-blur-md p-1.5 rounded-2xl shadow-xl">
+        <div className="pointer-events-auto flex items-center gap-1.5 bg-white/95 border border-[#EAE0D0] backdrop-blur-md p-1.5 rounded-2xl shadow-xl text-[#29252B]">
           {/* Accessible Table View Toggle */}
           <button
             onClick={() => setAccessibleListView(!accessibleListView)}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold transition ${
-              accessibleListView ? 'bg-sky-600 text-white shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800'
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+              accessibleListView ? 'bg-[#C66B4E] text-white shadow-xs' : 'text-[#5A525E] hover:text-[#29252B] hover:bg-[#FAF6F0]'
             }`}
             title="Toggle Accessible Table View (WCAG Screen Reader Alternative)"
           >
-            <List className="w-3.5 h-3.5 text-sky-400" />
+            <List className="w-3.5 h-3.5 text-[#789477]" />
             <span>{accessibleListView ? '3D View' : 'Accessible List'}</span>
           </button>
 
-          <div className="w-px h-4 bg-slate-700 mx-1" />
+          <div className="w-px h-4 bg-[#EAE0D0] mx-1" />
 
           {/* Lighting Mode Presets */}
           <button
             onClick={() => setLightingMode('day')}
-            className={`p-1.5 rounded-xl transition ${lightingMode === 'day' ? 'bg-amber-500/20 text-amber-300' : 'text-slate-400 hover:text-white'}`}
+            className={`p-1.5 rounded-xl transition cursor-pointer ${lightingMode === 'day' ? 'bg-[#FAF6F0] text-[#C66B4E] font-bold' : 'text-[#8A808F] hover:text-[#29252B]'}`}
             title="Day sunlight"
           >
             <Sun className="w-4 h-4" />
           </button>
           <button
             onClick={() => setLightingMode('sunset')}
-            className={`p-1.5 rounded-xl transition ${lightingMode === 'sunset' ? 'bg-orange-500/20 text-orange-400' : 'text-slate-400 hover:text-white'}`}
+            className={`p-1.5 rounded-xl transition cursor-pointer ${lightingMode === 'sunset' ? 'bg-[#FDF8F6] text-[#C66B4E] font-bold' : 'text-[#8A808F] hover:text-[#29252B]'}`}
             title="Sunset / Golden Hour"
           >
             <Sunset className="w-4 h-4" />
           </button>
           <button
             onClick={() => setLightingMode('night')}
-            className={`p-1.5 rounded-xl transition ${lightingMode === 'night' ? 'bg-indigo-500/20 text-indigo-300' : 'text-slate-400 hover:text-white'}`}
+            className={`p-1.5 rounded-xl transition cursor-pointer ${lightingMode === 'night' ? 'bg-[#F4EFF7] text-[#7F5B95] font-bold' : 'text-[#8A808F] hover:text-[#29252B]'}`}
             title="Night moonlight"
           >
             <Moon className="w-4 h-4" />
           </button>
 
-          <div className="w-px h-4 bg-slate-700 mx-1" />
+          <div className="w-px h-4 bg-[#EAE0D0] mx-1" />
 
           {/* Layer Toggles */}
           <button
             onClick={() => setShowTransitLayer(!showTransitLayer)}
-            className={`px-2 py-1 rounded-xl text-[11px] font-semibold transition ${showTransitLayer ? 'bg-emerald-500/20 text-emerald-300' : 'text-slate-400 hover:text-white'}`}
+            className={`px-2 py-1 rounded-xl text-[11px] font-bold transition cursor-pointer ${showTransitLayer ? 'bg-[#EFF5EE] text-[#4F734E] border border-[#789477]/30' : 'text-[#8A808F] hover:text-[#29252B]'}`}
             title="Toggle GTFS Transit Routes"
           >
             Transit
@@ -987,7 +987,7 @@ export const DigitalTwin3D: React.FC<DigitalTwin3DProps> = ({
 
           <button
             onClick={() => setShowLandmarkPins(!showLandmarkPins)}
-            className={`px-2 py-1 rounded-xl text-[11px] font-semibold transition ${showLandmarkPins ? 'bg-sky-500/20 text-sky-300' : 'text-slate-400 hover:text-white'}`}
+            className={`px-2 py-1 rounded-xl text-[11px] font-bold transition cursor-pointer ${showLandmarkPins ? 'bg-[#FDF8F6] text-[#C66B4E] border border-[#C66B4E]/30' : 'text-[#8A808F] hover:text-[#29252B]'}`}
             title="Toggle Landmark Pins"
           >
             Pins
@@ -996,19 +996,19 @@ export const DigitalTwin3D: React.FC<DigitalTwin3DProps> = ({
           {itinerary && (
             <button
               onClick={() => setShowItineraryRoute(!showItineraryRoute)}
-              className={`px-2 py-1 rounded-xl text-[11px] font-semibold transition ${showItineraryRoute ? 'bg-pink-500/20 text-pink-300' : 'text-slate-400 hover:text-white'}`}
+              className={`px-2 py-1 rounded-xl text-[11px] font-bold transition cursor-pointer ${showItineraryRoute ? 'bg-[#FDF2F4] text-[#C64A6A] border border-[#E9A5B5]' : 'text-[#8A808F] hover:text-[#29252B]'}`}
               title="Toggle Connected 3D Itinerary Route"
             >
               3D Route
             </button>
           )}
 
-          <div className="w-px h-4 bg-slate-700 mx-1" />
+          <div className="w-px h-4 bg-[#EAE0D0] mx-1" />
 
           {/* Fullscreen Toggle */}
           <button
             onClick={() => setIsFullscreen(!isFullscreen)}
-            className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            className="p-1.5 rounded-xl text-[#8A808F] hover:text-[#29252B] hover:bg-[#FAF6F0] transition cursor-pointer"
             title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
           >
             {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
@@ -1017,7 +1017,7 @@ export const DigitalTwin3D: React.FC<DigitalTwin3DProps> = ({
           {/* Reset Camera */}
           <button
             onClick={handleResetCamera}
-            className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            className="p-1.5 rounded-xl text-[#8A808F] hover:text-[#29252B] hover:bg-[#FAF6F0] transition cursor-pointer"
             title="Reset Camera View"
           >
             <RotateCcw className="w-4 h-4" />
@@ -1027,10 +1027,10 @@ export const DigitalTwin3D: React.FC<DigitalTwin3DProps> = ({
           {onSwitchTo2D && (
             <button
               onClick={onSwitchTo2D}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-sky-300 font-semibold border border-slate-700 transition"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#FAF6F0] hover:bg-[#F3EBE0] text-xs text-[#29252B] font-bold border border-[#EAE0D0] transition cursor-pointer"
               title="Switch to 2D Vector Map"
             >
-              <MapIcon className="w-3.5 h-3.5" />
+              <MapIcon className="w-3.5 h-3.5 text-[#789477]" />
               <span>2D Map</span>
             </button>
           )}
@@ -1038,36 +1038,36 @@ export const DigitalTwin3D: React.FC<DigitalTwin3DProps> = ({
       </div>
 
       {/* Camera Presets Bar */}
-      <div className="absolute top-20 left-4 z-20 pointer-events-none hidden sm:flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 backdrop-blur-md p-1 rounded-2xl shadow-lg">
-        <span className="text-[10px] font-bold uppercase text-slate-400 px-2">Presets:</span>
+      <div className="absolute top-20 left-4 z-20 pointer-events-none hidden sm:flex items-center gap-1.5 bg-white/95 border border-[#EAE0D0] backdrop-blur-md p-1.5 rounded-2xl shadow-lg text-[#29252B]">
+        <span className="text-[10px] font-bold uppercase text-[#8A808F] px-2">Presets:</span>
         <button
           onClick={() => applyCameraPreset('summit')}
-          className={`px-2.5 py-1 rounded-xl text-[11px] font-bold pointer-events-auto transition ${
-            activePreset === 'summit' ? 'bg-sky-600 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-800'
+          className={`px-2.5 py-1 rounded-xl text-[11px] font-bold pointer-events-auto transition cursor-pointer ${
+            activePreset === 'summit' ? 'bg-[#C66B4E] text-white shadow-xs' : 'text-[#5A525E] hover:text-[#29252B] hover:bg-[#FAF6F0]'
           }`}
         >
           🌋 Summit (3,776m)
         </button>
         <button
           onClick={() => applyCameraPreset('kawaguchiko')}
-          className={`px-2.5 py-1 rounded-xl text-[11px] font-bold pointer-events-auto transition ${
-            activePreset === 'kawaguchiko' ? 'bg-sky-600 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-800'
+          className={`px-2.5 py-1 rounded-xl text-[11px] font-bold pointer-events-auto transition cursor-pointer ${
+            activePreset === 'kawaguchiko' ? 'bg-[#C66B4E] text-white shadow-xs' : 'text-[#5A525E] hover:text-[#29252B] hover:bg-[#FAF6F0]'
           }`}
         >
           🌊 Kawaguchiko
         </button>
         <button
           onClick={() => applyCameraPreset('chureito')}
-          className={`px-2.5 py-1 rounded-xl text-[11px] font-bold pointer-events-auto transition ${
-            activePreset === 'chureito' ? 'bg-sky-600 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-800'
+          className={`px-2.5 py-1 rounded-xl text-[11px] font-bold pointer-events-auto transition cursor-pointer ${
+            activePreset === 'chureito' ? 'bg-[#C66B4E] text-white shadow-xs' : 'text-[#5A525E] hover:text-[#29252B] hover:bg-[#FAF6F0]'
           }`}
         >
           ⛩️ Chureito Pagoda
         </button>
         <button
           onClick={() => applyCameraPreset('panorama')}
-          className={`px-2.5 py-1 rounded-xl text-[11px] font-bold pointer-events-auto transition ${
-            activePreset === 'panorama' ? 'bg-sky-600 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-800'
+          className={`px-2.5 py-1 rounded-xl text-[11px] font-bold pointer-events-auto transition cursor-pointer ${
+            activePreset === 'panorama' ? 'bg-[#C66B4E] text-white shadow-xs' : 'text-[#5A525E] hover:text-[#29252B] hover:bg-[#FAF6F0]'
           }`}
         >
           🗺️ Five Lakes Panorama
@@ -1347,22 +1347,22 @@ export const DigitalTwin3D: React.FC<DigitalTwin3DProps> = ({
               </div>
 
               <div className="flex items-center gap-2 text-xs">
-                <span className="px-2.5 py-1 rounded-full bg-slate-800 text-sky-300 border border-slate-700 font-mono font-bold">
+                <span className="px-2.5 py-1 rounded-full bg-[#FAF6F0] text-[#29252B] border border-[#EAE0D0] font-mono font-bold">
                   {totalRouteDistanceKm} km total
                 </span>
-                <span className="px-2.5 py-1 rounded-full bg-slate-800 text-emerald-300 border border-slate-700 font-mono">
+                <span className="px-2.5 py-1 rounded-full bg-[#EFF5EE] text-[#4F734E] border border-[#789477]/30 font-mono font-bold">
                   ~{Math.round(totalRouteDistanceKm * 2.2)}m transit
                 </span>
                 <button
                   onClick={focusEntireRoute}
-                  className="px-3 py-1 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs transition-colors shadow-xs"
+                  className="px-3 py-1 rounded-xl bg-[#EFF5EE] hover:bg-[#E3EFE1] text-[#4F734E] font-bold text-xs border border-[#789477]/30 transition-colors shadow-xs cursor-pointer"
                 >
                   Fit Route
                 </button>
                 {!isTourPlaying ? (
                   <button
                     onClick={startRouteTour}
-                    className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white font-bold text-xs transition-all shadow-md cursor-pointer"
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#C66B4E] hover:bg-[#B2583D] text-white font-bold text-xs transition-all shadow-md cursor-pointer"
                     title="Launch animated 3D route tour"
                   >
                     <Play className="w-3.5 h-3.5 fill-white" />
@@ -1371,7 +1371,7 @@ export const DigitalTwin3D: React.FC<DigitalTwin3DProps> = ({
                 ) : (
                   <button
                     onClick={pauseRouteTour}
-                    className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs transition-all shadow-md cursor-pointer"
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#789477] hover:bg-[#5F7C5E] text-white font-bold text-xs transition-all shadow-md cursor-pointer"
                   >
                     <Pause className="w-3.5 h-3.5 fill-white" />
                     <span>{t('twin_pause_tour', 'Pause Tour')}</span>
@@ -1386,16 +1386,16 @@ export const DigitalTwin3D: React.FC<DigitalTwin3DProps> = ({
                 <React.Fragment key={stop.stop_id || sIdx}>
                   <button
                     onClick={() => focusStopWaypoint(sIdx)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950/80 hover:bg-slate-800 border border-slate-800 hover:border-pink-500/50 text-xs font-semibold text-slate-200 transition-all shrink-0 cursor-pointer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-[#FAF6F0] border border-[#EAE0D0] hover:border-[#E9A5B5] text-xs font-bold text-[#29252B] transition-all shrink-0 cursor-pointer shadow-2xs"
                   >
-                    <span className="w-5 h-5 rounded-full bg-pink-500/20 text-pink-300 text-[10px] font-bold flex items-center justify-center">
+                    <span className="w-5 h-5 rounded-full bg-[#FDF2F4] text-[#C64A6A] border border-[#E9A5B5] text-[10px] font-bold flex items-center justify-center">
                       {sIdx + 1}
                     </span>
                     <span className="truncate max-w-[130px]">{stop.name_en || stop.name_ja}</span>
                   </button>
 
                   {sIdx < arr.length - 1 && routeSegments[sIdx] && (
-                    <span className="text-[10px] text-slate-400 font-mono shrink-0 flex items-center gap-0.5">
+                    <span className="text-[10px] text-[#8A808F] font-mono shrink-0 flex items-center gap-0.5">
                       → {routeSegments[sIdx].distanceKm} km →
                     </span>
                   )}
@@ -1408,20 +1408,20 @@ export const DigitalTwin3D: React.FC<DigitalTwin3DProps> = ({
 
       {/* Active 3D Route Tour Floating HUD */}
       {isTourPlaying && itinerary && (
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-30 pointer-events-auto bg-slate-900/95 border border-pink-500/50 backdrop-blur-xl px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-4 text-xs max-w-lg w-full animate-in fade-in zoom-in-95">
-          <div className="w-8 h-8 rounded-full bg-pink-600 text-white flex items-center justify-center font-bold text-xs shadow-md shrink-0">
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-30 pointer-events-auto bg-white/95 border border-[#E9A5B5] backdrop-blur-xl px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-4 text-xs max-w-lg w-full animate-in fade-in zoom-in-95 text-[#29252B]">
+          <div className="w-8 h-8 rounded-full bg-[#C66B4E] text-white flex items-center justify-center font-bold text-xs shadow-md shrink-0">
             {tourStopIndex + 1}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-pink-400">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#C66B4E]">
                 {t('twin_tour_active', '3D Route Tour Active')}
               </span>
-              <span className="text-[10px] text-slate-400 font-mono">
+              <span className="text-[10px] text-[#8A808F] font-mono">
                 ({tourStopIndex + 1} / {itinerary.days?.flatMap(d => d.stops).length || 0})
               </span>
             </div>
-            <h4 className="text-sm font-bold text-white truncate">
+            <h4 className="text-sm font-bold text-[#29252B] truncate">
               {itinerary.days?.flatMap(d => d.stops)[tourStopIndex]?.name_en || itinerary.days?.flatMap(d => d.stops)[tourStopIndex]?.name_ja}
             </h4>
           </div>
@@ -1429,31 +1429,31 @@ export const DigitalTwin3D: React.FC<DigitalTwin3DProps> = ({
           <div className="flex items-center gap-1">
             <button
               onClick={prevTourStop}
-              className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition cursor-pointer"
+              className="p-1.5 rounded-lg bg-[#FAF6F0] hover:bg-[#F3EBE0] text-[#29252B] transition cursor-pointer"
               title="Previous Stop"
             >
               <SkipBack className="w-4 h-4" />
             </button>
             <button
               onClick={resumeRouteTour}
-              className="p-1.5 rounded-lg bg-pink-600 hover:bg-pink-500 text-white transition cursor-pointer"
+              className="p-1.5 rounded-lg bg-[#C66B4E] hover:bg-[#B2583D] text-white transition cursor-pointer"
               title="Play"
             >
               <Play className="w-4 h-4 fill-white" />
             </button>
             <button
               onClick={nextTourStop}
-              className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition cursor-pointer"
+              className="p-1.5 rounded-lg bg-[#FAF6F0] hover:bg-[#F3EBE0] text-[#29252B] transition cursor-pointer"
               title="Next Stop"
             >
               <SkipForward className="w-4 h-4" />
             </button>
             <button
               onClick={exitRouteTour}
-              className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-900/60 text-rose-300 transition cursor-pointer ml-1"
+              className="p-1.5 rounded-lg bg-[#FAF6F0] hover:bg-rose-100 text-rose-600 transition cursor-pointer ml-1"
               title="Exit Tour"
             >
-              <Square className="w-4 h-4 fill-rose-300" />
+              <Square className="w-4 h-4 fill-rose-600" />
             </button>
           </div>
         </div>

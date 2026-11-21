@@ -15,13 +15,15 @@ interface FujiNovaLogoProps {
   className?: string;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   showTagline?: boolean;
+  version?: string;
 }
 
 export const FujiNovaLogo: React.FC<FujiNovaLogoProps> = ({
   variant = 'full-horizontal',
   className = '',
   size = 'md',
-  showTagline = false
+  showTagline = false,
+  version = '8.0'
 }) => {
   // Dimension mappings
   const heightMap = {
@@ -33,20 +35,13 @@ export const FujiNovaLogo: React.FC<FujiNovaLogoProps> = ({
 
   const currentHeight = heightMap[size];
   const isMonochrome = variant === 'monochrome';
-  const isLightMode = variant === 'light';
 
-  // Palette definitions
-  const snowWhite = isMonochrome ? '#FFFFFF' : '#FFFFFF';
-  const sakuraPink = isMonochrome ? 'currentColor' : '#F2A7C0';
-  const blossomRose = isMonochrome ? 'currentColor' : '#D96C98';
-  const goldPath = isMonochrome ? 'currentColor' : '#F59E0B';
-  const textColor = isMonochrome 
-    ? 'currentColor' 
-    : isLightMode 
-    ? '#17253F' 
-    : '#FFFFFF';
+  // Official Sakura Garden Palette
+  const vermilionColor = isMonochrome ? 'currentColor' : '#C66B4E';
+  const sakuraColor = isMonochrome ? 'currentColor' : '#E9A5B5';
+  const charcoalText = isMonochrome ? 'currentColor' : '#29252B';
 
-  // Vector Symbol: Mount Fuji + Sakura Blossom + Travel Compass Arc
+  // Vector Symbol: Japanese Circular Emblem with Mount Fuji & Wrapping Sakura Blossom Cluster
   const renderSymbol = () => (
     <svg
       viewBox="0 0 100 100"
@@ -58,35 +53,22 @@ export const FujiNovaLogo: React.FC<FujiNovaLogoProps> = ({
       aria-label="FujiNova Mount Fuji and Sakura Emblem"
     >
       <defs>
-        {/* Sky / Base Circular Glow */}
-        <linearGradient id="fnSkyGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#2878B8" stopOpacity="0.9" />
-          <stop offset="100%" stopColor="#17253F" stopOpacity="0.95" />
+        {/* Rich Plum / Vermilion Sun Emblem */}
+        <linearGradient id="fnSakuraSun" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#C66B4E" />
+          <stop offset="50%" stopColor="#A84465" />
+          <stop offset="100%" stopColor="#7E244D" />
         </linearGradient>
 
-        {/* Mount Fuji Body Gradient */}
-        <linearGradient id="fnFujiSlope" x1="50%" y1="20%" x2="50%" y2="90%">
-          <stop offset="0%" stopColor="#2A6496" />
-          <stop offset="100%" stopColor="#17253F" />
-        </linearGradient>
-
-        {/* Sakura Petal Radial Gradient */}
-        <radialGradient id="fnSakuraGrad" cx="30%" cy="30%" r="70%">
-          <stop offset="0%" stopColor="#FFF1F5" />
-          <stop offset="60%" stopColor="#F2A7C0" />
-          <stop offset="100%" stopColor="#D96C98" />
-        </radialGradient>
-
-        {/* Travel Path Orbital Gradient */}
-        <linearGradient id="fnPathGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#9BD7EF" stopOpacity="0.3" />
-          <stop offset="50%" stopColor="#F59E0B" />
-          <stop offset="100%" stopColor="#F2A7C0" />
+        {/* Mount Fuji Body Slope */}
+        <linearGradient id="fnFujiBody" x1="50%" y1="35%" x2="50%" y2="90%">
+          <stop offset="0%" stopColor="#3D3740" />
+          <stop offset="100%" stopColor="#29252B" />
         </linearGradient>
 
         {/* Soft Drop Shadow Filter */}
         <filter id="fnShadow" x="-10%" y="-10%" width="120%" height="120%">
-          <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.25" />
+          <feDropShadow dx="0" dy="1.5" stdDeviation="2.5" floodColor="#29252B" floodOpacity="0.2" />
         </filter>
       </defs>
 
@@ -95,117 +77,77 @@ export const FujiNovaLogo: React.FC<FujiNovaLogoProps> = ({
         cx="50" 
         cy="50" 
         r="46" 
-        fill={isMonochrome ? 'none' : 'url(#fnSkyGlow)'} 
-        stroke={isMonochrome ? 'currentColor' : '#9BD7EF'} 
+        fill={isMonochrome ? 'none' : 'url(#fnSakuraSun)'} 
+        stroke={isMonochrome ? 'currentColor' : '#F7EFE5'} 
         strokeWidth={isMonochrome ? '3' : '2'}
-        strokeOpacity={isMonochrome ? '1' : '0.4'}
         filter="url(#fnShadow)"
       />
 
-      {/* Rising Sun Disk / Golden Hour Aura */}
-      {!isMonochrome && (
-        <circle cx="50" cy="42" r="28" fill="#F2A7C0" fillOpacity="0.25" />
-      )}
-
-      {/* Mount Fuji Base & Flanks */}
-      <path
-        d="M14 82 C28 78 38 48 46 26 L54 26 C62 48 72 78 86 82 C74 85 26 85 14 82 Z"
-        fill={isMonochrome ? '#333333' : 'url(#fnFujiSlope)'}
-      />
-
-      {/* Mount Fuji Snowcap with Iconic Volcanic Ridges */}
-      <path
-        d="M46 26 L54 26 C57 34 60 41 64 47 C61 45 58 48 56 46 C54 44 52 50 50 48 C48 46 45 50 43 46 C41 48 38 45 36 47 C40 41 43 34 46 26 Z"
-        fill={snowWhite}
-      />
-
-      {/* Snowcap Shadow Accent */}
-      {!isMonochrome && (
+      {/* Mount Fuji Silhouette Silhouette with White Snowcap */}
+      <g>
+        {/* Fuji Mountain Base */}
         <path
-          d="M50 26 L54 26 C57 34 60 41 64 47 C61 45 58 48 56 46 C54 44 52 50 50 48 Z"
-          fill="#9BD7EF"
-          fillOpacity="0.4"
+          d="M 18 80 C 32 75 42 55 47 42 L 53 42 C 58 55 68 75 82 80 C 72 82 28 82 18 80 Z"
+          fill="url(#fnFujiBody)"
         />
-      )}
-
-      {/* Curved Exploration Path / Orbital Compass Arc */}
-      <path
-        d="M18 72 C32 86 68 86 84 66"
-        stroke={goldPath}
-        strokeWidth="3.2"
-        strokeLinecap="round"
-        strokeDasharray="1 0"
-        fill="none"
-      />
-      <circle cx="84" cy="66" r="3.5" fill="#F59E0B" />
-
-      {/* Sakura Branch & Cherry Blossoms (Left Foreground) */}
-      <g id="sakura-cluster" transform="translate(6, 18)">
-        {/* Curved Cherry Branch */}
+        {/* Snowcap with distinctive scalloped edges */}
         <path
-          d="M6 55 C12 40 18 32 30 24"
-          stroke={isMonochrome ? 'currentColor' : '#8B5A3C'}
-          strokeWidth="2.2"
-          strokeLinecap="round"
-          fill="none"
-        />
-
-        {/* Main Five-Petal Cherry Blossom */}
-        <g transform="translate(22, 24)">
-          {/* 5 Petals with Heart Notches */}
-          {[0, 72, 144, 216, 288].map((angle, i) => (
-            <path
-              key={i}
-              transform={`rotate(${angle})`}
-              d="M0 -3 C-4 -8 -6 -13 -3 -15 C-1 -16 0 -13 0 -13 C0 -13 1 -16 3 -15 C6 -13 4 -8 0 -3 Z"
-              fill={isMonochrome ? '#FFFFFF' : 'url(#fnSakuraGrad)'}
-              stroke={isMonochrome ? 'currentColor' : blossomRose}
-              strokeWidth="0.8"
-            />
-          ))}
-          {/* Flower Center & Pistils */}
-          <circle cx="0" cy="0" r="2.5" fill={isMonochrome ? 'currentColor' : '#F59E0B'} />
-          <circle cx="0" cy="0" r="1.2" fill={isMonochrome ? '#FFFFFF' : '#FFFFFF'} />
-        </g>
-
-        {/* Small Accompanying Sakura Blossom */}
-        <g transform="translate(10, 44) scale(0.65)">
-          {[0, 72, 144, 216, 288].map((angle, i) => (
-            <path
-              key={i}
-              transform={`rotate(${angle})`}
-              d="M0 -3 C-4 -8 -6 -13 -3 -15 C-1 -16 0 -13 0 -13 C0 -13 1 -16 3 -15 C6 -13 4 -8 0 -3 Z"
-              fill={isMonochrome ? '#FFFFFF' : 'url(#fnSakuraGrad)'}
-              stroke={isMonochrome ? 'currentColor' : blossomRose}
-              strokeWidth="0.8"
-            />
-          ))}
-          <circle cx="0" cy="0" r="2" fill="#F59E0B" />
-        </g>
-
-        {/* Drifting Petals in Spring Breeze */}
-        <path
-          d="M36 12 C38 8 42 7 44 9 C45 11 43 14 40 14 C37 14 35 13 36 12 Z"
-          fill={sakuraPink}
-          opacity="0.85"
-        />
-        <path
-          d="M48 22 C50 19 53 19 54 21 C55 23 53 25 51 25 C49 25 47 23 48 22 Z"
-          fill={sakuraPink}
-          opacity="0.75"
+          d="M 47 42 L 53 42 C 55 48 57 53 59 56 L 56 57 L 54 53 L 52 58 L 50 54 L 48 58 L 46 54 L 44 57 L 41 56 C 43 53 45 48 47 42 Z"
+          fill="#FFFFFF"
         />
       </g>
 
-      {/* Subtle 4-Point Compass Star (Upper Right) */}
-      <g transform="translate(74, 26) scale(0.8)">
-        <polygon points="0,-7 2,-2 7,0 2,2 0,7 -2,2 -7,0 -2,-2" fill={goldPath} />
-        <circle cx="0" cy="0" r="1.5" fill="#FFFFFF" />
+      {/* Stylized Sakura Blossom Cluster Wrapping around Left and Base */}
+      {/* Blossom 1 (Top Left) */}
+      <g transform="translate(18, 28) scale(0.24)">
+        {[0, 72, 144, 216, 288].map((angle, i) => (
+          <path
+            key={i}
+            d="M 0 0 C -12 -24 -24 -40 0 -50 C 24 -40 12 -24 0 0 Z"
+            fill="#FFFFFF"
+            transform={`rotate(${angle})`}
+          />
+        ))}
+        <circle cx="0" cy="0" r="7" fill={sakuraColor} />
       </g>
+
+      {/* Blossom 2 (Mid Left) */}
+      <g transform="translate(14, 52) scale(0.3)">
+        {[0, 72, 144, 216, 288].map((angle, i) => (
+          <path
+            key={i}
+            d="M 0 0 C -12 -24 -24 -40 0 -50 C 24 -40 12 -24 0 0 Z"
+            fill="#FFFFFF"
+            transform={`rotate(${angle})`}
+          />
+        ))}
+        <circle cx="0" cy="0" r="7" fill={vermilionColor} />
+      </g>
+
+      {/* Blossom 3 (Bottom Center) */}
+      <g transform="translate(36, 75) scale(0.26)">
+        {[0, 72, 144, 216, 288].map((angle, i) => (
+          <path
+            key={i}
+            d="M 0 0 C -12 -24 -24 -40 0 -50 C 24 -40 12 -24 0 0 Z"
+            fill="#FFFFFF"
+            transform={`rotate(${angle})`}
+          />
+        ))}
+        <circle cx="0" cy="0" r="7" fill={sakuraColor} />
+      </g>
+
+      {/* Drifting Petal (Right) */}
+      <path
+        d="M 72 32 C 75 28 80 30 78 35 C 75 38 70 36 72 32 Z"
+        fill="#FFFFFF"
+        opacity="0.9"
+      />
     </svg>
   );
 
-  // If compact symbol, square icon, or favicon, return symbol alone
-  if (variant === 'compact-symbol' || variant === 'square-icon' || variant === 'favicon' || variant === 'mobile') {
+  // Variant: Just the emblem symbol
+  if (variant === 'compact-symbol' || variant === 'favicon' || variant === 'square-icon') {
     return (
       <div className={`inline-flex items-center justify-center ${className}`}>
         {renderSymbol()}
@@ -213,35 +155,32 @@ export const FujiNovaLogo: React.FC<FujiNovaLogoProps> = ({
     );
   }
 
-  // Full Horizontal Logo with Modern Typography
+  // Variant: Full Horizontal with Logo typography and Japanese kanji
   return (
-    <div className={`inline-flex items-center gap-3 select-none ${className}`}>
+    <div className={`inline-flex items-center gap-2.5 ${className}`}>
       {renderSymbol()}
-      <div className="flex flex-col">
-        <div className="flex items-center leading-none tracking-tight">
-          <span 
-            className="font-black text-lg sm:text-xl tracking-tight"
-            style={{ color: textColor }}
-          >
-            Fuji
-          </span>
-          <span 
-            className="font-extrabold text-lg sm:text-xl tracking-tight"
-            style={{ 
-              color: isMonochrome ? textColor : '#F2A7C0',
-              textShadow: isMonochrome ? 'none' : '0 0 12px rgba(242, 167, 192, 0.4)'
+      <div className="flex flex-col select-none">
+        <div className="flex items-center gap-1.5">
+          <span
+            className="font-black tracking-tight leading-none text-ink-charcoal"
+            style={{
+              fontSize: size === 'sm' ? '1.15rem' : size === 'md' ? '1.45rem' : size === 'lg' ? '1.75rem' : '2.1rem',
+              color: charcoalText
             }}
           >
-            Nova
+            <span>Fuji</span>
+            <span style={{ color: vermilionColor }}>Nova</span>
           </span>
-          <span className="ml-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-400/30 tracking-widest uppercase">
-            7.0
+          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-matcha-light text-matcha-green border border-matcha-border/40 hidden sm:inline-block">
+            {version}
           </span>
         </div>
-        {showTagline && (
-          <span className="text-[9px] uppercase tracking-widest font-semibold text-slate-400 mt-1">
-            Discover • Explore • Experience
-          </span>
+        {(showTagline || variant === 'full-horizontal') && (
+          <div className="flex items-center gap-1 text-[10px] font-semibold text-charcoal-muted leading-tight mt-0.5">
+            <span className="text-sakura-pink">🌸</span>
+            <span>Mount Fuji & Five Lakes</span>
+            <span className="text-charcoal-light font-normal hidden lg:inline">・ 富士山の旅</span>
+          </div>
         )}
       </div>
     </div>

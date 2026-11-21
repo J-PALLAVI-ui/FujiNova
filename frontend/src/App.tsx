@@ -14,7 +14,7 @@ import { PublicTripView } from './components/PublicTripView';
 import { ExperienceModeProvider, useExperienceMode } from './context/ExperienceModeContext';
 import { LanguageProvider, useTranslation } from './i18n/LanguageContext';
 import { GlobalLanguageSelector } from './components/GlobalLanguageSelector';
-import { InteractiveSakuraBackground } from './components/InteractiveSakuraBackground';
+import { InteractiveSakuraBackground, SeasonMode } from './components/InteractiveSakuraBackground';
 
 import { TravellerProfile, ItineraryPlan, Place, ItineraryStop } from './types';
 import ALL_VERIFIED_LANDMARKS from './data/all_landmarks.json';
@@ -63,6 +63,7 @@ const AppInner: React.FC = () => {
   const [externalPrompt, setExternalPrompt] = useState<string | undefined>(undefined);
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
   const [twinMode2D, setTwinMode2D] = useState(false);
+  const [season, setSeason] = useState<SeasonMode>('spring');
 
   const { t } = useTranslation();
   const { modeTitle, modeBadgeColor } = useExperienceMode();
@@ -261,20 +262,20 @@ const AppInner: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans select-none antialiased relative">
-      {/* Background System: Mount Fuji Silhouette + Interactive Falling Sakura Petals */}
-      <InteractiveSakuraBackground activeTab={activeTab} />
+    <div className="min-h-screen bg-[#F7EFE5] text-[#29252B] flex flex-col font-sans select-none antialiased relative">
+      {/* Background System: Mount Fuji Silhouette + Interactive Falling Sakura Petals & Seasonal Scenery */}
+      <InteractiveSakuraBackground activeTab={activeTab} season={season} />
 
       {/* WCAG 2.2 AA Skip Link */}
       <a 
         href="#main-content" 
-        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:bg-sky-600 focus:text-white focus:rounded-xl focus:shadow-2xl focus:ring-2 focus:ring-white focus:outline-hidden text-xs font-bold"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:bg-[#C66B4E] focus:text-white focus:rounded-xl focus:shadow-2xl focus:ring-2 focus:ring-white focus:outline-hidden text-xs font-bold"
       >
         {t('skip_content', 'Skip to main content (Alt+1)')}
       </a>
 
-      {/* Top Header Navigation */}
-      <header className="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40">
+      {/* Top Header Navigation - Sakura Garden Warm Ivory & Charcoal Aesthetic */}
+      <header className="bg-[#F7EFE5]/92 backdrop-blur-md border-b border-[#EAE0D0] sticky top-0 z-40 shadow-xs">
         <div className="max-w-[1920px] mx-auto px-4 h-14 flex items-center justify-between gap-3">
           {/* Logo & Brand Identity */}
           <button 
@@ -286,13 +287,13 @@ const AppInner: React.FC = () => {
           </button>
 
           {/* Primary Workspace Navigation Tabs (Streamlined 7 Sections, Zero Horizontal Scrollbar) */}
-          <nav className="flex items-center gap-1 bg-slate-950/80 p-1 rounded-xl border border-slate-800/80 shrink-0">
+          <nav className="flex items-center gap-1 bg-[#EFE4D6]/90 p-1 rounded-xl border border-[#E2D5C4] shrink-0 shadow-inner">
             <button
               onClick={() => setActiveTab('discover')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'discover'
-                  ? 'bg-sky-600 text-white shadow-xs'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                  ? 'bg-[#C66B4E] text-white shadow-xs'
+                  : 'text-[#5A525E] hover:text-[#29252B] hover:bg-[#F7EFE5]/80'
               }`}
             >
               <span>{t('nav_discover', 'Discover')}</span>
@@ -302,11 +303,11 @@ const AppInner: React.FC = () => {
               onClick={() => setActiveTab('hana')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'hana'
-                  ? 'bg-sky-600 text-white shadow-xs'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                  ? 'bg-[#C66B4E] text-white shadow-xs'
+                  : 'text-[#5A525E] hover:text-[#29252B] hover:bg-[#F7EFE5]/80'
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5 text-pink-400" />
+              <Sparkles className="w-3.5 h-3.5 text-[#E9A5B5]" />
               <span>{t('nav_hana', 'Hana AI')}</span>
             </button>
 
@@ -314,11 +315,11 @@ const AppInner: React.FC = () => {
               onClick={() => setActiveTab('twin')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'twin'
-                  ? 'bg-sky-600 text-white shadow-xs'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                  ? 'bg-[#C66B4E] text-white shadow-xs'
+                  : 'text-[#5A525E] hover:text-[#29252B] hover:bg-[#F7EFE5]/80'
               }`}
             >
-              <Compass className="w-3.5 h-3.5 text-sky-400" />
+              <Compass className="w-3.5 h-3.5 text-[#789477]" />
               <span>{t('nav_twin', '3D Digital Twin')}</span>
             </button>
 
@@ -326,14 +327,14 @@ const AppInner: React.FC = () => {
               onClick={() => setActiveTab('journey')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'journey'
-                  ? 'bg-sky-600 text-white shadow-xs'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                  ? 'bg-[#C66B4E] text-white shadow-xs'
+                  : 'text-[#5A525E] hover:text-[#29252B] hover:bg-[#F7EFE5]/80'
               }`}
             >
-              <Navigation className="w-3.5 h-3.5 text-emerald-400" />
+              <Navigation className="w-3.5 h-3.5 text-[#789477]" />
               <span>{t('nav_journey', 'Journey Planner')}</span>
               {itinerary && (
-                <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />
+                <span className="w-2 h-2 rounded-full bg-[#789477] inline-block" />
               )}
             </button>
 
@@ -341,11 +342,11 @@ const AppInner: React.FC = () => {
               onClick={() => setActiveTab('intelligence')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'intelligence'
-                  ? 'bg-sky-600 text-white shadow-xs'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                  ? 'bg-[#C66B4E] text-white shadow-xs'
+                  : 'text-[#5A525E] hover:text-[#29252B] hover:bg-[#F7EFE5]/80'
               }`}
             >
-              <Activity className="w-3.5 h-3.5 text-amber-400" />
+              <Activity className="w-3.5 h-3.5 text-[#B99BCB]" />
               <span>{t('nav_intelligence', 'Travel Intelligence')}</span>
             </button>
 
@@ -353,11 +354,11 @@ const AppInner: React.FC = () => {
               onClick={() => setActiveTab('mytravel')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'mytravel'
-                  ? 'bg-sky-600 text-white shadow-xs'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                  ? 'bg-[#C66B4E] text-white shadow-xs'
+                  : 'text-[#5A525E] hover:text-[#29252B] hover:bg-[#F7EFE5]/80'
               }`}
             >
-              <Wallet className="w-3.5 h-3.5 text-purple-400" />
+              <Wallet className="w-3.5 h-3.5 text-[#C66B4E]" />
               <span>{t('nav_mytravel', 'My Travel')}</span>
             </button>
 
@@ -365,11 +366,11 @@ const AppInner: React.FC = () => {
               onClick={() => setActiveTab('settings')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'settings'
-                  ? 'bg-sky-600 text-white shadow-xs'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                  ? 'bg-[#C66B4E] text-white shadow-xs'
+                  : 'text-[#5A525E] hover:text-[#29252B] hover:bg-[#F7EFE5]/80'
               }`}
             >
-              <Settings className="w-3.5 h-3.5 text-slate-400" />
+              <Settings className="w-3.5 h-3.5 text-[#5A525E]" />
               <span>{t('nav_settings', 'Settings')}</span>
             </button>
           </nav>
@@ -392,34 +393,34 @@ const AppInner: React.FC = () => {
             {/* Trip Basket Button */}
             <button
               onClick={() => setIsBasketOpen(true)}
-              className="relative p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700/80 transition-all flex items-center gap-1.5 cursor-pointer"
+              className="relative p-2 rounded-xl bg-white hover:bg-[#FAF6F0] text-[#29252B] border border-[#EAE0D0] transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
               title="Open Trip Selection Basket"
               aria-label={`Trip basket with ${basket.length} places`}
             >
-              <ShoppingBag className="w-4 h-4 text-pink-400" />
+              <ShoppingBag className="w-4 h-4 text-[#C66B4E]" />
               <span className="text-xs font-bold hidden sm:inline">{t('basket', 'Basket')}</span>
               {basket.length > 0 && (
-                <span className="px-1.5 py-0.2 rounded-full bg-pink-500 text-white font-bold text-[10px]">
+                <span className="px-1.5 py-0.2 rounded-full bg-[#C66B4E] text-white font-bold text-[10px]">
                   {basket.length}
                 </span>
               )}
             </button>
 
             {/* Live Free Tier Engine Telemetry */}
-            <div className="hidden xl:flex items-center gap-2 px-3 py-1 rounded-xl bg-slate-950/80 border border-slate-800/90 text-xs">
+            <div className="hidden xl:flex items-center gap-2 px-3 py-1 rounded-xl bg-white border border-[#EAE0D0] text-xs shadow-xs">
               <span
                 className={`w-2 h-2 rounded-full shrink-0 ${
-                  health?.status === 'ok' ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
+                  health?.status === 'ok' ? 'bg-[#789477] animate-pulse' : 'bg-amber-400'
                 }`}
               />
-              <span className="text-[10px] uppercase font-bold text-sky-400 tracking-wider">
+              <span className="text-[10px] uppercase font-bold text-[#C66B4E] tracking-wider">
                 Google Gemini
               </span>
-              <span className="text-slate-600">|</span>
-              <span className="font-mono text-[11px] font-medium text-slate-200">
+              <span className="text-[#D5C1A3]">|</span>
+              <span className="font-mono text-[11px] font-semibold text-[#29252B]">
                 {health?.active_model || health?.primary_model || 'gemini-3.5-flash-lite'}
               </span>
-              <span className="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.2 rounded font-semibold">
+              <span className="text-[9px] bg-[#EFF5EE] text-[#4F734E] border border-[#789477]/30 px-1.5 py-0.2 rounded font-semibold">
                 Free Tier (₹0)
               </span>
             </div>
@@ -431,6 +432,8 @@ const AppInner: React.FC = () => {
       <main id="main-content" tabIndex={-1} className="flex-1 overflow-hidden relative outline-hidden">
         {activeTab === 'discover' && (
           <DiscoverView
+            season={season}
+            onSeasonChange={setSeason}
             onAskHana={handleAskHana}
             onExplore3D={(pid) => {
               if (pid) setSelectedPlaceId(pid);
@@ -456,11 +459,11 @@ const AppInner: React.FC = () => {
         {activeTab === 'twin' && (
           twinMode2D ? (
             <div className="h-full flex flex-col">
-              <div className="p-2 bg-slate-900 border-b border-slate-800 flex justify-between items-center px-4">
-                <span className="text-xs text-slate-300 font-semibold">Accessible 2D Vector Map</span>
+              <div className="p-2 bg-white border-b border-[#EAE0D0] flex justify-between items-center px-4 shadow-xs">
+                <span className="text-xs text-[#29252B] font-bold">Accessible 2D Vector Map</span>
                 <button
                   onClick={() => setTwinMode2D(false)}
-                  className="px-3 py-1 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold"
+                  className="px-3 py-1 rounded-lg bg-[#C66B4E] hover:bg-[#B2583D] text-white text-xs font-bold shadow-xs cursor-pointer"
                 >
                   Switch to 3D Digital Twin
                 </button>
