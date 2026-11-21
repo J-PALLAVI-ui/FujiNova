@@ -65,6 +65,18 @@ CORE IDENTITY & CAPABILITIES:
    - Remember previous turns, traveler counts, budgets, and preferences within the session.
    - Understand context references such as "there", "that place", "the previous option", and "make it cheaper".
    - Avoid repetitive robotic greetings in ongoing conversations.
+
+5. JAPANESE TRAVEL COMMUNICATION ASSISTANT:
+   - When asked how to say something in Japanese or how to communicate with bus drivers, hotel staff, restaurants, or in emergencies:
+     Always provide:
+     * Japanese (Kanji & Kana script, e.g. 忍野八海で降ります。)
+     * Romaji (Phonetic pronunciation, e.g. Oshino Hakkai de orimasu.)
+     * English meaning (e.g. I would like to get off at Oshino Hakkai.)
+     * Brief etiquette tip if helpful.
+
+6. ABSOLUTE DATA TRUTH & ZERO HALLUCINATION:
+   - Never invent departure times, admission prices, or weather forecasts. Ground every specific fact in the verified context provided.
+   - For accessibility, always disclose verified step counts (e.g. Chureito: 398 steps) and never promise step-free access where steep terrain exists.
 """
 
 
@@ -586,11 +598,42 @@ class HanaAgent:
             state["identified_places"] = []
             grounded_places = []
 
-        # 4. Deterministic Public Transport Routing via RAPTOR
+        # 4. Deterministic Public Transport Routing via RAPTOR & Missed Connection Handling
+        is_missed_bus = any(kw in lower_msg for kw in ["missed my bus", "missed the bus", "missed bus", "missed train", "missed my train", "missed connection"])
         transit_info = extract_transit_query(user_message)
         transit_context = ""
         state["identified_journeys"] = []
-        if transit_info:
+
+        if is_missed_bus:
+            state["response_type"] = "transit"
+            # Target missed destination or Oishi Park as default
+            target_dest = "kawaguchiko_oishi_park" if "oishi" in lower_msg else "kawaguchiko_station"
+            try:
+                routing_svc = get_routing_service()
+                req = RouteSearchRequest(
+                    origin="0025_01",  # Kawaguchiko Station Bus Terminal
+                    destination=target_dest,
+                    departure_time="09:30:00",
+                    max_results=2
+                )
+                res = routing_svc.search_routes(req)
+                if res.journeys:
+                    state["identified_journeys"] = [j.model_dump() for j in res.journeys]
+                    next_j = res.journeys[0]
+                    first_leg = next_j.legs[0] if next_j.legs else None
+                    dep_time = first_leg.departure_time if first_leg else "09:30"
+                    transit_context = (
+                        f"\n\nMISSED CONNECTION RECOVERY (Grounded in Fujikyuko Bus GTFS Timetable):\n"
+                        f"- Current Station: Kawaguchiko Station (0025_01)\n"
+                        f"- Next Available Departure: {dep_time} via {first_leg.route_long_name if first_leg else 'Omnibus Red Line'}\n"
+                        f"- Estimated Arrival: {next_j.arrival_time} (Fare: {next_j.total_fare_jpy} JPY)\n"
+                        f"- Alternative: Lake promenade walking path to nearby Funatsu Pier (~8 min flat walk)\n"
+                        f"- INSTRUCTION: Inform the tourist of the exact next departure time ({dep_time}), reassure them that buses run frequently, explain changes to the arrival time, and ask if they would like to update their afternoon itinerary."
+                    )
+            except Exception as e:
+                logger.warning(f"Missed connection routing error: {e}")
+
+        elif transit_info:
             orig_q, dest_q, dep_time_str = transit_info
             try:
                 routing_svc = get_routing_service()
@@ -682,6 +725,18 @@ class HanaAgent:
                 f"- Packing Advice: {w_data['packing_recommendations']}\n"
                 f"- Source: {w_data['data_source']}\n"
             )
+            # If user asks about rain or changing plans due to weather, provide verified indoor alternatives
+            if any(w in lower_msg for w in ["rain", "raining", "storm", "wet", "indoor"]):
+                indoor_places = search_places_db(indoor_alternative=True, limit=4)
+                if indoor_places:
+                    weather_context += "\nRECOMMENDED VERIFIED INDOOR ALTERNATIVES (Rain-proof destinations):\n"
+                    for ip in indoor_places:
+                        weather_context += (
+                            f"- {ip['name_en']} ({ip['name_ja']}): Category={ip['primary_category']}, "
+                            f"Hours={ip['opening_hours_text']}, Admission=¥{ip.get('general_admission_fee_jpy', 0)}, "
+                            f"Access={ip['accessibility_status']}\n"
+                        )
+                    weather_context += "- INSTRUCTION: Acknowledge the weather condition, suggest these verified indoor alternatives, explain transport adjustments, and ask before modifying the saved trip."
 
         # 8. Grounded Places Formatting
         grounding_places_text = ""

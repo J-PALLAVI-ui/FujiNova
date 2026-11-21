@@ -222,3 +222,90 @@ export interface ItineraryPlan {
   summary_notes?: string;
 }
 
+export interface EssentialService {
+  service_id: string;
+  name_en: string;
+  name_ja: string;
+  category: 'hospital' | 'pharmacy' | 'convenience_store' | 'atm' | 'toilet' | 'tourist_info' | 'train_station' | 'bus_stop' | 'parking' | 'restaurant' | string;
+  latitude: number;
+  longitude: number;
+  address_en?: string;
+  address_ja?: string;
+  phone?: string;
+  opening_hours?: string;
+  is_24_hours: number;
+  has_english_support: number;
+  distance_km?: number;
+  source: string;
+  last_verified_date: string;
+}
+
+export interface EmergencyHotline {
+  title_en: string;
+  title_ja: string;
+  number: string;
+  description_en: string;
+  description_ja: string;
+  available_languages: string[];
+}
+
+export interface TravelDisruption {
+  disruption_id: string;
+  line_or_area: string;
+  disruption_type: 'train_delay' | 'train_cancellation' | 'bus_change' | 'weather_warning' | 'road_closure' | 'attraction_closure' | string;
+  severity: 'minor' | 'moderate' | 'severe' | string;
+  title_en: string;
+  title_ja: string;
+  description_en: string;
+  description_ja: string;
+  alternative_advice_en?: string;
+  alternative_advice_ja?: string;
+  source: string;
+  reported_at: string;
+  is_active: number;
+}
+
+export interface ExpenseRecord {
+  expense_id: string;
+  trip_id?: string;
+  category: 'transport' | 'admission' | 'meals' | 'accommodation' | 'shopping' | 'other' | string;
+  amount_jpy: number;
+  description: string;
+  is_verified_fee: number;
+  created_at: string;
+}
+
+export interface BudgetSummary {
+  currency: string;
+  target_daily_budget_jpy: number;
+  total_spent_jpy: number;
+  remaining_balance_jpy: number;
+  spent_by_category: {
+    transport: number;
+    admission: number;
+    meals: number;
+    accommodation: number;
+    shopping: number;
+    other: number;
+  };
+  status: 'UNDER_BUDGET' | 'OVER_BUDGET' | string;
+}
+
+export interface BusinessListing {
+  business_id: string;
+  name_en: string;
+  name_ja: string;
+  category: string;
+  latitude: number;
+  longitude: number;
+  address_ja?: string;
+  address_en?: string;
+  phone?: string;
+  operating_hours?: string;
+  price_range_jpy?: string;
+  official_website?: string;
+  verified_partner: number;
+  source_verification_date?: string;
+}
+
+

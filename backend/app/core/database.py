@@ -120,6 +120,97 @@ def init_db(db_path: Optional[str] = None) -> None:
         """)
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_saved_trips_token ON saved_trips (share_token);")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_saved_trips_created ON saved_trips (created_at DESC);")
+
+        # User Accounts & Profiles (FujiNova 9.0)
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS user_accounts (
+            user_id TEXT PRIMARY KEY,
+            email TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            full_name TEXT,
+            created_at TEXT NOT NULL,
+            preferences_json TEXT DEFAULT '{}'
+        );
+        """)
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_user_email ON user_accounts (email);")
+
+        # Budget & Expense Records (FujiNova 9.0)
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS expenses (
+            expense_id TEXT PRIMARY KEY,
+            trip_id TEXT,
+            user_id TEXT,
+            category TEXT NOT NULL CHECK(category IN ('transport', 'admission', 'meals', 'accommodation', 'shopping', 'other')),
+            amount_jpy INTEGER NOT NULL,
+            description TEXT NOT NULL,
+            is_verified_fee INTEGER DEFAULT 0,
+            created_at TEXT NOT NULL
+        );
+        """)
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_expenses_trip ON expenses (trip_id);")
+
+        # Essential Services: Hospitals, Pharmacies, Konbini, ATMs, Toilets, Stations (FujiNova 9.0)
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS essential_services (
+            service_id TEXT PRIMARY KEY,
+            name_en TEXT NOT NULL,
+            name_ja TEXT NOT NULL,
+            category TEXT NOT NULL CHECK(category IN ('hospital', 'pharmacy', 'convenience_store', 'atm', 'toilet', 'tourist_info', 'train_station', 'bus_stop', 'parking', 'restaurant', 'police')),
+            latitude REAL NOT NULL,
+            longitude REAL NOT NULL,
+            address_en TEXT,
+            address_ja TEXT,
+            phone TEXT,
+            opening_hours TEXT,
+            is_24_hours INTEGER DEFAULT 0,
+            has_english_support INTEGER DEFAULT 0,
+            source TEXT NOT NULL,
+            last_verified_date TEXT NOT NULL
+        );
+        """)
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_essential_cat ON essential_services (category);")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_essential_spatial ON essential_services (latitude, longitude);")
+
+        # Travel Disruptions: Rail, Bus, Weather Warnings, Closures (FujiNova 9.0)
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS travel_disruptions (
+            disruption_id TEXT PRIMARY KEY,
+            line_or_area TEXT NOT NULL,
+            disruption_type TEXT NOT NULL CHECK(disruption_type IN ('train_delay', 'train_cancellation', 'bus_change', 'weather_warning', 'road_closure', 'attraction_closure')),
+            severity TEXT NOT NULL CHECK(severity IN ('minor', 'moderate', 'severe')),
+            title_en TEXT NOT NULL,
+            title_ja TEXT NOT NULL,
+            description_en TEXT NOT NULL,
+            description_ja TEXT NOT NULL,
+            alternative_advice_en TEXT,
+            alternative_advice_ja TEXT,
+            source TEXT NOT NULL,
+            reported_at TEXT NOT NULL,
+            is_active INTEGER DEFAULT 1
+        );
+        """)
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_disruptions_active ON travel_disruptions (is_active, reported_at DESC);")
+
+        # Local Business & Experience Directory: Ryokans, Bike Rentals, Crafts, Tours (FujiNova 9.0)
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS business_listings (
+            business_id TEXT PRIMARY KEY,
+            name_en TEXT NOT NULL,
+            name_ja TEXT NOT NULL,
+            category TEXT NOT NULL CHECK(category IN ('ryokan', 'hotel', 'restaurant', 'tour', 'craft_workshop', 'cultural_experience', 'bicycle_rental', 'luggage_storage', 'transport')),
+            latitude REAL NOT NULL,
+            longitude REAL NOT NULL,
+            address_ja TEXT,
+            address_en TEXT,
+            phone TEXT,
+            operating_hours TEXT,
+            price_range_jpy TEXT,
+            official_website TEXT,
+            verified_partner INTEGER DEFAULT 0,
+            source_verification_date TEXT
+        );
+        """)
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_business_cat ON business_listings (category);")
         conn.commit()
 
 

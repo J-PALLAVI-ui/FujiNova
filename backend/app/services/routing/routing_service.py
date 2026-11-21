@@ -43,17 +43,22 @@ TOURIST_LANDMARKS = {
     "新倉山浅間公園": "rail_shimoyoshida",
     "arakurayama": "rail_shimoyoshida",
     "arakurayama sengen park": "rail_shimoyoshida",
+    "arakurayama_sengen_park": "rail_shimoyoshida",
     "oishi": "1857_01",
     "oishi park": "1857_01",
+    "kawaguchiko oishi park": "1857_01",
+    "kawaguchiko_oishi_park": "1857_01",
     "大石公園": "1857_01",
     "河口湖自然生活館": "1857_01",
     "kawaguchiko natural living center": "1857_01",
     "natural living center": "1857_01",
     "kawaguchiko station": "0025_01",
+    "kawaguchiko_station": "0025_01",
     "河口湖駅": "0025_01",
     "kawaguchiko": "0025_01",
     "lake kawaguchiko": "0025_01",
     "fujisan station": "rail_fujisan",
+    "fujisan_station": "rail_fujisan",
     "富士山駅": "rail_fujisan",
     "mt fuji station": "rail_fujisan",
     "fujiyoshida": "rail_shimoyoshida",
@@ -65,6 +70,9 @@ TOURIST_LANDMARKS = {
     "fuji-q highland": "rail_fujikyu_highland",
     "fujikyu highland": "rail_fujikyu_highland",
     "富士急ハイランド": "rail_fujikyu_highland",
+    "mt_fuji_panoramic_ropeway": "1802_01",
+    "panoramic ropeway": "1802_01",
+    "ropeway": "1802_01"
 }
 
 
@@ -186,9 +194,14 @@ class RoutingService:
         if q in self.stops:
             return self.stops[q]
 
-        # 2. Check well-known tourist landmarks
+        # 2. Check well-known tourist landmarks (supports raw queries and place_id slugs with underscores)
+        q_clean = q_lower.replace("_", " ").strip()
         if q_lower in TOURIST_LANDMARKS:
             target_id = TOURIST_LANDMARKS[q_lower]
+            if target_id in self.stops:
+                return self.stops[target_id]
+        if q_clean in TOURIST_LANDMARKS:
+            target_id = TOURIST_LANDMARKS[q_clean]
             if target_id in self.stops:
                 return self.stops[target_id]
 

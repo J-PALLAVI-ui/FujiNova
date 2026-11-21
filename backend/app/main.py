@@ -25,15 +25,21 @@ from backend.app.api.routes_conversations import (
 )
 from backend.app.api.routes_translation import router as translation_router
 from backend.app.api.routes_export import router as export_router
+from backend.app.api.routes_essentials import router as essentials_router
+from backend.app.api.routes_disruptions import router as disruptions_router
+from backend.app.api.routes_expenses import router as expenses_router
+from backend.app.api.routes_business import router as business_router
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Lifecycle event: initialize database on startup and seed 35 verified places."""
+    """Lifecycle event: initialize database on startup and seed canonical verified places and services."""
     init_db()
     try:
         from backend.data.seed_places import seed_database
+        from backend.data.seed_fujinova9 import seed_fujinova9_data
         seed_database()
+        seed_fujinova9_data()
     except Exception as e:
         print(f"Startup seed notice: {e}")
     yield
@@ -82,6 +88,10 @@ app.include_router(travel_router)
 app.include_router(conversations_router)
 app.include_router(translation_router)
 app.include_router(export_router)
+app.include_router(essentials_router)
+app.include_router(disruptions_router)
+app.include_router(expenses_router)
+app.include_router(business_router)
 
 # Direct Compatibility Endpoints (as inspected in /docs)
 from backend.app.api.routes_health import health_check

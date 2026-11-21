@@ -7,6 +7,7 @@ import { YourJourneyPanel } from './components/YourJourneyPanel';
 import { TravelIntelligenceView } from './components/TravelIntelligenceView';
 import { MyTravelView } from './components/MyTravelView';
 import { ProfileSettingsView } from './components/ProfileSettingsView';
+import { TravelEssentialsView } from './components/TravelEssentialsView';
 import { FujiNovaLogo } from './components/brand/FujiNovaLogo';
 import { TripBasketDrawer } from './components/TripBasketDrawer';
 import { TripExportModal } from './components/TripExportModal';
@@ -29,7 +30,8 @@ import {
   ShoppingBag,
   Smile,
   ChevronDown,
-  Check
+  Check,
+  ShieldAlert
 } from 'lucide-react';
 
 export type WorkspaceTab = 
@@ -37,6 +39,7 @@ export type WorkspaceTab =
   | 'hana' 
   | 'twin' 
   | 'journey' 
+  | 'essentials'
   | 'intelligence' 
   | 'mytravel' 
   | 'settings';
@@ -343,6 +346,18 @@ const AppInner: React.FC = () => {
             </button>
 
             <button
+              onClick={() => setActiveTab('essentials')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                activeTab === 'essentials'
+                  ? 'bg-[#C66B4E] text-white shadow-xs'
+                  : 'text-[#5A525E] hover:text-[#29252B] hover:bg-[#F7EFE5]/80'
+              }`}
+            >
+              <ShieldAlert className="w-3.5 h-3.5 text-[#C66B4E]" />
+              <span>{t('nav_essentials', 'Essentials')}</span>
+            </button>
+
+            <button
               onClick={() => setActiveTab('intelligence')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'intelligence'
@@ -575,6 +590,12 @@ const AppInner: React.FC = () => {
               onOpenExport={() => setIsExportOpen(true)}
               onViewIn3D={() => setActiveTab('twin')}
             />
+          </div>
+        )}
+
+        {activeTab === 'essentials' && (
+          <div className="h-full overflow-y-auto">
+            <TravelEssentialsView />
           </div>
         )}
 

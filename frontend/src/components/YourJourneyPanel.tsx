@@ -22,7 +22,8 @@ import {
   CheckCircle2,
   Trophy,
   Award,
-  Smile
+  Smile,
+  AlertCircle
 } from 'lucide-react';
 
 interface YourJourneyPanelProps {
@@ -217,6 +218,14 @@ export const YourJourneyPanel: React.FC<YourJourneyPanelProps> = ({
           >
             <Sparkles className="w-3 h-3 text-[#C66B4E]" />
             <span>Less Crowded</span>
+          </button>
+          <button
+            onClick={() => onAskHana('I missed my bus on the itinerary. What is the next available scheduled connection and how does it affect my plan?')}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#FFF0F4] border border-[#FFD0DD] text-[10px] font-bold text-[#A83F70] hover:bg-[#FFEBF1] shadow-2xs transition-colors cursor-pointer"
+            title="Missed bus connection assistant"
+          >
+            <AlertCircle className="w-3 h-3 text-[#A83F70]" />
+            <span>Missed Bus?</span>
           </button>
         </div>
       </div>
