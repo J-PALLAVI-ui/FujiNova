@@ -82,20 +82,20 @@ export const ProfileSettingsView: React.FC<ProfileSettingsViewProps> = ({
         </div>
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-[#29252B]">Profile & Accessibility Settings</h1>
-          <p className="text-xs text-[#5A525E]">
+          <p className="text-xs text-[#625966]">
             WCAG 2.2 AA accessibility preferences, multilingual fluency, and AI engine telemetry.
           </p>
         </div>
       </div>
 
       {/* 0. Multi-Age Experience Modes */}
-      <div className="bg-white border border-[#EAE0D0] rounded-3xl p-6 shadow-sm space-y-4">
-        <div className="flex items-center gap-2 text-sm font-bold text-[#29252B] border-b border-[#EAE0D0] pb-3">
+      <div className="bg-white border border-[#E5DDD2] rounded-3xl p-6 shadow-sm space-y-4">
+        <div className="flex items-center gap-2 text-sm font-bold text-[#29252B] border-b border-[#E5DDD2] pb-3">
           <Sparkles className="w-4 h-4 text-[#C66B4E]" />
           <span>Multi-Age Experience Modes (FujiNova Adaptive UI)</span>
         </div>
 
-        <p className="text-xs text-[#5A525E]">
+        <p className="text-xs text-[#403944]">
           Tailor FujiNova’s interface, tone, and recommendations to who is travelling. Switch instantly at any time.
         </p>
 
@@ -106,7 +106,7 @@ export const ProfileSettingsView: React.FC<ProfileSettingsViewProps> = ({
             className={`p-4 rounded-2xl border text-left transition-all relative cursor-pointer ${
               currentExperienceMode === 'adult'
                 ? 'bg-[#FAF6F0] border-[#C66B4E] ring-2 ring-[#C66B4E]/30 shadow-xs'
-                : 'bg-white border-[#EAE0D0] hover:border-[#C66B4E]/40 text-[#29252B]'
+                : 'bg-white border-[#E5DDD2] hover:border-[#C66B4E]/40 text-[#29252B]'
             }`}
           >
             {currentExperienceMode === 'adult' && (
@@ -118,12 +118,12 @@ export const ProfileSettingsView: React.FC<ProfileSettingsViewProps> = ({
               <Compass className="w-5 h-5" />
             </div>
             <h3 className="text-sm font-bold text-[#29252B]">Standard Explorer (Adult)</h3>
-            <p className="text-xs text-[#5A525E] mt-1 leading-relaxed">
+            <p className="text-xs text-[#403944] mt-1 leading-relaxed">
               Professional tables, detailed RAPTOR transit timetables, budget breakdowns & full accessibility controls.
             </p>
             <div className="mt-3 flex flex-wrap gap-1 text-[10px] text-[#C66B4E]">
-              <span className="px-2 py-0.5 rounded-lg bg-[#FAF6F0] border border-[#EAE0D0] font-bold">Transit Times</span>
-              <span className="px-2 py-0.5 rounded-lg bg-[#FAF6F0] border border-[#EAE0D0] font-bold">Exact Costs</span>
+              <span className="px-2 py-0.5 rounded-lg bg-[#FAF6F0] border border-[#E5DDD2] font-bold">Transit Times</span>
+              <span className="px-2 py-0.5 rounded-lg bg-[#FAF6F0] border border-[#E5DDD2] font-bold">Exact Costs</span>
             </div>
           </button>
 
@@ -133,7 +133,7 @@ export const ProfileSettingsView: React.FC<ProfileSettingsViewProps> = ({
             className={`p-4 rounded-2xl border text-left transition-all relative cursor-pointer ${
               currentExperienceMode === 'teen'
                 ? 'bg-[#FDF2F4] border-[#E9A5B5] ring-2 ring-[#E9A5B5]/30 shadow-xs'
-                : 'bg-white border-[#EAE0D0] hover:border-[#E9A5B5]/50 text-[#29252B]'
+                : 'bg-white border-[#E5DDD2] hover:border-[#E9A5B5]/50 text-[#29252B]'
             }`}
           >
             {currentExperienceMode === 'teen' && (
@@ -145,7 +145,7 @@ export const ProfileSettingsView: React.FC<ProfileSettingsViewProps> = ({
               <Sparkles className="w-5 h-5" />
             </div>
             <h3 className="text-sm font-bold text-[#29252B]">Trendsetter (Teenager)</h3>
-            <p className="text-xs text-[#5A525E] mt-1 leading-relaxed">
+            <p className="text-xs text-[#403944] mt-1 leading-relaxed">
               Vibrant sakura gradients, viral photography ratings, social travel summaries & Japanese pop culture cues.
             </p>
             <div className="mt-3 flex flex-wrap gap-1 text-[10px] text-[#C64A6A]">
@@ -160,7 +160,7 @@ export const ProfileSettingsView: React.FC<ProfileSettingsViewProps> = ({
             className={`p-4 rounded-2xl border text-left transition-all relative cursor-pointer ${
               currentExperienceMode === 'family'
                 ? 'bg-[#EFF5EE] border-[#789477] ring-2 ring-[#789477]/30 shadow-xs'
-                : 'bg-white border-[#EAE0D0] hover:border-[#789477]/50 text-[#29252B]'
+                : 'bg-white border-[#E5DDD2] hover:border-[#789477]/50 text-[#29252B]'
             }`}
           >
             {currentExperienceMode === 'family' && (
@@ -172,7 +172,7 @@ export const ProfileSettingsView: React.FC<ProfileSettingsViewProps> = ({
               <Smile className="w-5 h-5" />
             </div>
             <h3 className="text-sm font-bold text-[#29252B]">Family & Junior Explorer</h3>
-            <p className="text-xs text-[#5A525E] mt-1 leading-relaxed">
+            <p className="text-xs text-[#403944] mt-1 leading-relaxed">
               Friendly playful badges, gentle stroller-friendly paths, restroom proximity alerts & explorer scavenger badges.
             </p>
             <div className="mt-3 flex flex-wrap gap-1 text-[10px] text-[#4F734E]">

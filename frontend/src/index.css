@@ -79,3 +79,54 @@ html.reduced-motion ::after {
   transition-duration: 0.01ms !important;
   scroll-behavior: auto !important;
 }
+
+/* ==========================================================================
+   GLOBAL TEXT VISIBILITY & CONTRAST SYSTEM (WCAG 2.2 AA / AAA)
+   Light Backgrounds:
+   - Main Headings: #29232B
+   - Body Text: #403944
+   - Secondary Text / Muted Labels: #625966
+   - Sakura Accent: #A83F70
+   - Links: #87365E
+   Dark Backgrounds:
+   - Main Headings: #FFFFFF
+   - Body Text: #F5EDF3
+   - Secondary Text: #D9CED8
+   ========================================================================== */
+
+.text-main-heading { color: #29232B !important; }
+.text-body-primary { color: #403944 !important; }
+.text-body-secondary { color: #625966 !important; }
+.text-muted-label { color: #625966 !important; }
+.text-sakura-accent { color: #A83F70 !important; }
+.text-brand-link { color: #87365E !important; }
+
+/* Markdown Content Global Visibility */
+.markdown-body {
+  color: #403944;
+  line-height: 1.65;
+}
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3 {
+  color: #29232B !important;
+}
+.markdown-body h4 {
+  color: #625966 !important;
+}
+.markdown-body p {
+  color: #403944;
+}
+.markdown-body strong {
+  color: #29232B !important;
+}
+.markdown-body em {
+  color: #625966;
+}
+.markdown-body a {
+  color: #87365E;
+}
+.markdown-body a:hover {
+  color: #A83F70;
+}
+

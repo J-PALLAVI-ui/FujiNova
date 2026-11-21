@@ -5,6 +5,7 @@ import { JourneyDisplay } from './JourneyDisplay';
 import { PlaceCard } from './PlaceCard';
 import { MarkdownMessage } from './MarkdownMessage';
 import { useTranslation } from '../i18n/LanguageContext';
+import { useExperienceMode } from '../context/ExperienceModeContext';
 import { 
   Send, 
   Bot, 
@@ -55,6 +56,7 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
   externalPrompt
 }) => {
   const { t } = useTranslation();
+  const { isTeenMode, isFamilyMode } = useExperienceMode();
 
   // Conversation List State
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
@@ -557,22 +559,32 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
       {/* 2. Main Conversation Workspace */}
       <main className="flex-1 flex flex-col h-full bg-[#F7EFE5] relative min-w-0">
         {/* Fixed Header */}
-        <div className="p-3 border-b border-[#EAE0D0] bg-[#FAF6F0]/90 backdrop-blur-md flex items-center justify-between shrink-0 z-10 text-[#29252B]">
+        <div className="p-3 border-b border-[#E5DDD2] bg-[#FAF6F0]/90 backdrop-blur-md flex items-center justify-between shrink-0 z-10 text-[#29252B]">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-[#C66B4E] text-white flex items-center justify-center font-bold text-xs shadow-xs">
+            <div className={`w-8 h-8 rounded-full text-white flex items-center justify-center font-bold text-xs shadow-xs ${
+              isFamilyMode ? 'bg-[#4CAF50]' : isTeenMode ? 'bg-[#FF5C8A]' : 'bg-[#C66B4E]'
+            }`}>
               ハ
             </div>
             <div>
               <h2 className="text-xs font-bold text-[#29252B] flex items-center gap-1.5">
-                <span>Guide Hana (ハナ)</span>
+                <span>
+                  {isFamilyMode ? 'Guide Hana (ハナ) 🌸' : isTeenMode ? 'Guide Hana (ハナ) ✨' : 'Guide Hana (ハナ)'}
+                </span>
                 <span className="w-2 h-2 rounded-full bg-[#789477] inline-block animate-pulse" title="Google Gemini Free Tier Enabled (₹0 Cost)" />
               </h2>
-              <p className="text-[10px] text-[#5A525E]">Conversational Travel Companion & Technical Guide</p>
+              <p className="text-[10px] text-[#625966] font-medium">
+                {isFamilyMode 
+                  ? 'Junior Explorer Guide & Storyteller' 
+                  : isTeenMode 
+                  ? 'Sakura Pop Photo Guide & Trend Advisor' 
+                  : 'Conversational Travel Companion & Technical Guide'}
+              </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 text-[10px] text-[#4F734E] bg-[#EFF5EE] border border-[#789477]/40 px-2.5 py-0.5 rounded-lg font-mono font-bold">
+            <div className="flex items-center gap-1 text-[10px] text-[#2E7D32] bg-[#EFF5EE] border border-[#789477]/40 px-2.5 py-0.5 rounded-lg font-mono font-bold">
               <Cpu className="w-3 h-3 text-[#789477]" />
               <span>{activeModel}</span>
             </div>
@@ -591,20 +603,33 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
               className={`flex gap-3 max-w-4xl mx-auto ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               {msg.sender === 'hana' && (
-                <div className="w-7 h-7 rounded-full bg-[#E9A5B5] text-white flex items-center justify-center text-xs shrink-0 mt-1 shadow-xs">
+                <div className={`w-7 h-7 rounded-full text-white flex items-center justify-center text-xs shrink-0 mt-1 shadow-xs ${
+                  isFamilyMode ? 'bg-[#4CAF50]' : isTeenMode ? 'bg-[#FF5C8A]' : 'bg-[#E9A5B5]'
+                }`}>
                   <Bot className="w-4 h-4" />
                 </div>
               )}
 
-              <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-xs sm:text-sm relative group shadow-xs ${
+              <div className={`max-w-[85%] px-4 py-3 text-xs sm:text-sm relative group shadow-xs ${
+                isFamilyMode ? 'rounded-3xl' : isTeenMode ? 'rounded-2xl' : 'rounded-2xl'
+              } ${
                 msg.sender === 'user'
-                  ? 'bg-[#C66B4E] text-white rounded-br-xs'
-                  : 'bg-white border border-[#EAE0D0] text-[#29252B] rounded-bl-xs'
+                  ? (isFamilyMode 
+                      ? 'bg-[#4CAF50] text-white rounded-br-xs' 
+                      : isTeenMode 
+                      ? 'bg-gradient-to-r from-[#FF5C8A] to-[#FF8E53] text-white rounded-br-xs' 
+                      : 'bg-[#C66B4E] text-white rounded-br-xs')
+                  : (isFamilyMode 
+                      ? 'bg-white border-2 border-[#C8E6C9] text-[#29232B] rounded-bl-xs' 
+                      : isTeenMode 
+                      ? 'bg-white border-2 border-[#FFD0DD] text-[#29232B] rounded-bl-xs' 
+                      : 'bg-white border border-[#E5DDD2] text-[#29232B] rounded-bl-xs')
               }`}>
                 {/* Render formatted markdown message with headers, bold, code, tables */}
                 <MarkdownMessage
                   content={msg.text}
                   isHana={msg.sender === 'hana'}
+                  isDarkBackground={msg.sender === 'user'}
                   onExploreIn3D={() => onSelectSession(currentSessionId)}
                 />
 
@@ -735,35 +760,94 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
         )}
 
         {/* 3. Fixed Bottom Input Composer */}
-        <div className="p-4 border-t border-[#EAE0D0] bg-[#FAF6F0]/95 backdrop-blur-md shrink-0">
+        <div className="p-4 border-t border-[#E5DDD2] bg-[#FAF6F0]/95 backdrop-blur-md shrink-0">
           <div className="max-w-4xl mx-auto space-y-3">
-            {/* Quick Prompts */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px] text-[#5A525E] no-scrollbar">
-              <span className="shrink-0 text-[#8A808F] font-bold">{t('hana_try_asking', 'Try asking:')}</span>
-              <button
-                onClick={() => sendMessage('Tell me about Japanese Omotenashi hospitality and travel etiquette.')}
-                className="shrink-0 px-2.5 py-1 rounded-xl bg-white hover:bg-[#FDF2F4] hover:text-[#C66B4E] hover:border-[#E9A5B5] border border-[#EAE0D0] text-[#5A525E] font-semibold transition-all cursor-pointer shadow-2xs"
-              >
-                {t('prompt_omotenashi', 'Omotenashi Hospitality')}
-              </button>
-              <button
-                onClick={() => sendMessage('How does FujiNova implement the RAPTOR public transit algorithm?')}
-                className="shrink-0 px-2.5 py-1 rounded-xl bg-white hover:bg-[#FDF2F4] hover:text-[#C66B4E] hover:border-[#E9A5B5] border border-[#EAE0D0] text-[#5A525E] font-semibold transition-all cursor-pointer shadow-2xs"
-              >
-                {t('prompt_raptor', 'RAPTOR Algorithm Code')}
-              </button>
-              <button
-                onClick={() => sendMessage('Plan a 1-day trip from Kawaguchiko Station with great Fuji views under ¥10,000.')}
-                className="shrink-0 px-2.5 py-1 rounded-xl bg-white hover:bg-[#FDF2F4] hover:text-[#C66B4E] hover:border-[#E9A5B5] border border-[#EAE0D0] text-[#5A525E] font-semibold transition-all cursor-pointer shadow-2xs"
-              >
-                {t('prompt_budget', '1-Day Trip under ¥10,000')}
-              </button>
-              <button
-                onClick={() => sendMessage('What are the best attractions around Lake Kawaguchiko for elderly visitors avoiding steep stairs?')}
-                className="shrink-0 px-2.5 py-1 rounded-xl bg-white hover:bg-[#FDF2F4] hover:text-[#C66B4E] hover:border-[#E9A5B5] border border-[#EAE0D0] text-[#5A525E] font-semibold transition-all cursor-pointer shadow-2xs"
-              >
-                {t('prompt_barrier', 'Barrier-Free Highlights')}
-              </button>
+            {/* Quick Prompts - Multi-Age Adaptive */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px] text-[#403944] no-scrollbar">
+              <span className="shrink-0 text-[#625966] font-bold">{t('hana_try_asking', 'Try asking:')}</span>
+              
+              {isFamilyMode ? (
+                <>
+                  <button
+                    onClick={() => sendMessage('Where can our family ride lake duck boats and take fun photos?')}
+                    className="shrink-0 px-3 py-1 rounded-2xl bg-white hover:bg-[#E8F5E9] hover:text-[#2E7D32] hover:border-[#4CAF50] border border-[#C8E6C9] text-[#403944] font-bold transition-all cursor-pointer shadow-2xs"
+                  >
+                    🦆 Lake Duck Boats
+                  </button>
+                  <button
+                    onClick={() => sendMessage('Where is the best lavender soft-serve ice cream around Lake Kawaguchiko?')}
+                    className="shrink-0 px-3 py-1 rounded-2xl bg-white hover:bg-[#E8F5E9] hover:text-[#2E7D32] hover:border-[#4CAF50] border border-[#C8E6C9] text-[#403944] font-bold transition-all cursor-pointer shadow-2xs"
+                  >
+                    🍦 Lavender Ice Cream
+                  </button>
+                  <button
+                    onClick={() => sendMessage('Which walking paths around Lake Kawaguchiko are 100% flat and stroller-friendly?')}
+                    className="shrink-0 px-3 py-1 rounded-2xl bg-white hover:bg-[#E8F5E9] hover:text-[#2E7D32] hover:border-[#4CAF50] border border-[#C8E6C9] text-[#403944] font-bold transition-all cursor-pointer shadow-2xs"
+                  >
+                    👶 Stroller-Friendly Paths
+                  </button>
+                  <button
+                    onClick={() => sendMessage('How can children explore Chureito Pagoda comfortably without getting tired?')}
+                    className="shrink-0 px-3 py-1 rounded-2xl bg-white hover:bg-[#E8F5E9] hover:text-[#2E7D32] hover:border-[#4CAF50] border border-[#C8E6C9] text-[#403944] font-bold transition-all cursor-pointer shadow-2xs"
+                  >
+                    🏰 Easy Way to Pagoda
+                  </button>
+                </>
+              ) : isTeenMode ? (
+                <>
+                  <button
+                    onClick={() => sendMessage('Where are the top aesthetic sunset photo spots for Mount Fuji and Lake Kawaguchi?')}
+                    className="shrink-0 px-3 py-1 rounded-xl bg-white hover:bg-[#FFEBF1] hover:text-[#FF5C8A] hover:border-[#FF5C8A] border border-[#FFD0DD] text-[#403944] font-bold transition-all cursor-pointer shadow-2xs"
+                  >
+                    📸 Sunset Photo Spots
+                  </button>
+                  <button
+                    onClick={() => sendMessage('What camera angle and timing are best for Chureito Pagoda cherry blossoms?')}
+                    className="shrink-0 px-3 py-1 rounded-xl bg-white hover:bg-[#FFEBF1] hover:text-[#FF5C8A] hover:border-[#FF5C8A] border border-[#FFD0DD] text-[#403944] font-bold transition-all cursor-pointer shadow-2xs"
+                  >
+                    🌸 Chureito Photo Tips
+                  </button>
+                  <button
+                    onClick={() => sendMessage('Tell me about anime pilgrimage shrines and Torii gates near Mount Fuji.')}
+                    className="shrink-0 px-3 py-1 rounded-xl bg-white hover:bg-[#FFEBF1] hover:text-[#FF5C8A] hover:border-[#FF5C8A] border border-[#FFD0DD] text-[#403944] font-bold transition-all cursor-pointer shadow-2xs"
+                  >
+                    ⛩️ Anime Pilgrimage Shrines
+                  </button>
+                  <button
+                    onClick={() => sendMessage('What are the trendiest aesthetic cafes and matcha bakeries in Fujiyoshida?')}
+                    className="shrink-0 px-3 py-1 rounded-xl bg-white hover:bg-[#FFEBF1] hover:text-[#FF5C8A] hover:border-[#FF5C8A] border border-[#FFD0DD] text-[#403944] font-bold transition-all cursor-pointer shadow-2xs"
+                  >
+                    ☕ Aesthetic Cafes & Matcha
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => sendMessage('Tell me about Japanese Omotenashi hospitality and travel etiquette.')}
+                    className="shrink-0 px-2.5 py-1 rounded-xl bg-white hover:bg-[#FAF3EC] hover:text-[#C66B4E] hover:border-[#C66B4E] border border-[#E5DDD2] text-[#403944] font-semibold transition-all cursor-pointer shadow-2xs"
+                  >
+                    {t('prompt_omotenashi', 'Omotenashi Hospitality')}
+                  </button>
+                  <button
+                    onClick={() => sendMessage('How does FujiNova implement the RAPTOR public transit algorithm?')}
+                    className="shrink-0 px-2.5 py-1 rounded-xl bg-white hover:bg-[#FAF3EC] hover:text-[#C66B4E] hover:border-[#C66B4E] border border-[#E5DDD2] text-[#403944] font-semibold transition-all cursor-pointer shadow-2xs"
+                  >
+                    {t('prompt_raptor', 'RAPTOR Algorithm Code')}
+                  </button>
+                  <button
+                    onClick={() => sendMessage('Plan a 1-day trip from Kawaguchiko Station with great Fuji views under ¥10,000.')}
+                    className="shrink-0 px-2.5 py-1 rounded-xl bg-white hover:bg-[#FAF3EC] hover:text-[#C66B4E] hover:border-[#C66B4E] border border-[#E5DDD2] text-[#403944] font-semibold transition-all cursor-pointer shadow-2xs"
+                  >
+                    {t('prompt_budget', '1-Day Trip under ¥10,000')}
+                  </button>
+                  <button
+                    onClick={() => sendMessage('What are the best attractions around Lake Kawaguchiko for elderly visitors avoiding steep stairs?')}
+                    className="shrink-0 px-2.5 py-1 rounded-xl bg-white hover:bg-[#FAF3EC] hover:text-[#C66B4E] hover:border-[#C66B4E] border border-[#E5DDD2] text-[#403944] font-semibold transition-all cursor-pointer shadow-2xs"
+                  >
+                    {t('prompt_barrier', 'Barrier-Free Highlights')}
+                  </button>
+                </>
+              )}
             </div>
 
             {/* Input Form */}
@@ -772,7 +856,9 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
                 e.preventDefault();
                 sendMessage();
               }}
-              className="flex items-end gap-2 bg-white border border-[#EAE0D0] focus-within:border-[#C66B4E] rounded-2xl p-2 shadow-2xs transition-all"
+              className={`flex items-end gap-2 bg-white border focus-within:border-[#C66B4E] p-2 shadow-2xs transition-all ${
+                isFamilyMode ? 'rounded-3xl border-[#C8E6C9]' : isTeenMode ? 'rounded-2xl border-[#FFD0DD]' : 'rounded-2xl border-[#E5DDD2]'
+              }`}
             >
               <textarea
                 value={input}
@@ -783,9 +869,15 @@ export const HanaWorkspace: React.FC<HanaWorkspaceProps> = ({
                     sendMessage();
                   }
                 }}
-                placeholder={t('hana_placeholder', 'Ask Hana anything: Japanese culture, travel advice, RAPTOR transit, cuisine...')}
+                placeholder={
+                  isFamilyMode
+                    ? 'Ask Hana about kid-safe walks, duck boats, ice cream shops, easy trails...'
+                    : isTeenMode
+                    ? 'Ask Hana about photo spots, aesthetic cafes, TikTok viewpoints, anime shrines...'
+                    : t('hana_placeholder', 'Ask Hana anything: Japanese culture, travel advice, RAPTOR transit, cuisine...')
+                }
                 rows={1}
-                className="flex-1 bg-transparent px-3 py-1.5 text-xs sm:text-sm text-[#29252B] placeholder-[#8A808F] resize-none focus:outline-none max-h-32 min-h-[36px]"
+                className="flex-1 bg-transparent px-3 py-1.5 text-xs sm:text-sm text-[#29252B] placeholder-[#625966] resize-none focus:outline-hidden max-h-32 min-h-[36px] font-medium"
               />
 
               {isStreaming ? (

@@ -26,7 +26,10 @@ import {
   Activity, 
   Wallet, 
   Settings,
-  ShoppingBag
+  ShoppingBag,
+  Smile,
+  ChevronDown,
+  Check
 } from 'lucide-react';
 
 export type WorkspaceTab = 
@@ -66,7 +69,8 @@ const AppInner: React.FC = () => {
   const [season, setSeason] = useState<SeasonMode>('spring');
 
   const { t } = useTranslation();
-  const { modeTitle, modeBadgeColor } = useExperienceMode();
+  const { isAdultMode, isTeenMode, isFamilyMode, modeTitle, modeBadgeColor, setMode } = useExperienceMode();
+  const [isModeMenuOpen, setIsModeMenuOpen] = useState(false);
 
   const [health, setHealth] = useState<{
     status: string;
@@ -380,15 +384,62 @@ const AppInner: React.FC = () => {
             {/* Global Multilingual Selector Dropdown */}
             <GlobalLanguageSelector />
 
-            {/* Experience Mode Pill */}
-            <button
-              onClick={() => setActiveTab('settings')}
-              className={`hidden lg:inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full border transition-all cursor-pointer ${modeBadgeColor}`}
-              title="Click to change experience mode in Settings"
-            >
-              <Sparkles className="w-3 h-3" />
-              <span>{modeTitle.split(' ')[0]}</span>
-            </button>
+            {/* Experience Mode Interactive Quick Switcher */}
+            <div className="relative hidden lg:block">
+              <button
+                onClick={() => setIsModeMenuOpen(!isModeMenuOpen)}
+                className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full border transition-all cursor-pointer ${modeBadgeColor}`}
+                title="Click to switch Multi-Age Experience Mode instantly"
+              >
+                {isFamilyMode ? <Smile className="w-3 h-3" /> : isTeenMode ? <Sparkles className="w-3 h-3" /> : <Compass className="w-3 h-3" />}
+                <span>{modeTitle.split(' ')[0]}</span>
+                <ChevronDown className="w-2.5 h-2.5 opacity-60" />
+              </button>
+
+              {isModeMenuOpen && (
+                <div className="absolute right-0 mt-1.5 w-60 bg-white rounded-2xl shadow-xl border border-[#E5DDD2] py-1.5 z-50 text-xs">
+                  <div className="px-3 py-1 text-[10px] font-bold text-[#625966] uppercase tracking-wider border-b border-[#E5DDD2]">
+                    Switch Experience Mode
+                  </div>
+                  <button
+                    onClick={() => { setMode('adult'); setIsModeMenuOpen(false); }}
+                    className={`w-full px-3 py-2 text-left flex items-center justify-between hover:bg-[#FAF6F0] transition-colors cursor-pointer ${
+                      isAdultMode ? 'font-bold text-[#C66B4E] bg-[#FAF6F0]' : 'text-[#403944]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Compass className="w-3.5 h-3.5 text-[#C66B4E]" />
+                      <span>Standard Explorer (Adult)</span>
+                    </div>
+                    {isAdultMode && <Check className="w-3.5 h-3.5 text-[#C66B4E]" />}
+                  </button>
+                  <button
+                    onClick={() => { setMode('teen'); setIsModeMenuOpen(false); }}
+                    className={`w-full px-3 py-2 text-left flex items-center justify-between hover:bg-[#FFF0F4] transition-colors cursor-pointer ${
+                      isTeenMode ? 'font-bold text-[#FF5C8A] bg-[#FFF0F4]' : 'text-[#403944]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-3.5 h-3.5 text-[#FF5C8A]" />
+                      <span>Trendsetter (Teenager)</span>
+                    </div>
+                    {isTeenMode && <Check className="w-3.5 h-3.5 text-[#FF5C8A]" />}
+                  </button>
+                  <button
+                    onClick={() => { setMode('family'); setIsModeMenuOpen(false); }}
+                    className={`w-full px-3 py-2 text-left flex items-center justify-between hover:bg-[#F1F8E9] transition-colors cursor-pointer ${
+                      isFamilyMode ? 'font-bold text-[#4CAF50] bg-[#F1F8E9]' : 'text-[#403944]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Smile className="w-3.5 h-3.5 text-[#4CAF50]" />
+                      <span>Family & Junior Explorer</span>
+                    </div>
+                    {isFamilyMode && <Check className="w-3.5 h-3.5 text-[#4CAF50]" />}
+                  </button>
+                </div>
+              )}
+            </div>
 
             {/* Trip Basket Button */}
             <button

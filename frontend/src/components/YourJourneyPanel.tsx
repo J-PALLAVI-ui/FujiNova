@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ItineraryPlan, ItineraryStop } from '../types';
+import { useExperienceMode } from '../context/ExperienceModeContext';
 import { 
   Calendar, 
   Clock, 
@@ -20,7 +21,8 @@ import {
   Play,
   CheckCircle2,
   Trophy,
-  Award
+  Award,
+  Smile
 } from 'lucide-react';
 
 interface YourJourneyPanelProps {
@@ -40,6 +42,7 @@ export const YourJourneyPanel: React.FC<YourJourneyPanelProps> = ({
   onOpenExport,
   onViewIn3D
 }) => {
+  const { isTeenMode, isFamilyMode } = useExperienceMode();
   const [travelModeActive, setTravelModeActive] = useState<boolean>(false);
   const [visitedStopIds, setVisitedStopIds] = useState<string[]>([]);
   const [currentWaypointIndex, setCurrentWaypointIndex] = useState<number>(0);
@@ -48,48 +51,62 @@ export const YourJourneyPanel: React.FC<YourJourneyPanelProps> = ({
     return (
       <div className="h-full flex flex-col bg-white border border-[#EAE0D0] rounded-3xl overflow-y-auto p-6 shadow-sm">
         <div className="flex items-center gap-2 mb-4">
-          <div className="w-8 h-8 rounded-xl bg-[#EFF5EE] text-[#4F734E] flex items-center justify-center font-bold">
-            <Calendar className="w-5 h-5 text-[#789477]" />
+          <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold ${
+            isFamilyMode ? 'bg-[#E8F5E9] text-[#2E7D32]' : isTeenMode ? 'bg-[#FFEBF1] text-[#FF5C8A]' : 'bg-[#EFF5EE] text-[#4F734E]'
+          }`}>
+            <Calendar className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-base font-black text-[#29252B]">Your Journey</h2>
-            <p className="text-xs text-[#5A525E]">Adaptive Itinerary & RAPTOR Transit Schedule</p>
+            <h2 className="text-base font-black text-[#29252B]">
+              {isFamilyMode ? 'Family Adventure Journal' : isTeenMode ? 'Trendsetter Trip Board' : 'Your Journey'}
+            </h2>
+            <p className="text-xs text-[#625966]">
+              {isFamilyMode ? 'Kid-friendly stops & stroller easy routing' : isTeenMode ? 'Aesthetic photo spots & viral views' : 'Adaptive Itinerary & RAPTOR Transit Schedule'}
+            </p>
           </div>
         </div>
 
         <div className="my-auto py-8 text-center max-w-sm mx-auto">
-          <div className="w-16 h-16 rounded-2xl bg-[#EFF5EE] border border-[#789477]/30 flex items-center justify-center mx-auto mb-4 text-[#789477] shadow-xs">
-            <Navigation className="w-8 h-8" />
+          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xs ${
+            isFamilyMode ? 'bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9]' : isTeenMode ? 'bg-[#FFEBF1] text-[#FF5C8A] border border-[#FFD0DD]' : 'bg-[#EFF5EE] text-[#789477] border border-[#789477]/30'
+          }`}>
+            {isFamilyMode ? <Smile className="w-8 h-8" /> : isTeenMode ? <Sparkles className="w-8 h-8" /> : <Navigation className="w-8 h-8" />}
           </div>
-          <h3 className="text-sm font-bold text-[#29252B] mb-1">No Active Itinerary Yet</h3>
-          <p className="text-xs text-[#5A525E] leading-relaxed mb-6">
-            Ask Guide Hana to generate a personalized itinerary tailored to your group, mobility needs, and pace.
+          <h3 className="text-sm font-bold text-[#29252B] mb-1">
+            {isFamilyMode ? 'No Family Adventures Started' : isTeenMode ? 'No Aesthetic Itinerary Yet' : 'No Active Itinerary Yet'}
+          </h3>
+          <p className="text-xs text-[#403944] leading-relaxed mb-6">
+            {isFamilyMode 
+              ? 'Ask Guide Hana to generate a playful family trip with duck boats, gentle trails, and ice cream treats!'
+              : isTeenMode
+              ? 'Ask Guide Hana to curate a viral photo tour with golden hour angles and retro cafes!'
+              : 'Ask Guide Hana to generate a personalized itinerary tailored to your group, mobility needs, and pace.'}
           </p>
 
           <div className="space-y-2 text-left">
-            <span className="text-[11px] font-bold text-[#8A808F] uppercase tracking-wider block mb-1">
-              Quick Itinerary Starters
+            <span className="text-[11px] font-bold text-[#625966] uppercase tracking-wider block mb-1">
+              {isFamilyMode ? '🎈 Family Adventure Starters' : isTeenMode ? '✨ Pop Itinerary Starters' : 'Quick Itinerary Starters'}
             </span>
             <button
-              onClick={() => onAskHana('Can you recommend a 1-day itinerary around Lake Kawaguchiko with classic Mount Fuji views?')}
-              className="w-full text-left p-3 rounded-2xl border border-[#EAE0D0] bg-[#FAF6F0] hover:bg-[#FDF2F4] hover:border-[#E9A5B5] text-xs text-[#29252B] font-semibold transition-all group flex items-center justify-between shadow-2xs"
+              onClick={() => onAskHana(isFamilyMode ? 'Plan a 1-day family tour with lake duck boats and lavender ice cream.' : isTeenMode ? 'Plan a 1-day viral photo tour of Mount Fuji and Chureito Pagoda.' : 'Can you recommend a 1-day itinerary around Lake Kawaguchiko with classic Mount Fuji views?')}
+              className="w-full text-left p-3 rounded-2xl border border-[#E5DDD2] bg-[#FAF6F0] hover:bg-[#FAF3EC] text-xs text-[#29252B] font-semibold transition-all group flex items-center justify-between shadow-2xs"
             >
-              <span>1-Day Classic Fuji & Kawaguchiko Highlights</span>
-              <ArrowRight className="w-3.5 h-3.5 text-[#8A808F] group-hover:text-[#C66B4E] group-hover:translate-x-0.5 transition-all" />
+              <span>{isFamilyMode ? '1-Day Lake Duck Boats & Ice Cream Adventure' : isTeenMode ? '1-Day Viral Sunset & Golden Hour Spots' : '1-Day Classic Fuji & Kawaguchiko Highlights'}</span>
+              <ArrowRight className="w-3.5 h-3.5 text-[#625966] group-hover:text-[#C66B4E] group-hover:translate-x-0.5 transition-all" />
             </button>
             <button
-              onClick={() => onAskHana('Help me plan a 2-day photography trip around the Fuji Five Lakes with quiet viewpoints.')}
-              className="w-full text-left p-3 rounded-2xl border border-[#EAE0D0] bg-[#FAF6F0] hover:bg-[#FDF2F4] hover:border-[#E9A5B5] text-xs text-[#29252B] font-semibold transition-all group flex items-center justify-between shadow-2xs"
+              onClick={() => onAskHana(isFamilyMode ? 'Plan a 2-day relaxed family trip with flat stroller paths.' : isTeenMode ? 'Plan a 2-day photography trip with aesthetic cafes and Torii gates.' : 'Help me plan a 2-day photography trip around the Fuji Five Lakes with quiet viewpoints.')}
+              className="w-full text-left p-3 rounded-2xl border border-[#E5DDD2] bg-[#FAF6F0] hover:bg-[#FAF3EC] text-xs text-[#29252B] font-semibold transition-all group flex items-center justify-between shadow-2xs"
             >
-              <span>2-Day Photography & Tranquil Lakes Tour</span>
-              <ArrowRight className="w-3.5 h-3.5 text-[#8A808F] group-hover:text-[#C66B4E] group-hover:translate-x-0.5 transition-all" />
+              <span>{isFamilyMode ? '2-Day Stroller-Easy Family Tour' : isTeenMode ? '2-Day Aesthetic Fuji Cafes & Torii Gates' : '2-Day Photography & Tranquil Lakes Tour'}</span>
+              <ArrowRight className="w-3.5 h-3.5 text-[#625966] group-hover:text-[#C66B4E] group-hover:translate-x-0.5 transition-all" />
             </button>
             <button
               onClick={() => onAskHana('Please plan a family-friendly 3-day itinerary with easy walking and step-free access.')}
-              className="w-full text-left p-3 rounded-2xl border border-[#EAE0D0] bg-[#FAF6F0] hover:bg-[#FDF2F4] hover:border-[#E9A5B5] text-xs text-[#29252B] font-semibold transition-all group flex items-center justify-between shadow-2xs"
+              className="w-full text-left p-3 rounded-2xl border border-[#E5DDD2] bg-[#FAF6F0] hover:bg-[#FAF3EC] text-xs text-[#29252B] font-semibold transition-all group flex items-center justify-between shadow-2xs"
             >
               <span>3-Day Family & Barrier-Free Experience</span>
-              <ArrowRight className="w-3.5 h-3.5 text-[#8A808F] group-hover:text-[#C66B4E] group-hover:translate-x-0.5 transition-all" />
+              <ArrowRight className="w-3.5 h-3.5 text-[#625966] group-hover:text-[#C66B4E] group-hover:translate-x-0.5 transition-all" />
             </button>
           </div>
         </div>
@@ -115,17 +132,21 @@ export const YourJourneyPanel: React.FC<YourJourneyPanelProps> = ({
   };
 
   return (
-    <div className="h-full flex flex-col bg-white border border-[#EAE0D0] rounded-3xl overflow-hidden shadow-sm">
+    <div className={`h-full flex flex-col bg-white border overflow-hidden shadow-sm ${
+      isFamilyMode ? 'border-2 border-[#C8E6C9] rounded-3xl' : isTeenMode ? 'border-2 border-[#FFD0DD] rounded-2xl' : 'border border-[#E5DDD2] rounded-3xl'
+    }`}>
       {/* Header */}
-      <div className="p-4 border-b border-[#EAE0D0] bg-[#FAF6F0]">
+      <div className={`p-4 border-b ${isFamilyMode ? 'bg-[#F1F8E9] border-[#C8E6C9]' : isTeenMode ? 'bg-[#FFF0F4] border-[#FFD0DD]' : 'bg-[#FAF6F0] border-[#E5DDD2]'}`}>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2.5">
-            <span className="w-9 h-9 rounded-xl bg-[#C66B4E] text-white flex items-center justify-center font-black text-xs shadow-xs">
+            <span className={`w-9 h-9 rounded-xl text-white flex items-center justify-center font-black text-xs shadow-xs ${
+              isFamilyMode ? 'bg-[#4CAF50]' : isTeenMode ? 'bg-[#FF5C8A]' : 'bg-[#C66B4E]'
+            }`}>
               {itinerary.total_days}D
             </span>
             <div>
               <h2 className="text-sm font-black text-[#29252B] leading-tight">{itinerary.title}</h2>
-              <p className="text-[11px] text-[#5A525E]">
+              <p className="text-[11px] text-[#625966] font-medium">
                 {totalStops} destinations • {itinerary.pace} pace • {itinerary.budget_tier} budget
               </p>
             </div>
@@ -156,20 +177,20 @@ export const YourJourneyPanel: React.FC<YourJourneyPanelProps> = ({
         </div>
 
         {/* Travel Mode Toggle Bar */}
-        <div className="pt-2 flex items-center justify-between border-t border-[#EAE0D0] mt-2">
+        <div className="pt-2 flex items-center justify-between border-t border-[#E5DDD2] mt-2">
           <button
             onClick={() => setTravelModeActive(!travelModeActive)}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
               travelModeActive
                 ? 'bg-[#789477] text-white shadow-xs'
-                : 'bg-white border border-[#EAE0D0] hover:bg-[#FAF6F0] text-[#29252B]'
+                : 'bg-white border border-[#E5DDD2] hover:bg-[#FAF6F0] text-[#29252B]'
             }`}
           >
             <Play className={`w-3.5 h-3.5 ${travelModeActive ? 'fill-white' : ''}`} />
             <span>{travelModeActive ? 'Active Travel Mode On' : 'Start Travel Mode'}</span>
           </button>
 
-          <span className="text-[11px] font-bold text-[#5A525E]">
+          <span className="text-[11px] font-bold text-[#625966]">
             Visited: {visitedStopIds.length}/{totalStops}
           </span>
         </div>
@@ -178,21 +199,21 @@ export const YourJourneyPanel: React.FC<YourJourneyPanelProps> = ({
         <div className="flex flex-wrap gap-1.5 pt-2">
           <button
             onClick={() => onAskHana('Please make this itinerary cheaper with more free viewpoints and low-cost options.')}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-[#EAE0D0] text-[10px] font-bold text-[#29252B] hover:bg-[#EFF5EE] shadow-2xs transition-colors cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-[#E5DDD2] text-[10px] font-bold text-[#403944] hover:bg-[#EFF5EE] shadow-2xs transition-colors cursor-pointer"
           >
             <DollarSign className="w-3 h-3 text-[#4F734E]" />
             <span>Cheaper</span>
           </button>
           <button
             onClick={() => onAskHana('Please reduce walking and avoid steep stairs for this itinerary.')}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-[#EAE0D0] text-[10px] font-bold text-[#29252B] hover:bg-[#EFF5EE] shadow-2xs transition-colors cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-[#E5DDD2] text-[10px] font-bold text-[#403944] hover:bg-[#EFF5EE] shadow-2xs transition-colors cursor-pointer"
           >
             <Footprints className="w-3 h-3 text-[#789477]" />
             <span>Less Walking</span>
           </button>
           <button
             onClick={() => onAskHana('Can you recommend a quieter alternative for crowded stops in this plan?')}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-[#EAE0D0] text-[10px] font-bold text-[#29252B] hover:bg-[#FDF2F4] shadow-2xs transition-colors cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-[#E5DDD2] text-[10px] font-bold text-[#403944] hover:bg-[#FAF3EC] shadow-2xs transition-colors cursor-pointer"
           >
             <Sparkles className="w-3 h-3 text-[#C66B4E]" />
             <span>Less Crowded</span>
@@ -252,19 +273,19 @@ export const YourJourneyPanel: React.FC<YourJourneyPanelProps> = ({
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
         {itinerary.days.map((day) => (
           <div key={day.day_number} className="space-y-3">
-            <div className="flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-xs py-1 z-10 border-b border-[#EAE0D0]">
+            <div className="flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-xs py-1 z-10 border-b border-[#E5DDD2]">
               <span className="text-xs font-bold text-[#29252B] flex items-center gap-1.5">
                 <span className="w-5 h-5 rounded-full bg-[#29252B] text-white text-[10px] flex items-center justify-center font-bold">
                   {day.day_number}
                 </span>
                 <span>Day {day.day_number}: {day.title}</span>
               </span>
-              <span className="text-[11px] text-[#8A808F] font-bold">
+              <span className="text-[11px] text-[#625966] font-bold">
                 {day.stops.length} stops
               </span>
             </div>
 
-            <div className="space-y-3 pl-2 border-l-2 border-[#EAE0D0] ml-2.5">
+            <div className="space-y-3 pl-2 border-l-2 border-[#E5DDD2] ml-2.5">
               {day.stops.map((stop: ItineraryStop, idx: number) => {
                 const isVisited = visitedStopIds.includes(stop.stop_id);
 
@@ -283,7 +304,7 @@ export const YourJourneyPanel: React.FC<YourJourneyPanelProps> = ({
 
                     {/* Stop Card */}
                     <div className={`bg-white rounded-2xl border p-3 shadow-2xs hover:shadow-xs transition-all ${
-                      isVisited ? 'border-[#789477]/40 bg-[#EFF5EE]/30' : 'border-[#EAE0D0] hover:border-[#E9A5B5]'
+                      isVisited ? 'border-[#789477]/40 bg-[#EFF5EE]/30' : 'border-[#E5DDD2] hover:border-[#E9A5B5]'
                     }`}>
                       <div className="flex gap-3">
                         {stop.image_url ? (
@@ -301,10 +322,10 @@ export const YourJourneyPanel: React.FC<YourJourneyPanelProps> = ({
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-1">
                             <div>
-                              <h4 className={`text-xs font-bold truncate ${isVisited ? 'line-through text-[#8A808F]' : 'text-[#29252B]'}`}>
+                              <h4 className={`text-xs font-bold truncate ${isVisited ? 'line-through text-[#625966]' : 'text-[#29252B]'}`}>
                                 {stop.name_en}
                               </h4>
-                              <span className="text-[10px] text-[#5A525E] block truncate font-serif">
+                              <span className="text-[10px] text-[#625966] block truncate font-serif">
                                 {stop.name_ja}
                               </span>
                             </div>
@@ -314,7 +335,7 @@ export const YourJourneyPanel: React.FC<YourJourneyPanelProps> = ({
                               {onReorderStop && idx > 0 && (
                                 <button
                                   onClick={() => onReorderStop(day.day_number, idx, 'up')}
-                                  className="p-1 text-[#8A808F] hover:text-[#29252B] rounded hover:bg-[#FAF6F0]"
+                                  className="p-1 text-[#625966] hover:text-[#29252B] rounded hover:bg-[#FAF6F0]"
                                   title="Move stop up"
                                 >
                                   <ChevronUp className="w-3 h-3" />
@@ -323,7 +344,7 @@ export const YourJourneyPanel: React.FC<YourJourneyPanelProps> = ({
                               {onReorderStop && idx < day.stops.length - 1 && (
                                 <button
                                   onClick={() => onReorderStop(day.day_number, idx, 'down')}
-                                  className="p-1 text-[#8A808F] hover:text-[#29252B] rounded hover:bg-[#FAF6F0]"
+                                  className="p-1 text-[#625966] hover:text-[#29252B] rounded hover:bg-[#FAF6F0]"
                                   title="Move stop down"
                                 >
                                   <ChevronDown className="w-3 h-3" />
@@ -332,7 +353,7 @@ export const YourJourneyPanel: React.FC<YourJourneyPanelProps> = ({
                               {onRemoveStop && (
                                 <button
                                   onClick={() => onRemoveStop(day.day_number, idx)}
-                                  className="p-1 text-[#8A808F] hover:text-rose-600 rounded hover:bg-rose-50"
+                                  className="p-1 text-[#625966] hover:text-rose-600 rounded hover:bg-rose-50"
                                   title="Remove stop"
                                 >
                                   <Trash2 className="w-3 h-3" />
@@ -342,16 +363,16 @@ export const YourJourneyPanel: React.FC<YourJourneyPanelProps> = ({
                           </div>
 
                           {/* Timing and Fuji Rating */}
-                          <div className="flex items-center gap-2 mt-1.5 text-[11px] text-[#5A525E]">
+                          <div className="flex items-center gap-2 mt-1.5 text-[11px] text-[#403944]">
                             <span className="flex items-center gap-1 font-bold text-[#4F734E] bg-[#EFF5EE] px-1.5 py-0.5 rounded-lg border border-[#789477]/30">
                               <Clock className="w-3 h-3" />
                               <span>{stop.estimated_arrival}</span>
                             </span>
-                            <span className="flex items-center gap-0.5 text-[#C64A6A] font-bold bg-[#FDF2F4] px-1.5 py-0.5 rounded-lg border border-[#E9A5B5]">
-                              <Star className="w-3 h-3 fill-[#E9A5B5]" />
+                            <span className="flex items-center gap-0.5 text-[#A83F70] font-bold bg-[#FAF3EC] px-1.5 py-0.5 rounded-lg border border-[#E9A5B5]">
+                              <Star className="w-3 h-3 fill-[#A83F70]" />
                               <span>{stop.fuji_view_rating}/5</span>
                             </span>
-                            <span className="text-[10px] text-[#8A808F] font-semibold truncate">
+                            <span className="text-[10px] text-[#625966] font-semibold truncate">
                               {stop.admission_info}
                             </span>
                           </div>
@@ -360,7 +381,7 @@ export const YourJourneyPanel: React.FC<YourJourneyPanelProps> = ({
 
                       {/* Step-Free Accessibility Notice */}
                       {stop.accessibility_status === 'VERIFIED_ACCESSIBLE' && (
-                        <div className="mt-2 pt-2 border-t border-[#EAE0D0] flex items-center gap-1 text-[10px] text-[#4F734E] font-bold">
+                        <div className="mt-2 pt-2 border-t border-[#E5DDD2] flex items-center gap-1 text-[10px] text-[#4F734E] font-bold">
                           <ShieldCheck className="w-3 h-3 text-[#789477] shrink-0" />
                           <span className="truncate">Verified Barrier-Free & Step-Free Accessible</span>
                         </div>
@@ -369,7 +390,7 @@ export const YourJourneyPanel: React.FC<YourJourneyPanelProps> = ({
 
                     {/* RAPTOR Transit Connection to Next Stop */}
                     {stop.transit_to_next && (
-                      <div className="my-2 p-2 rounded-xl bg-[#FAF6F0] border border-[#EAE0D0] text-[11px] text-[#29252B] flex items-center justify-between">
+                      <div className="my-2 p-2 rounded-xl bg-[#FAF6F0] border border-[#E5DDD2] text-[11px] text-[#29252B] flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <span
                             className="w-2.5 h-2.5 rounded-full shrink-0"
@@ -379,8 +400,8 @@ export const YourJourneyPanel: React.FC<YourJourneyPanelProps> = ({
                             <Bus className="w-3 h-3 text-[#789477]" />
                             <span>{stop.transit_to_next.route_name}</span>
                           </span>
-                          <span className="text-[#8A808F]">•</span>
-                          <span className="text-[#5A525E] font-semibold">{stop.transit_to_next.duration_minutes} min</span>
+                          <span className="text-[#625966]">•</span>
+                          <span className="text-[#403944] font-semibold">{stop.transit_to_next.duration_minutes} min</span>
                         </div>
                         <div className="font-bold text-[#C66B4E] text-[10px]">
                           ¥{stop.transit_to_next.fare_jpy || 0}
