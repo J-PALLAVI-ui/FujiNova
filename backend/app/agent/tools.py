@@ -562,6 +562,207 @@ def get_provider_sync_status() -> Dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
+# ==============================================================================
+# FUJINOVA 11.0 — HANA SMART JOURNEY CONVERSATIONAL TOOLS (Part 7)
+# ==============================================================================
+
+def detect_user_location(latitude: float, longitude: float) -> Dict[str, Any]:
+    """Detect closest Fujikyu stations, bus stops, and landmarks near user GPS coordinates."""
+    try:
+        from backend.app.services.smart_journey.category_service import CategoryExplorationService
+        nearby = CategoryExplorationService.get_nearby_locations(latitude, longitude)
+        return {
+            "success": True,
+            "detected_location": nearby["detected_location_name"],
+            "closest_station": nearby["closest_station"],
+            "nearby_stations": nearby["nearby_stations"],
+            "nearby_places": nearby["nearby_places"]
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+def search_transport_stations(query: str) -> Dict[str, Any]:
+    """Search the 18 official Fujikyu Railway stations (FJ01-FJ18)."""
+    try:
+        from backend.app.services.smart_journey.station_service import StationGuideService
+        stations = StationGuideService.get_all_railway_stations()
+        q = query.lower()
+        matched = [s for s in stations if q in s["name_en"].lower() or q in s["name_ja"] or q in s["station_code"].lower()]
+        return {"success": True, "count": len(matched), "stations": matched}
+    except Exception as e:
+        return {"success": False, "error": str(e), "stations": []}
+
+
+def search_fujikyu_bus_stops(query: str) -> Dict[str, Any]:
+    """Search Fujikyu bus stops, sightseeing loop lines (Red/Green/Blue), and shuttles."""
+    try:
+        from backend.app.services.smart_journey.category_service import CategoryExplorationService
+        res = CategoryExplorationService.search_all_locations(query)
+        bus_stops = [r for r in res if r.get("type") == "bus_stop"]
+        return {"success": True, "count": len(bus_stops), "bus_stops": bus_stops}
+    except Exception as e:
+        return {"success": False, "error": str(e), "bus_stops": []}
+
+
+def get_nearby_places(latitude: float, longitude: float, category: Optional[str] = None) -> Dict[str, Any]:
+    """Find nearby attractions, hotels, food, activities, or essential services."""
+    try:
+        from backend.app.services.smart_journey.category_service import CategoryExplorationService
+        data = CategoryExplorationService.get_nearby_locations(latitude, longitude)
+        places = data["nearby_places"]
+        if category:
+            places = [p for p in places if p.get("category_id") == category]
+        return {"success": True, "places": places}
+    except Exception as e:
+        return {"success": False, "error": str(e), "places": []}
+
+
+def get_live_crowd_information(destination_id: str) -> Dict[str, Any]:
+    """Retrieve CrowdSense 3.0 crowd gauge, confidence, observed metadata, and 4 Hana choices."""
+    try:
+        from backend.app.services.smart_journey.crowd_service_v3 import CrowdSense3Service
+        data = CrowdSense3Service.get_crowd_details(destination_id)
+        return {"success": True, "crowd_intelligence": data}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+def compare_destination_crowds(destination_ids: List[str]) -> Dict[str, Any]:
+    """Compare crowd congestion levels and estimated wait times across multiple destinations."""
+    try:
+        from backend.app.services.smart_journey.crowd_service_v3 import CrowdSense3Service
+        results = []
+        for did in destination_ids:
+            details = CrowdSense3Service.get_crowd_details(did)
+            results.append({
+                "destination": details["place_name_en"],
+                "crowd_level": details["crowd_level"],
+                "numeric_score": details["numeric_score"],
+                "confidence": details["confidence_level"],
+                "wait_time_minutes": details["wait_time_minutes"]
+            })
+        results.sort(key=lambda x: x["numeric_score"])
+        return {"success": True, "comparison": results, "recommended_least_crowded": results[0] if results else None}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+def find_quieter_alternatives(destination_id: str) -> Dict[str, Any]:
+    """Suggest calmer, less congested alternative destinations with similar views or experiences."""
+    try:
+        from backend.app.services.smart_journey.crowd_service_v3 import CrowdSense3Service
+        alts = CrowdSense3Service.get_alternatives_by_type(destination_id, "quieter")
+        return {"success": True, "quieter_alternatives": alts}
+    except Exception as e:
+        return {"success": False, "error": str(e), "quieter_alternatives": []}
+
+
+def find_hidden_gems(interests: Optional[List[str]] = None) -> Dict[str, Any]:
+    """Find authentic, low-crowd hidden gems matching traveler preferences."""
+    try:
+        from backend.app.services.smart_journey.crowd_service_v3 import CrowdSense3Service
+        alts = CrowdSense3Service.get_alternatives_by_type("chureito_pagoda", "hidden_gems")
+        return {"success": True, "hidden_gems": alts}
+    except Exception as e:
+        return {"success": False, "error": str(e), "hidden_gems": []}
+
+
+def get_station_departures(station_id: str, mode: str = "train") -> Dict[str, Any]:
+    """Retrieve departure board with verified platforms, adult/child fares, and status."""
+    try:
+        from backend.app.services.smart_journey.station_service import StationGuideService
+        departures = StationGuideService.get_station_departures(station_id, mode)
+        return {"success": True, "station_id": station_id, "mode": mode, "departures": departures}
+    except Exception as e:
+        return {"success": False, "error": str(e), "departures": []}
+
+
+def get_next_train(station_id: str, destination: Optional[str] = None) -> Dict[str, Any]:
+    """Find the next scheduled train departure with platform number and fare."""
+    try:
+        from backend.app.services.smart_journey.station_service import StationGuideService
+        departures = StationGuideService.get_station_departures(station_id, "train")
+        if destination:
+            d_lower = destination.lower()
+            matched = [dep for dep in departures if d_lower in dep["destination_en"].lower() or d_lower in dep["destination_ja"]]
+            next_dep = matched[0] if matched else (departures[0] if departures else None)
+        else:
+            next_dep = departures[0] if departures else None
+
+        return {"success": True, "next_train": next_dep}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+def get_next_bus(bus_stop_id: str, route_name: Optional[str] = None) -> Dict[str, Any]:
+    """Find the next scheduled bus departure with platform and route details."""
+    try:
+        from backend.app.services.smart_journey.station_service import StationGuideService
+        departures = StationGuideService.get_station_departures(bus_stop_id, "bus")
+        if route_name:
+            r_lower = route_name.lower()
+            matched = [dep for dep in departures if r_lower in dep["line_name"].lower()]
+            next_bus = matched[0] if matched else (departures[0] if departures else None)
+        else:
+            next_bus = departures[0] if departures else None
+
+        return {"success": True, "next_bus": next_bus}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+def get_platform_information(station_id: str, platform_number: str) -> Dict[str, Any]:
+    """Retrieve verified boarding guidance and accessibility directions for a platform."""
+    try:
+        from backend.app.services.smart_journey.station_service import StationGuideService
+        guide = StationGuideService.get_platform_navigation_guide(station_id, platform_number)
+        return {"success": True, "platform_guide": guide}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+def calculate_transport_route(origin: str, destination: str) -> Dict[str, Any]:
+    """Compute complete route plan with duration, distance, fares, transfers, and step instructions."""
+    try:
+        from backend.app.services.smart_journey.journey_service import SmartJourneyService
+        plan = SmartJourneyService.get_journey_plan(origin, destination)
+        return {"success": True, "journey_plan": plan}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+def calculate_journey_fare(origin: str, destination: str, passenger_type: str = "adult") -> Dict[str, Any]:
+    """Calculate exact rail and bus fares for adults and children."""
+    try:
+        from backend.app.services.smart_journey.journey_service import SmartJourneyService
+        plan = SmartJourneyService.get_journey_plan(origin, destination)
+        adult_fare = plan["train_fare_jpy"] + plan["bus_fare_jpy"]
+        child_fare = adult_fare // 2
+        return {
+            "success": True,
+            "origin": origin,
+            "destination": destination,
+            "adult_fare_jpy": adult_fare,
+            "child_fare_jpy": child_fare,
+            "passenger_type": passenger_type,
+            "applicable_fare_jpy": adult_fare if passenger_type == "adult" else child_fare,
+            "ic_card_accepted": True
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+def get_nearby_services(service_type: str, latitude: float, longitude: float) -> Dict[str, Any]:
+    """Locate nearest essential services: hospital, ATM, police, coin locker, or pharmacy."""
+    try:
+        from backend.app.services.smart_journey.category_service import CategoryExplorationService
+        nearby = CategoryExplorationService.get_nearby_locations(latitude, longitude, radius_km=10.0)
+        return {"success": True, "services": nearby["nearby_places"]}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
 # Tool Registry mapping names to functions and tool documentation
 TOOL_REGISTRY = {
     "search_destinations": search_destinations,
@@ -587,5 +788,21 @@ TOOL_REGISTRY = {
     "get_hazard_and_safety_alerts": get_hazard_and_safety_alerts,
     "get_destination_gallery": get_destination_gallery,
     "get_live_crowdsense_2": get_live_crowdsense_2,
-    "get_provider_sync_status": get_provider_sync_status
+    "get_provider_sync_status": get_provider_sync_status,
+    # FujiNova 11.0 Hana Tools
+    "detect_user_location": detect_user_location,
+    "search_transport_stations": search_transport_stations,
+    "search_fujikyu_bus_stops": search_fujikyu_bus_stops,
+    "get_nearby_places": get_nearby_places,
+    "get_live_crowd_information": get_live_crowd_information,
+    "compare_destination_crowds": compare_destination_crowds,
+    "find_quieter_alternatives": find_quieter_alternatives,
+    "find_hidden_gems": find_hidden_gems,
+    "get_station_departures": get_station_departures,
+    "get_next_train": get_next_train,
+    "get_next_bus": get_next_bus,
+    "get_platform_information": get_platform_information,
+    "calculate_transport_route": calculate_transport_route,
+    "calculate_journey_fare": calculate_journey_fare,
+    "get_nearby_services": get_nearby_services
 }

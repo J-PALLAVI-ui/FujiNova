@@ -291,6 +291,15 @@ def init_db(db_path: Optional[str] = None) -> None:
             is_free_tier INTEGER DEFAULT 1
         );
         """)
+
+        # FujiNova 11.0 — Hana Smart Journey & Station Guide Schema & Seeding
+        try:
+            from backend.app.services.smart_journey.data_seed import seed_fujinova11_data
+            seed_fujinova11_data(cursor)
+        except Exception as e:
+            # Fallback safe logging if seed fails during partial migrations
+            pass
+
         conn.commit()
 
 

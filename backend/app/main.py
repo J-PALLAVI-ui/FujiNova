@@ -30,6 +30,7 @@ from backend.app.api.routes_disruptions import router as disruptions_router
 from backend.app.api.routes_expenses import router as expenses_router
 from backend.app.api.routes_business import router as business_router
 from backend.app.api.routes_live_intel import router as live_intel_router
+from backend.app.api.routes_smart_journey import router as smart_journey_router
 from backend.app.services.sync.sync_manager import SyncManager
 
 
@@ -100,6 +101,7 @@ app.include_router(disruptions_router)
 app.include_router(expenses_router)
 app.include_router(business_router)
 app.include_router(live_intel_router)
+app.include_router(smart_journey_router)
 
 # Direct Compatibility Endpoints (as inspected in /docs)
 from backend.app.api.routes_health import health_check

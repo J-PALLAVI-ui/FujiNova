@@ -16,6 +16,7 @@ import { ExperienceModeProvider, useExperienceMode } from './context/ExperienceM
 import { LanguageProvider, useTranslation } from './i18n/LanguageContext';
 import { GlobalLanguageSelector } from './components/GlobalLanguageSelector';
 import { InteractiveSakuraBackground, SeasonMode } from './components/InteractiveSakuraBackground';
+import { HanaSmartJourneyView } from './components/HanaSmartJourney/HanaSmartJourneyView';
 
 import { TravellerProfile, ItineraryPlan, Place, ItineraryStop } from './types';
 import ALL_VERIFIED_LANDMARKS from './data/all_landmarks.json';
@@ -35,6 +36,7 @@ import {
 } from 'lucide-react';
 
 export type WorkspaceTab = 
+  | 'smart_journey'
   | 'discover' 
   | 'hana' 
   | 'twin' 
@@ -60,7 +62,7 @@ const AppInner: React.FC = () => {
     return localStorage.getItem('fujinova_active_session') || `fn_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
   });
 
-  const [activeTab, setActiveTab] = useState<WorkspaceTab>('discover');
+  const [activeTab, setActiveTab] = useState<WorkspaceTab>('smart_journey');
   const [_profile, setProfile] = useState<TravellerProfile>({});
   const [itinerary, setItinerary] = useState<ItineraryPlan | null>(null);
   const [basket, setBasket] = useState<Place[]>([]);
@@ -296,6 +298,19 @@ const AppInner: React.FC = () => {
           {/* Primary Workspace Navigation Tabs (Streamlined 7 Sections, Zero Horizontal Scrollbar) */}
           <nav className="flex items-center gap-1 bg-[#EFE4D6]/90 p-1 rounded-xl border border-[#E2D5C4] shrink-0 shadow-inner">
             <button
+              onClick={() => setActiveTab('smart_journey')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                activeTab === 'smart_journey'
+                  ? 'bg-[#C66B4E] text-white shadow-xs'
+                  : 'text-[#5A525E] hover:text-[#29252B] hover:bg-[#F7EFE5]/80'
+              }`}
+            >
+              <span className="text-sm">🌸</span>
+              <span>Hana Smart Journey</span>
+              <span className="text-[9px] bg-[#E9A5B5] text-white px-1.5 py-0.2 rounded-full font-bold">11.0</span>
+            </button>
+
+            <button
               onClick={() => setActiveTab('discover')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'discover'
@@ -496,6 +511,12 @@ const AppInner: React.FC = () => {
 
       {/* Main Workspace Display Container */}
       <main id="main-content" tabIndex={-1} className="flex-1 overflow-hidden relative outline-hidden">
+        {activeTab === 'smart_journey' && (
+          <div className="h-full overflow-y-auto">
+            <HanaSmartJourneyView />
+          </div>
+        )}
+
         {activeTab === 'discover' && (
           <DiscoverView
             season={season}
