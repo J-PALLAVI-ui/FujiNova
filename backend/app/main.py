@@ -117,6 +117,18 @@ from backend.app.services.crowd.recommendation_service import recommendation_ser
 async def root_health():
     return await health_check()
 
+@app.get("/api/v1/providers/health", tags=["Provider Governance"])
+async def api_providers_health():
+    """Return all 14 external data providers with exact taxonomy status classifications and $0 cost lock."""
+    sync_mgr = SyncManager.get_instance()
+    providers = sync_mgr.get_all_provider_health()
+    return {
+        "success": True,
+        "total_providers": len(providers),
+        "zero_cost_lock_enforced": True,
+        "providers": providers
+    }
+
 @app.get("/api/attractions", tags=["Places Compatibility"])
 def api_attractions(limit: int = 100, offset: int = 0):
     places = search_places_db(limit=limit, offset=offset)

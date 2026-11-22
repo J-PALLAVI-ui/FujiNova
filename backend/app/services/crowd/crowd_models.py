@@ -20,6 +20,19 @@ class PlaceCrowdStatus(BaseModel):
     historical_peak_hours: Optional[str] = Field(None, description="Typical rush window (e.g. '11:00 - 14:30')")
     trend: Optional[Literal["rising", "steady", "falling"]] = Field("steady", description="Crowd progression trend")
     advisory: Optional[str] = Field(None, description="Visitor guidance notes (e.g. 'Parking queues exceeding 20 min')")
+    live_available: Optional[bool] = Field(False, description="True if sufficient fresh community reports (>=3 in 60m) exist")
+    reports_count: Optional[int] = Field(0, description="Number of fresh crowd reports received in last 60m")
+    status_message: Optional[str] = Field(None, description="Live crowd status or data availability notice")
+    typical_crowd_pattern: Optional[Dict[str, Any]] = Field(None, description="Historical crowd baseline model")
+
+
+class CrowdUserReportRequest(BaseModel):
+    """Schema for traveler first-party opt-in crowd report."""
+    place_id: str
+    crowd_level: Literal["Quiet", "Normal", "Busy", "Very Busy"]
+    device_id: str = Field(..., description="Device or session identifier (hashed on backend)")
+    consent: bool = Field(True, description="User consent flag for anonymous coarse crowd reporting")
+    coarse_area: Optional[str] = Field(None, description="Coarse regional district (e.g. Fujiyoshida / Kawaguchiko)")
 
 
 class CrowdSystemStatusResponse(BaseModel):

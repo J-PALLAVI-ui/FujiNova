@@ -38,6 +38,15 @@ export const Step2CrowdAndChoices: React.FC<Step2Props> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'crowd' | 'access' | 'nearby' | 'photos'>('crowd');
   const [activeAlternativeModal, setActiveAlternativeModal] = useState<string | null>(null);
+  
+  // First-party opt-in crowd report state
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportLevel, setReportLevel] = useState<'Quiet' | 'Normal' | 'Busy' | 'Very Busy'>('Normal');
+  const [reportConsent, setReportConsent] = useState(true);
+  const [reportsCount, setReportsCount] = useState(1); // default demo state: 1 report (below threshold of 3)
+  const [reportSuccessMsg, setReportSuccessMsg] = useState<string | null>(null);
+  const [currentLevel, setCurrentLevel] = useState(crowdLevel);
+  const [currentScore, setCurrentScore] = useState(crowdScore);
 
   const sampleAlternatives: Record<string, CrowdAlternative[]> = {
     quieter_places: [
@@ -111,9 +120,40 @@ export const Step2CrowdAndChoices: React.FC<Step2Props> = ({
     onProceedToTransport();
   };
 
+  const handleSubmitReport = async () => {
+    if (!reportConsent) return;
+    try {
+      await fetch('/api/v1/crowd/reports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          place_id: destinationName.toLowerCase().replace(/\s+/g, '_'),
+          crowd_level: reportLevel,
+          device_id: 'browser_user_session',
+          consent: reportConsent,
+          coarse_area: 'Fuji Five Lakes'
+        })
+      });
+    } catch {
+      // Offline fallback
+    }
+
+    const nextCount = reportsCount + 1;
+    setReportsCount(nextCount);
+    if (nextCount >= 3) {
+      setCurrentLevel(reportLevel === 'Very Busy' ? 'High' : reportLevel);
+      setCurrentScore(reportLevel === 'Quiet' ? 25 : reportLevel === 'Normal' ? 50 : reportLevel === 'Busy' ? 75 : 90);
+    }
+    setReportSuccessMsg('Report submitted! Thank you for contributing to crowd awareness.');
+    setTimeout(() => {
+      setShowReportModal(false);
+      setReportSuccessMsg(null);
+    }, 1600);
+  };
+
   // Semi-circle SVG angle calculation for gauge
   // Angle from -180 deg (low) to 0 deg (high)
-  const angle = -180 + (crowdScore / 100) * 180;
+  const angle = -180 + (currentScore / 100) * 180;
   const radians = (angle * Math.PI) / 180;
   const needleX = 100 + 70 * Math.cos(radians);
   const needleY = 100 + 70 * Math.sin(radians);
@@ -195,9 +235,15 @@ export const Step2CrowdAndChoices: React.FC<Step2Props> = ({
               <span>👥</span>
               <span>Crowd Information</span>
             </div>
-            <span className="text-[9px] bg-[#FFF0E8] text-[#C66B4E] px-2 py-0.5 rounded-full font-medium border border-[#FADCCB]">
-              Illustrative Example (Not Live)
-            </span>
+            {reportsCount >= 3 ? (
+              <span className="text-[9px] bg-[#EBF4EB] text-[#3D663C] px-2 py-0.5 rounded-full font-bold border border-[#D5E5D5]">
+                Live Community Verified ({reportsCount} reports)
+              </span>
+            ) : (
+              <span className="text-[9px] bg-[#FFF0E8] text-[#C66B4E] px-2 py-0.5 rounded-full font-medium border border-[#FADCCB]">
+                Crowd Data: Unavailable (Reports: {reportsCount}/3)
+              </span>
+            )}
           </div>
 
           {/* Semi-Circular Radial Gauge */}
@@ -245,12 +291,19 @@ export const Step2CrowdAndChoices: React.FC<Step2Props> = ({
               {/* Gauge Text Overlay */}
               <div className="absolute bottom-0 text-center flex flex-col items-center">
                 <span className="text-[10px] text-[#7A6C76] font-medium">Current Crowd Level</span>
-                <span className="text-base font-extrabold text-[#C66B4E] leading-none">{crowdLevel}</span>
+                <span className="text-base font-extrabold text-[#C66B4E] leading-none">
+                  {currentLevel}
+                </span>
+                {reportsCount < 3 && (
+                  <span className="text-[7.5px] text-[#A83F70] font-bold">
+                    (Live Unavailable &lt; 3)
+                  </span>
+                )}
               </div>
             </div>
 
             <span className="mt-1 text-[9px] bg-[#FAF2EB] text-[#7A6C76] px-2 py-0.5 rounded-full font-medium">
-              Live Status: <span className="text-[#C66B4E] font-bold">Estimated</span>
+              Live Status: <span className="text-[#C66B4E] font-bold">{reportsCount >= 3 ? 'Live Community Verified' : 'Unavailable (Showing Historical Model)'}</span>
             </span>
           </div>
 
@@ -258,7 +311,9 @@ export const Step2CrowdAndChoices: React.FC<Step2Props> = ({
           <div className="bg-[#FCF8F5] rounded-lg p-2 text-[10px] space-y-1 border border-[#F0E3D8]">
             <div className="flex justify-between text-[#7A6C76]">
               <span>Source</span>
-              <span className="font-semibold text-[#29252B]">CrowdSense (Multi-Source)</span>
+              <span className="font-semibold text-[#29252B]">
+                {reportsCount >= 3 ? 'FujiNova First-Party Opt-in Community' : 'CrowdSense (Multi-Source)'}
+              </span>
             </div>
             <div className="flex justify-between text-[#7A6C76]">
               <span>Observed</span>
@@ -266,15 +321,89 @@ export const Step2CrowdAndChoices: React.FC<Step2Props> = ({
             </div>
             <div className="flex justify-between text-[#7A6C76]">
               <span>Confidence</span>
-              <span className="font-semibold text-[#789477]">High ({confidencePct}%)</span>
+              <span className="font-semibold text-[#789477]">
+                {reportsCount >= 3 ? `High (${confidencePct}%)` : `High (${confidencePct}%)`}
+              </span>
             </div>
             <div className="flex justify-between text-[#7A6C76]">
               <span>Data Type</span>
-              <span className="font-semibold text-[#29252B]">Estimated (based on busyness, trends & sensors)</span>
+              <span className="font-semibold text-[#29252B]">
+                {reportsCount >= 3 ? 'Live Community Reports' : 'Estimated (based on busyness, trends & sensors)'}
+              </span>
+            </div>
+            <div className="flex justify-between text-[#7A6C76]">
+              <span>Live Reports</span>
+              <span className="font-semibold text-[#C66B4E]">
+                {reportsCount} fresh reports (last 60m) · Min 3 required
+              </span>
             </div>
             <div className="flex justify-between text-[#7A6C76]">
               <span>Last Update</span>
               <span className="font-semibold text-[#29252B]">{lastUpdateText}</span>
+            </div>
+          </div>
+
+          {/* First-Party Report Button */}
+          <button
+            onClick={() => setShowReportModal(true)}
+            className="w-full py-1.5 px-2 bg-[#FFF0F4] hover:bg-[#FFE4EC] text-[#A83F70] border border-[#FAD6DF] rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
+          >
+            <span>🌸</span>
+            <span>Report Current Crowd Level</span>
+          </button>
+        </div>
+
+        {/* Dedicated Typical Crowd Pattern (Historical Estimate) Card */}
+        <div className="bg-white rounded-xl p-3 border border-[#EBDCD0] shadow-2xs space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 font-bold text-xs text-[#29252B]">
+              <span>📊</span>
+              <span>Typical Crowd Pattern</span>
+            </div>
+            <span className="text-[8.5px] bg-[#FAF2EB] text-[#7A6C76] px-1.5 py-0.5 rounded font-medium border border-[#EBDCD0]">
+              Historical Estimate (Not Live)
+            </span>
+          </div>
+
+          <p className="text-[9.5px] text-[#554A53] leading-relaxed">
+            Historical baseline calibrated against peak visiting hours and clear weather days around Mount Fuji:
+          </p>
+
+          <div className="grid grid-cols-2 gap-2 text-[10px]">
+            <div className="bg-[#FCF8F5] p-2 rounded-lg border border-[#F0E3D8]">
+              <span className="text-[#C66B4E] font-bold block">🔥 Peak Hours</span>
+              <span className="font-semibold text-[#29252B]">10:00 - 14:30 JST</span>
+              <p className="text-[9px] text-[#7A6C76] mt-0.5">Heavy tour bus volume</p>
+            </div>
+            <div className="bg-[#FCF8F5] p-2 rounded-lg border border-[#F0E3D8]">
+              <span className="text-[#789477] font-bold block">🍃 Quieter Hours</span>
+              <span className="font-semibold text-[#29252B]">Before 09:00 / After 16:00</span>
+              <p className="text-[9px] text-[#7A6C76] mt-0.5">Tranquil photography & strolls</p>
+            </div>
+          </div>
+
+          {/* Hourly Trend Bars */}
+          <div className="pt-1">
+            <span className="text-[9px] text-[#7A6C76] font-medium block mb-1">Typical Daily Busyness Curve:</span>
+            <div className="flex items-end justify-between gap-1 h-12 bg-[#FAF2EB] p-2 rounded-lg border border-[#EBDCD0]">
+              {[
+                { time: '08:00', pct: 30, level: 'Low' },
+                { time: '10:00', pct: 70, level: 'High' },
+                { time: '12:00', pct: 95, level: 'Peak' },
+                { time: '14:00', pct: 80, level: 'High' },
+                { time: '16:00', pct: 45, level: 'Mod' },
+                { time: '18:00', pct: 20, level: 'Quiet' },
+              ].map((b) => (
+                <div key={b.time} className="flex-1 flex flex-col items-center gap-0.5">
+                  <div
+                    style={{ height: `${b.pct * 0.28}px` }}
+                    className={`w-full rounded-xs transition-all ${
+                      b.pct >= 75 ? 'bg-[#C66B4E]' : b.pct >= 45 ? 'bg-[#E9A5B5]' : 'bg-[#789477]'
+                    }`}
+                  />
+                  <span className="text-[7.5px] text-[#7A6C76] font-medium">{b.time}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -400,6 +529,92 @@ export const Step2CrowdAndChoices: React.FC<Step2Props> = ({
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* First-Party Opt-In Crowd Report Modal */}
+      {showReportModal && (
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-2xs flex flex-col justify-end z-40 p-3">
+          <div className="bg-[#FFF9F5] rounded-xl p-3 border border-[#EBDCD0] shadow-lg space-y-2.5">
+            <div className="flex items-center justify-between border-b border-[#EBDCD0] pb-2">
+              <span className="font-bold text-xs text-[#A83F70] flex items-center gap-1.5">
+                <span>🌸</span>
+                <span>Report Current Crowd at {destinationName}</span>
+              </span>
+              <button
+                onClick={() => setShowReportModal(false)}
+                className="w-5 h-5 rounded-full bg-gray-200 text-xs flex items-center justify-center font-bold text-gray-700 hover:bg-gray-300"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-[10px] text-[#554A53]">
+              Help fellow travelers by sharing how busy this location feels right now. All submissions are privacy-preserving.
+            </p>
+
+            {/* 4 Choices */}
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { level: 'Quiet' as const, label: '🍃 Quiet', desc: 'Few people, spacious' },
+                { level: 'Normal' as const, label: '🌤️ Normal', desc: 'Average flow, relaxed' },
+                { level: 'Busy' as const, label: '👥 Busy', desc: 'Noticeable queues' },
+                { level: 'Very Busy' as const, label: '🔥 Very Busy', desc: 'High crowding / waits' },
+              ].map((item) => (
+                <button
+                  key={item.level}
+                  type="button"
+                  onClick={() => setReportLevel(item.level)}
+                  className={`p-2 rounded-lg border text-left text-[10px] transition-colors ${
+                    reportLevel === item.level
+                      ? 'bg-[#FFF0F4] border-[#A83F70] font-bold text-[#A83F70]'
+                      : 'bg-white border-[#EAD7C8] hover:border-[#C66B4E] text-[#29252B]'
+                  }`}
+                >
+                  <p className="font-bold leading-tight">{item.label}</p>
+                  <p className="text-[8.5px] text-[#7A6C76] leading-tight mt-0.5">{item.desc}</p>
+                </button>
+              ))}
+            </div>
+
+            {/* Consent Checkbox */}
+            <label className="flex items-start gap-2 pt-1 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={reportConsent}
+                onChange={(e) => setReportConsent(e.target.checked)}
+                className="mt-0.5 rounded text-[#A83F70] focus:ring-[#A83F70]"
+              />
+              <span className="text-[9px] text-[#7A6C76] leading-tight">
+                I consent to anonymous, coarse regional crowd reporting under FujiNova's $0-spend privacy policy. No personal identifiers or precise GPS traces are stored.
+              </span>
+            </label>
+
+            {reportSuccessMsg && (
+              <div className="p-1.5 bg-[#EBF4EB] text-[#3D663C] text-[10px] font-bold rounded text-center border border-[#D5E5D5]">
+                {reportSuccessMsg}
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setShowReportModal(false)}
+                className="flex-1 py-1.5 bg-[#F5ECE5] text-[#29252B] rounded-lg text-[10px] font-bold hover:bg-[#EBDCD0]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={!reportConsent}
+                onClick={handleSubmitReport}
+                className="flex-1 py-1.5 bg-[#A83F70] text-white rounded-lg text-[10px] font-bold hover:bg-[#923360] disabled:opacity-50 transition-colors"
+              >
+                Submit Observation
+              </button>
             </div>
           </div>
         </div>

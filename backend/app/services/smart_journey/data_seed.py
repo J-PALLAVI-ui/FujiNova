@@ -138,6 +138,36 @@ def init_fujinova11_schema(cursor: sqlite3.Cursor) -> None:
     );
     """)
 
+    # 7. First-Party Opt-In Crowd User Reports (FujiNova 11.0 Revised Free-API Governance)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS crowd_user_reports (
+        report_id TEXT PRIMARY KEY,
+        place_id TEXT NOT NULL,
+        crowd_level TEXT NOT NULL CHECK(crowd_level IN ('Quiet', 'Normal', 'Busy', 'Very Busy')),
+        reporter_device_hash TEXT NOT NULL,
+        consent_flag INTEGER NOT NULL DEFAULT 1,
+        coarse_area TEXT,
+        created_at TEXT NOT NULL
+    );
+    """)
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_crowd_reports_place ON crowd_user_reports (place_id, created_at DESC);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_crowd_reports_rate ON crowd_user_reports (reporter_device_hash, place_id, created_at DESC);")
+
+    # 8. External API Quota & Governance Tracking (FujiNova 11.0 $0 Cost Lock & Provider Registry)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS provider_quota_tracking (
+        provider_name TEXT PRIMARY KEY,
+        daily_quota_limit INTEGER NOT NULL,
+        credits_used_today INTEGER NOT NULL DEFAULT 0,
+        reset_date TEXT NOT NULL,
+        is_hard_stop_active INTEGER NOT NULL DEFAULT 0,
+        status_classification TEXT NOT NULL,
+        notes TEXT NOT NULL,
+        last_sync_attempt TEXT,
+        last_sync_success TEXT
+    );
+    """)
+
 
 def seed_fujinova11_data(cursor: sqlite3.Cursor) -> None:
     """Seed comprehensive FujiNova 11.0 reference and operational data."""
@@ -601,3 +631,87 @@ def seed_fujinova11_data(cursor: sqlite3.Cursor) -> None:
         json.dumps(steps_kawa_chureito),
         json.dumps(route_geojson)
     ))
+
+    # 7. Seed Provider Quota & Governance Tracking (FujiNova 11.0 14-Provider Registry)
+    providers_governance = [
+        (
+            "JMA Disaster Prevention XML",
+            50000, 0, "LIVE VERIFIED",
+            "Official Japan meteorological and volcanic XML feeds. Free, no key required, no SLA."
+        ),
+        (
+            "Fujikyu Bus GTFS-JP",
+            10000, 0, "FREE STATIC DATA",
+            "Official open transit timetable data. Static timetables only, no live GPS or vehicle occupancy."
+        ),
+        (
+            "TERAREN Station & Railway API",
+            10000, 0, "FREE STATIC DATA",
+            "Metadata & coordinates only for railway lines and stations; no real-time schedules."
+        ),
+        (
+            "ODPT API",
+            5000, 0, "NEEDS REGISTRATION",
+            "Token required; FujiKyuko operator transit feed not participating. Live vehicle tracking marked UNAVAILABLE."
+        ),
+        (
+            "Geoapify Places & Routing",
+            3000, 0, "FREE WITH LIMIT",
+            "3,000 credits/day hard limit enforced. Road routing is geometry only (not traffic-aware). Mandatory attribution: Powered by Geoapify | © OpenStreetMap contributors."
+        ),
+        (
+            "MapLibre + OpenFreeMap",
+            100000, 0, "LIVE VERIFIED",
+            "Community open vector tiles, no API key required."
+        ),
+        (
+            "Wikimedia Commons",
+            20000, 0, "LIVE VERIFIED",
+            "MediaWiki API. Real destination photography with required author & CC license attribution."
+        ),
+        (
+            "LibreTranslate",
+            100000, 0, "SELF-HOSTED",
+            "Self-hosted local neural translation compute. $0 API spend."
+        ),
+        (
+            "Nager.Date",
+            10000, 0, "LIVE VERIFIED",
+            "Public holiday calendar API for Japanese national holidays (JP)."
+        ),
+        (
+            "Frankfurter",
+            10000, 0, "LIVE VERIFIED",
+            "European Central Bank reference foreign exchange rates (JPY conversions). Free, no key."
+        ),
+        (
+            "TomTom Traffic",
+            0, 0, "UNAVAILABLE",
+            "Published geographic coverage table explicitly excludes Japan. Excluded by architecture."
+        ),
+        (
+            "BestTime.app",
+            0, 0, "PAID/NOT ENABLED",
+            "Commercial foot-traffic provider ($29/month production tier). Excluded by $0 spend lock."
+        ),
+        (
+            "Google Places Reviews/Photos Scraper",
+            0, 0, "PAID/NOT ENABLED",
+            "Terms of service violation and billing required (SerpApi/Outscraper). Excluded by policy."
+        ),
+        (
+            "Google Routes Traffic",
+            0, 0, "PAID/NOT ENABLED",
+            "Requires billing account and credit card. Excluded by $0 spend lock."
+        )
+    ]
+
+    for name, quota, used, status_class, notes in providers_governance:
+        cursor.execute("""
+        INSERT OR REPLACE INTO provider_quota_tracking (
+            provider_name, daily_quota_limit, credits_used_today, reset_date,
+            is_hard_stop_active, status_classification, notes, last_sync_attempt, last_sync_success
+        ) VALUES (
+            ?, ?, ?, date('now'), 0, ?, ?, datetime('now'), datetime('now')
+        )
+        """, (name, quota, used, status_class, notes))

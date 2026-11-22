@@ -203,11 +203,36 @@ class SyncManager:
             logger.error(f"Error updating provider health for {provider_name}: {e}")
 
     def get_all_provider_health(self) -> List[Dict[str, Any]]:
-        """Retrieve complete health dashboard across all providers."""
+        """Retrieve complete health dashboard across all providers with governance classifications."""
         try:
             with get_db_connection() as conn:
                 cursor = conn.cursor()
+                # Join or fallback to provider_quota_tracking for complete 14-provider governance
+                cursor.execute("""
+                SELECT provider_name, daily_quota_limit, credits_used_today, reset_date,
+                       is_hard_stop_active, status_classification, notes, last_sync_attempt, last_sync_success
+                FROM provider_quota_tracking
+                ORDER BY provider_name ASC;
+                """)
+                rows = cursor.fetchall()
+                if rows:
+                    return [
+                        {
+                            "provider_name": r["provider_name"],
+                            "classification": r["status_classification"],
+                            "status": "HEALTHY" if r["status_classification"] in ("LIVE VERIFIED", "FREE STATIC DATA", "FREE WITH LIMIT", "SELF-HOSTED") else "DISABLED_OR_UNAVAILABLE",
+                            "daily_quota_limit": r["daily_quota_limit"],
+                            "credits_used_today": r["credits_used_today"],
+                            "is_hard_stop_active": bool(r["is_hard_stop_active"]),
+                            "notes": r["notes"],
+                            "last_sync_success": r["last_sync_success"],
+                            "last_sync_attempt": r["last_sync_attempt"]
+                        }
+                        for r in rows
+                    ]
+                
                 cursor.execute("SELECT * FROM provider_sync_health ORDER BY category ASC;")
                 return [dict(r) for r in cursor.fetchall()]
-        except Exception:
+        except Exception as e:
+            logger.error(f"Error fetching provider health: {e}")
             return []

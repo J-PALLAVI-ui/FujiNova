@@ -72,7 +72,7 @@ export const SmartJourneyBanner: React.FC<SmartJourneyBannerProps> = ({ onLangua
             className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#EFEAF2] border border-[#DCD3E3] text-[#4F3F56] hover:bg-[#E5DDE9] transition-colors"
           >
             <span>🌐</span>
-            <span>All Languages <span className="opacity-70 text-[9px]">(196 Countries)</span></span>
+            <span>Global Multilingual Support · All Languages <span className="opacity-70 text-[9px]">(20+ Tested Languages & Extensible i18n)</span></span>
           </button>
         </div>
       </div>

@@ -226,7 +226,7 @@ export const Step3StationGuide: React.FC<Step3Props> = ({
               >
                 <span className="col-span-3 font-bold text-[#29252B]">{dep.time}</span>
                 <span className="col-span-4 truncate text-[#403944]">{dep.destination}</span>
-                <span className="col-span-2 text-center text-[#789477] font-bold">{dep.platform}</span>
+                <span className="col-span-2 text-center text-[#789477] font-bold">{dep.platform || '—'}</span>
                 <span className="col-span-3 text-right">
                   <span className="bg-[#EBF4EB] text-[#3D663C] text-[9px] font-bold px-1.5 py-0.5 rounded-full">
                     {dep.status}
@@ -234,6 +234,14 @@ export const Step3StationGuide: React.FC<Step3Props> = ({
                 </span>
               </div>
             ))}
+          </div>
+
+          {/* Operational Reality Notice */}
+          <div className="mt-1 px-2 py-1 bg-[#FAF2EB] rounded-md text-[9px] text-[#7A6C76] flex flex-col sm:flex-row sm:items-center justify-between gap-1 border border-[#EBDCD0]">
+            <span className="font-medium text-[#A83F70]">Live vehicle tracking: Unavailable (Operator feed required)</span>
+            <span className="text-[8px] bg-white px-1.5 py-0.5 rounded text-[#29252B] font-medium border border-[#E8D9CD]">
+              Static GTFS-JP Timetable
+            </span>
           </div>
         </div>
 
@@ -257,11 +265,17 @@ export const Step3StationGuide: React.FC<Step3Props> = ({
 
           <div className="grid grid-cols-2 gap-2 bg-[#FCF8F5] p-2 rounded-lg text-[10px] border border-[#F0E3D8]">
             <div className="space-y-1">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[#7A6C76]">Platform:</span>
-                <span className="font-bold text-[#29252B]">{currentService.platform}</span>
-                <span className="text-[8px] bg-[#EBF4EB] text-[#3D663C] font-bold px-1 rounded-xs">✓ Verified (Operator Info)</span>
-              </div>
+              {currentService.platform && currentService.verified ? (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[#7A6C76]">Platform:</span>
+                  <span className="font-bold text-[#29252B]">{currentService.platform}</span>
+                  <span className="text-[8px] bg-[#EBF4EB] text-[#3D663C] font-bold px-1 rounded-xs">✓ Verified (Operator Info)</span>
+                </div>
+              ) : (
+                <div className="text-[8.5px] text-[#A83F70] bg-[#FFF0F4] p-1 rounded-md border border-[#FAD6DF] leading-tight">
+                  Platform/boarding information unavailable - please confirm on the operator departure board/signage
+                </div>
+              )}
               <div className="flex items-center gap-1.5">
                 <span className="text-[#7A6C76]">Fare:</span>
                 <span className="font-bold text-[#C66B4E]">¥{currentService.adult_fare_jpy} (Adult)</span>
