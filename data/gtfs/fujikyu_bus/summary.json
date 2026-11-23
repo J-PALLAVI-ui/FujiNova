@@ -1,0 +1,130 @@
+{
+  "feed_info": {
+    "feed_publisher_name": "富士急バス株式会社",
+    "feed_publisher_url": "https://www.fujikyubus.co.jp/",
+    "feed_lang": "ja",
+    "feed_start_date": "20260105",
+    "feed_end_date": "20261231",
+    "feed_version": "202610161800"
+  },
+  "agency": {
+    "agency_id": "1090001008495",
+    "agency_name": "富士急バス株式会社",
+    "agency_url": "https://www.fujikyubus.co.jp/",
+    "agency_timezone": "Asia/Tokyo",
+    "agency_lang": "ja",
+    "agency_phone": "",
+    "agency_fare_url": "",
+    "agency_email": ""
+  },
+  "routes_count": 231,
+  "stops_count": 1499,
+  "calendar_count": 8,
+  "sample_routes": [
+    {
+      "route_id": "10113",
+      "route_short_name": "",
+      "route_long_name": "月夜野→道志小中→診療所→長又",
+      "route_color": "",
+      "route_text_color": ""
+    },
+    {
+      "route_id": "10123",
+      "route_short_name": "",
+      "route_long_name": "長又→道志小中→診療所→月夜野",
+      "route_color": "",
+      "route_text_color": ""
+    },
+    {
+      "route_id": "10213",
+      "route_short_name": "",
+      "route_long_name": "月夜野-湯・医-長又",
+      "route_color": "",
+      "route_text_color": ""
+    },
+    {
+      "route_id": "10323",
+      "route_short_name": "",
+      "route_long_name": "長又→道志小中学校→月夜野",
+      "route_color": "",
+      "route_text_color": ""
+    },
+    {
+      "route_id": "10413",
+      "route_short_name": "",
+      "route_long_name": "都留市駅→大月駅",
+      "route_color": "",
+      "route_text_color": ""
+    },
+    {
+      "route_id": "10423",
+      "route_short_name": "",
+      "route_long_name": "大月駅→都留市駅",
+      "route_color": "",
+      "route_text_color": ""
+    },
+    {
+      "route_id": "10513",
+      "route_short_name": "",
+      "route_long_name": "月夜野-医-長又",
+      "route_color": "",
+      "route_text_color": ""
+    },
+    {
+      "route_id": "10613",
+      "route_short_name": "",
+      "route_long_name": "月夜野→道志中→市立病院",
+      "route_color": "",
+      "route_text_color": ""
+    },
+    {
+      "route_id": "10623",
+      "route_short_name": "",
+      "route_long_name": "都留市駅→道志中→月夜野",
+      "route_color": "",
+      "route_text_color": ""
+    },
+    {
+      "route_id": "10713",
+      "route_short_name": "",
+      "route_long_name": "道志水源の森--都留市立病院前",
+      "route_color": "",
+      "route_text_color": ""
+    },
+    {
+      "route_id": "10813",
+      "route_short_name": "",
+      "route_long_name": "都留市駅--つるぎ",
+      "route_color": "",
+      "route_text_color": ""
+    },
+    {
+      "route_id": "10823",
+      "route_short_name": "",
+      "route_long_name": "つるぎ--都留市駅",
+      "route_color": "",
+      "route_text_color": ""
+    },
+    {
+      "route_id": "10913",
+      "route_short_name": "",
+      "route_long_name": "都留市駅--菅野上",
+      "route_color": "",
+      "route_text_color": ""
+    },
+    {
+      "route_id": "10923",
+      "route_short_name": "",
+      "route_long_name": "菅野上--都留市駅",
+      "route_color": "",
+      "route_text_color": ""
+    },
+    {
+      "route_id": "12323",
+      "route_short_name": "",
+      "route_long_name": "浅川→百蔵山登山口→猿橋→営業所前",
+      "route_color": "",
+      "route_text_color": ""
+    }
+  ]
+}

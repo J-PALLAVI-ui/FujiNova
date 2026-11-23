@@ -1,0 +1,122 @@
+[
+  {
+    "trip_id": "0114_04_01_01_0900",
+    "depart_kawaguchiko": "09:00:00",
+    "arrive_oishi": "09:27:00",
+    "stop_count": 20
+  },
+  {
+    "trip_id": "0215_04_01_03_0900",
+    "depart_kawaguchiko": "09:00:00",
+    "arrive_oishi": "09:27:00",
+    "stop_count": 20
+  },
+  {
+    "trip_id": "0215_04_01_06_0900",
+    "depart_kawaguchiko": "09:00:00",
+    "arrive_oishi": "09:27:00",
+    "stop_count": 20
+  },
+  {
+    "trip_id": "0115_04_01_01_0915",
+    "depart_kawaguchiko": "09:15:00",
+    "arrive_oishi": "09:42:00",
+    "stop_count": 20
+  },
+  {
+    "trip_id": "0216_02_01_03_0915",
+    "depart_kawaguchiko": "09:15:00",
+    "arrive_oishi": "09:42:00",
+    "stop_count": 20
+  },
+  {
+    "trip_id": "0216_02_01_06_0915",
+    "depart_kawaguchiko": "09:15:00",
+    "arrive_oishi": "09:42:00",
+    "stop_count": 20
+  },
+  {
+    "trip_id": "0116_05_01_01_0930",
+    "depart_kawaguchiko": "09:30:00",
+    "arrive_oishi": "09:57:00",
+    "stop_count": 20
+  },
+  {
+    "trip_id": "0117_04_01_01_0930",
+    "depart_kawaguchiko": "09:30:00",
+    "arrive_oishi": "09:59:00",
+    "stop_count": 20
+  },
+  {
+    "trip_id": "0217_02_01_03_0930",
+    "depart_kawaguchiko": "09:30:00",
+    "arrive_oishi": "09:57:00",
+    "stop_count": 20
+  },
+  {
+    "trip_id": "0218_02_01_03_0930",
+    "depart_kawaguchiko": "09:30:00",
+    "arrive_oishi": "09:59:00",
+    "stop_count": 20
+  },
+  {
+    "trip_id": "0217_02_01_06_0930",
+    "depart_kawaguchiko": "09:30:00",
+    "arrive_oishi": "09:57:00",
+    "stop_count": 20
+  },
+  {
+    "trip_id": "0218_02_01_06_0930",
+    "depart_kawaguchiko": "09:30:00",
+    "arrive_oishi": "09:59:00",
+    "stop_count": 20
+  },
+  {
+    "trip_id": "0118_05_01_01_0945",
+    "depart_kawaguchiko": "09:45:00",
+    "arrive_oishi": "10:12:00",
+    "stop_count": 20
+  },
+  {
+    "trip_id": "0219_02_01_03_0945",
+    "depart_kawaguchiko": "09:45:00",
+    "arrive_oishi": "10:12:00",
+    "stop_count": 20
+  },
+  {
+    "trip_id": "0219_02_01_06_0945",
+    "depart_kawaguchiko": "09:45:00",
+    "arrive_oishi": "10:12:00",
+    "stop_count": 20
+  },
+  {
+    "trip_id": "0119_04_01_01_1000",
+    "depart_kawaguchiko": "10:00:00",
+    "arrive_oishi": "10:27:00",
+    "stop_count": 20
+  },
+  {
+    "trip_id": "0220_02_01_03_1000",
+    "depart_kawaguchiko": "10:00:00",
+    "arrive_oishi": "10:27:00",
+    "stop_count": 20
+  },
+  {
+    "trip_id": "0220_02_01_06_1000",
+    "depart_kawaguchiko": "10:00:00",
+    "arrive_oishi": "10:27:00",
+    "stop_count": 20
+  },
+  {
+    "trip_id": "0120_04_01_01_1015",
+    "depart_kawaguchiko": "10:15:00",
+    "arrive_oishi": "10:42:00",
+    "stop_count": 20
+  },
+  {
+    "trip_id": "0221_02_01_03_1015",
+    "depart_kawaguchiko": "10:15:00",
+    "arrive_oishi": "10:42:00",
+    "stop_count": 20
+  }
+]

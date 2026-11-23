@@ -1,0 +1,380 @@
+[
+  {
+    "stop_id": "0003_02",
+    "stop_name": "富士山駅",
+    "stop_name_en": "Mt.Fuji Station",
+    "stop_lat": 35.483821,
+    "stop_lon": 138.795356
+  },
+  {
+    "stop_id": "0003_03",
+    "stop_name": "富士山駅",
+    "stop_name_en": "Mt.Fuji Station",
+    "stop_lat": 35.483834,
+    "stop_lon": 138.795247
+  },
+  {
+    "stop_id": "0003_04",
+    "stop_name": "富士山駅",
+    "stop_name_en": "Mt.Fuji Station",
+    "stop_lat": 35.483862,
+    "stop_lon": 138.795161
+  },
+  {
+    "stop_id": "0003_05",
+    "stop_name": "富士山駅",
+    "stop_name_en": "Mt.Fuji Station",
+    "stop_lat": 35.48396768,
+    "stop_lon": 138.7951412
+  },
+  {
+    "stop_id": "0003_99",
+    "stop_name": "富士山駅",
+    "stop_name_en": "Mt.Fuji Station",
+    "stop_lat": 35.483819,
+    "stop_lon": 138.795275
+  },
+  {
+    "stop_id": "0025_01",
+    "stop_name": "河口湖駅",
+    "stop_name_en": "Kawaguchiko Sta.",
+    "stop_lat": 35.498338,
+    "stop_lon": 138.768846
+  },
+  {
+    "stop_id": "0025_04",
+    "stop_name": "河口湖駅",
+    "stop_name_en": "Kawaguchiko Sta.",
+    "stop_lat": 35.4984144,
+    "stop_lon": 138.7687426
+  },
+  {
+    "stop_id": "0025_05",
+    "stop_name": "河口湖駅",
+    "stop_name_en": "Kawaguchiko Sta.",
+    "stop_lat": 35.49842603,
+    "stop_lon": 138.7685469
+  },
+  {
+    "stop_id": "0025_06",
+    "stop_name": "河口湖駅",
+    "stop_name_en": "Kawaguchiko Sta.",
+    "stop_lat": 35.49849231,
+    "stop_lon": 138.7683784
+  },
+  {
+    "stop_id": "0025_07",
+    "stop_name": "河口湖駅",
+    "stop_name_en": "Kawaguchiko Sta.",
+    "stop_lat": 35.49861441,
+    "stop_lon": 138.7685426
+  },
+  {
+    "stop_id": "0025_99",
+    "stop_name": "河口湖駅",
+    "stop_name_en": "Kawaguchiko Sta.",
+    "stop_lat": 35.498417,
+    "stop_lon": 138.768544
+  },
+  {
+    "stop_id": "0797_01",
+    "stop_name": "新倉",
+    "stop_name_en": "Arakura",
+    "stop_lat": 35.607056,
+    "stop_lon": 139.057784
+  },
+  {
+    "stop_id": "1431_01",
+    "stop_name": "忍野入口",
+    "stop_name_en": "Oshino-iriguchi",
+    "stop_lat": 35.452904,
+    "stop_lon": 138.811497
+  },
+  {
+    "stop_id": "1431_02",
+    "stop_name": "忍野入口",
+    "stop_name_en": "Oshino-iriguchi",
+    "stop_lat": 35.452898,
+    "stop_lon": 138.811791
+  },
+  {
+    "stop_id": "1431_03",
+    "stop_name": "忍野入口",
+    "stop_name_en": "Oshino-iriguchi",
+    "stop_lat": 35.453465,
+    "stop_lon": 138.811528
+  },
+  {
+    "stop_id": "1431_04",
+    "stop_name": "忍野入口",
+    "stop_name_en": "Oshino-iriguchi",
+    "stop_lat": 35.453343,
+    "stop_lon": 138.811436
+  },
+  {
+    "stop_id": "1449_01",
+    "stop_name": "富士山山中湖（ホテルマウント富士入口",
+    "stop_name_en": "Fujisanyamanakako(Hotel-Mount-Fuji-iriguchi)",
+    "stop_lat": 35.425895,
+    "stop_lon": 138.849204
+  },
+  {
+    "stop_id": "1449_02",
+    "stop_name": "富士山山中湖（ホテルマウント富士入口",
+    "stop_name_en": "Fujisanyamanakako(Hotel-Mount-Fuji-iriguchi)",
+    "stop_lat": 35.426087,
+    "stop_lon": 138.849272
+  },
+  {
+    "stop_id": "1449_99",
+    "stop_name": "富士山山中湖（ホテルマウント富士入口",
+    "stop_name_en": "Fujisanyamanakako(Hotel-Mount-Fuji-iriguchi)",
+    "stop_lat": 35.425633,
+    "stop_lon": 138.849331
+  },
+  {
+    "stop_id": "1455_01",
+    "stop_name": "山中湖郵便局入口",
+    "stop_name_en": "Yamanakako-yubinkyoku-iriguchi",
+    "stop_lat": 35.421204,
+    "stop_lon": 138.852123
+  },
+  {
+    "stop_id": "1455_02",
+    "stop_name": "山中湖郵便局入口",
+    "stop_name_en": "Yamanakako-yubinkyoku-iriguchi",
+    "stop_lat": 35.421412,
+    "stop_lon": 138.852061
+  },
+  {
+    "stop_id": "1467_01",
+    "stop_name": "山中湖村役場前",
+    "stop_name_en": "Yamanakako-murayakuba-mae",
+    "stop_lat": 35.410687,
+    "stop_lon": 138.862016
+  },
+  {
+    "stop_id": "1467_02",
+    "stop_name": "山中湖村役場前",
+    "stop_name_en": "Yamanakako-murayakuba-mae",
+    "stop_lat": 35.410919,
+    "stop_lon": 138.862139
+  },
+  {
+    "stop_id": "1482_01",
+    "stop_name": "PICA山中湖前",
+    "stop_name_en": "PICA Yamanakako-mae",
+    "stop_lat": 35.40734546,
+    "stop_lon": 138.875163
+  },
+  {
+    "stop_id": "1483_01",
+    "stop_name": "山中湖旭日丘",
+    "stop_name_en": "Yamanakakoasahigaoka",
+    "stop_lat": 35.406879,
+    "stop_lon": 138.875965
+  },
+  {
+    "stop_id": "1483_02",
+    "stop_name": "山中湖旭日丘",
+    "stop_name_en": "Yamanakakoasahigaoka",
+    "stop_lat": 35.406905,
+    "stop_lon": 138.876269
+  },
+  {
+    "stop_id": "1497_01",
+    "stop_name": "忍野しのびの里",
+    "stop_name_en": "Oshinoshinobinosato",
+    "stop_lat": 35.456468,
+    "stop_lon": 138.81861
+  },
+  {
+    "stop_id": "1497_02",
+    "stop_name": "忍野しのびの里",
+    "stop_name_en": "Oshinoshinobinosato",
+    "stop_lat": 35.456628,
+    "stop_lon": 138.819133
+  },
+  {
+    "stop_id": "1499_01",
+    "stop_name": "忍野温泉前",
+    "stop_name_en": "Oshino-onsen-mae",
+    "stop_lat": 35.456473,
+    "stop_lon": 138.822391
+  },
+  {
+    "stop_id": "1499_02",
+    "stop_name": "忍野温泉前",
+    "stop_name_en": "Oshino-onsen-mae",
+    "stop_lat": 35.456444,
+    "stop_lon": 138.822019
+  },
+  {
+    "stop_id": "1519_01",
+    "stop_name": "忍野郵便局前",
+    "stop_name_en": "Oshino-yubinkyoku-mae",
+    "stop_lat": 35.459809,
+    "stop_lon": 138.845067
+  },
+  {
+    "stop_id": "1519_02",
+    "stop_name": "忍野郵便局前",
+    "stop_name_en": "Oshino-yubinkyoku-mae",
+    "stop_lat": 35.459914,
+    "stop_lon": 138.845008
+  },
+  {
+    "stop_id": "1523_01",
+    "stop_name": "忍野村役場前",
+    "stop_name_en": "Oshinomurayakuba-mae",
+    "stop_lat": 35.459708,
+    "stop_lon": 138.847837
+  },
+  {
+    "stop_id": "1523_02",
+    "stop_name": "忍野村役場前",
+    "stop_name_en": "Oshinomurayakuba-mae",
+    "stop_lat": 35.45982,
+    "stop_lon": 138.847593
+  },
+  {
+    "stop_id": "1539_01",
+    "stop_name": "忍野八海",
+    "stop_name_en": "Oshinohakkai",
+    "stop_lat": 35.458789,
+    "stop_lon": 138.830806
+  },
+  {
+    "stop_id": "1539_02",
+    "stop_name": "忍野八海",
+    "stop_name_en": "Oshinohakkai",
+    "stop_lat": 35.458981,
+    "stop_lon": 138.83073
+  },
+  {
+    "stop_id": "1557_01",
+    "stop_name": "山中湖ガーデン前",
+    "stop_name_en": "Yamanakako-garden-mae",
+    "stop_lat": 35.407784,
+    "stop_lon": 138.879173
+  },
+  {
+    "stop_id": "1561_01",
+    "stop_name": "京王リップル山中湖前",
+    "stop_name_en": "Keiorippuruyamanakako",
+    "stop_lat": 35.408006,
+    "stop_lon": 138.881181
+  },
+  {
+    "stop_id": "1561_02",
+    "stop_name": "京王リップル山中湖前",
+    "stop_name_en": "Keiorippuruyamanakako",
+    "stop_lat": 35.407929,
+    "stop_lon": 138.881198
+  },
+  {
+    "stop_id": "1577_01",
+    "stop_name": "山中湖交流プラザ前",
+    "stop_name_en": "Yamanakakokoryupuraza",
+    "stop_lat": 35.41948,
+    "stop_lon": 138.903455
+  },
+  {
+    "stop_id": "1577_02",
+    "stop_name": "山中湖交流プラザ前",
+    "stop_name_en": "Yamanakakokoryupuraza",
+    "stop_lat": 35.419478,
+    "stop_lon": 138.903613
+  },
+  {
+    "stop_id": "1585_01",
+    "stop_name": "山中湖平野",
+    "stop_name_en": "Yamanakakohirano",
+    "stop_lat": 35.426197,
+    "stop_lon": 138.903575
+  },
+  {
+    "stop_id": "1585_99",
+    "stop_name": "山中湖平野",
+    "stop_name_en": "Yamanakakohirano",
+    "stop_lat": 35.426344,
+    "stop_lon": 138.903683
+  },
+  {
+    "stop_id": "1657_01",
+    "stop_name": "下吉田駅",
+    "stop_name_en": "Shimoyoshida-eki",
+    "stop_lat": 35.497628,
+    "stop_lon": 138.803347
+  },
+  {
+    "stop_id": "1733_01",
+    "stop_name": "下吉田中学校前",
+    "stop_name_en": "Shimoyoshida-chugakko-mae",
+    "stop_lat": 35.494767,
+    "stop_lon": 138.796053
+  },
+  {
+    "stop_id": "1737_01",
+    "stop_name": "新倉郵便局前",
+    "stop_name_en": "Arakurayubinkyoku-mae",
+    "stop_lat": 35.494314,
+    "stop_lon": 138.793396
+  },
+  {
+    "stop_id": "1857_01",
+    "stop_name": "河口湖自然生活館",
+    "stop_name_en": "Kawaguchiko Shizenseikatsukan",
+    "stop_lat": 35.52369,
+    "stop_lon": 138.74495
+  },
+  {
+    "stop_id": "1859_01",
+    "stop_name": "大石荘前",
+    "stop_name_en": "Ooishiso-mae",
+    "stop_lat": 35.522888,
+    "stop_lon": 138.743411
+  },
+  {
+    "stop_id": "1953_01",
+    "stop_name": "本栖湖",
+    "stop_name_en": "Lake Motosuko",
+    "stop_lat": 35.46327,
+    "stop_lon": 138.603924
+  },
+  {
+    "stop_id": "1953_02",
+    "stop_name": "本栖湖",
+    "stop_name_en": "Lake Motosuko",
+    "stop_lat": 35.463156,
+    "stop_lon": 138.603828
+  },
+  {
+    "stop_id": "1957_01",
+    "stop_name": "本栖湖観光案内所",
+    "stop_name_en": "Motosukokankoannaijo",
+    "stop_lat": 35.464982,
+    "stop_lon": 138.602404
+  },
+  {
+    "stop_id": "1957_02",
+    "stop_name": "本栖湖観光案内所",
+    "stop_name_en": "Motosukokankoannaijo",
+    "stop_lat": 35.464982,
+    "stop_lon": 138.602404
+  },
+  {
+    "stop_id": "3539_01",
+    "stop_name": "山中湖交流プラザ",
+    "stop_name_en": "Yamanakako-koryu-plaza-mae",
+    "stop_lat": 35.419714,
+    "stop_lon": 138.902025
+  },
+  {
+    "stop_id": "9519_01",
+    "stop_name": "大石峠",
+    "stop_name_en": "Oishitoge",
+    "stop_lat": 35.52804959,
+    "stop_lon": 138.7161364
+  }
+]

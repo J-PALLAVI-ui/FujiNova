@@ -1,0 +1,15 @@
+{
+  "trip_id": "0114_04_01_01_0900",
+  "route": {
+    "route_id": "80611",
+    "agency_id": "1090001008495",
+    "route_short_name": "",
+    "route_long_name": "河口湖周遊バス",
+    "route_desc": "",
+    "route_type": "3",
+    "route_url": "",
+    "route_color": "",
+    "route_text_color": "",
+    "jp_parent_route_id": ""
+  }
+}

@@ -1,0 +1,44 @@
+[
+  {
+    "stop_id": "1857_01",
+    "stop_code": "",
+    "stop_name": "河口湖自然生活館",
+    "stop_desc": "",
+    "stop_lat": "35.52369",
+    "stop_lon": "138.74495",
+    "zone_id": "1857",
+    "stop_url": "",
+    "location_type": "0",
+    "parent_station": "",
+    "stop_timezone": "",
+    "wheelchair_boarding": ""
+  },
+  {
+    "stop_id": "1859_01",
+    "stop_code": "",
+    "stop_name": "大石荘前",
+    "stop_desc": "",
+    "stop_lat": "35.522888",
+    "stop_lon": "138.743411",
+    "zone_id": "1859",
+    "stop_url": "",
+    "location_type": "0",
+    "parent_station": "",
+    "stop_timezone": "",
+    "wheelchair_boarding": ""
+  },
+  {
+    "stop_id": "9519_01",
+    "stop_code": "",
+    "stop_name": "大石峠",
+    "stop_desc": "",
+    "stop_lat": "35.52804959",
+    "stop_lon": "138.7161364",
+    "zone_id": "9519",
+    "stop_url": "",
+    "location_type": "0",
+    "parent_station": "",
+    "stop_timezone": "",
+    "wheelchair_boarding": ""
+  }
+]

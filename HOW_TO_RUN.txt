@@ -1,0 +1,34 @@
+========================================================================
+                      FUJINOVA - QUICK START GUIDE
+========================================================================
+
+EASIEST WAY TO RUN:
+-------------------
+Simply double-click:
+    START_FUJINOVA.bat  (or run.bat)
+
+What this launcher does automatically:
+1. Checks for Python and creates a local virtual environment (.venv) if needed.
+2. Installs required backend packages from backend/requirements.txt.
+3. Installs frontend packages (npm install) if needed.
+4. Seeds the 35 verified Mount Fuji destinations into the SQLite database.
+5. Launches the FastAPI backend server on http://127.0.0.1:8000.
+6. Launches the React Vite frontend on http://localhost:5173.
+7. Automatically opens http://localhost:5173 in your default browser.
+
+To STOP the servers:
+Just close the two console windows that opened ("FujiNova Backend" and "FujiNova Frontend").
+
+------------------------------------------------------------------------
+MANUAL WAY TO RUN (TWO TERMINALS):
+------------------------------------------------------------------------
+Terminal 1 - Backend:
+    .\.venv\Scripts\python -m backend.data.seed_places
+    .\.venv\Scripts\uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload
+
+Terminal 2 - Frontend:
+    cd frontend
+    npm run dev
+
+Then open http://localhost:5173 in your browser.
+========================================================================

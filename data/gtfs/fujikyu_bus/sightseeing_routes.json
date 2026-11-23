@@ -1,0 +1,212 @@
+[
+  {
+    "route_id": "40012",
+    "route_short_name": "",
+    "route_long_name": "勝沼周遊バス（右回り折り返しなし）",
+    "route_color": "",
+    "route_text_color": ""
+  },
+  {
+    "route_id": "40111",
+    "route_short_name": "",
+    "route_long_name": "河口湖駅--御殿場駅",
+    "route_color": "",
+    "route_text_color": ""
+  },
+  {
+    "route_id": "40121",
+    "route_short_name": "",
+    "route_long_name": "御殿場駅--河口湖駅",
+    "route_color": "",
+    "route_text_color": ""
+  },
+  {
+    "route_id": "40311",
+    "route_short_name": "",
+    "route_long_name": "河口湖駅-膳棚-御殿場駅",
+    "route_color": "",
+    "route_text_color": ""
+  },
+  {
+    "route_id": "40312",
+    "route_short_name": "",
+    "route_long_name": "河口湖駅-膳棚-御殿場駅",
+    "route_color": "",
+    "route_text_color": ""
+  },
+  {
+    "route_id": "40321",
+    "route_short_name": "",
+    "route_long_name": "御殿場駅-膳棚-河口湖駅",
+    "route_color": "",
+    "route_text_color": ""
+  },
+  {
+    "route_id": "40322",
+    "route_short_name": "",
+    "route_long_name": "御殿場駅-膳棚-河口湖駅",
+    "route_color": "",
+    "route_text_color": ""
+  },
+  {
+    "route_id": "40621",
+    "route_short_name": "",
+    "route_long_name": "本栖湖レストハウス前--富士山駅",
+    "route_color": "",
+    "route_text_color": ""
+  },
+  {
+    "route_id": "41121",
+    "route_short_name": "",
+    "route_long_name": "平野--富士山山中湖（ホテルマウント富士入口",
+    "route_color": "",
+    "route_text_color": ""
+  },
+  {
+    "route_id": "41811",
+    "route_short_name": "",
+    "route_long_name": "富士山駅--西湖民宿",
+    "route_color": "",
+    "route_text_color": ""
+  },
+  {
+    "route_id": "41821",
+    "route_short_name": "",
+    "route_long_name": "西湖民宿--富士山駅",
+    "route_color": "",
+    "route_text_color": ""
+  },
+  {
+    "route_id": "43111",
+    "route_short_name": "",
+    "route_long_name": "河口湖駅-河天-天下茶屋",
+    "route_color": "",
+    "route_text_color": ""
+  },
+  {
+    "route_id": "43121",
+    "route_short_name": "",
+    "route_long_name": "天下茶屋-天河-河口湖駅",
+    "route_color": "",
+    "route_text_color": ""
+  },
+  {
+    "route_id": "44311",
+    "route_short_name": "",
+    "route_long_name": "富士山駅-富石甲-甲府駅",
+    "route_color": "",
+    "route_text_color": ""
+  },
+  {
+    "route_id": "44312",
+    "route_short_name": "",
+    "route_long_name": "富士山駅-富石甲-甲府駅",
+    "route_color": "",
+    "route_text_color": ""
+  },
+  {
+    "route_id": "44321",
+    "route_short_name": "",
+    "route_long_name": "甲府駅-甲石富-富士山駅",
+    "route_color": "",
+    "route_text_color": ""
+  },
+  {
+    "route_id": "44322",
+    "route_short_name": "",
+    "route_long_name": "甲府駅-甲石富-富士山駅",
+    "route_color": "",
+    "route_text_color": ""
+  },
+  {
+    "route_id": "44411",
+    "route_short_name": "",
+    "route_long_name": "甲府駅-甲玉-富士急上阿原車庫",
+    "route_color": "",
+    "route_text_color": ""
+  },
+  {
+    "route_id": "44412",
+    "route_short_name": "",
+    "route_long_name": "甲府駅-甲玉-富士急上阿原車庫",
+    "route_color": "",
+    "route_text_color": ""
+  },
+  {
+    "route_id": "44421",
+    "route_short_name": "",
+    "route_long_name": "富士急上阿原車庫-玉甲-甲府駅",
+    "route_color": "",
+    "route_text_color": ""
+  },
+  {
+    "route_id": "44422",
+    "route_short_name": "",
+    "route_long_name": "富士急上阿原車庫-玉甲-甲府駅",
+    "route_color": "",
+    "route_text_color": ""
+  },
+  {
+    "route_id": "44711",
+    "route_short_name": "",
+    "route_long_name": "富士山駅--天狗社",
+    "route_color": "",
+    "route_text_color": ""
+  },
+  {
+    "route_id": "44721",
+    "route_short_name": "",
+    "route_long_name": "内野--富士山駅",
+    "route_color": "",
+    "route_text_color": ""
+  },
+  {
+    "route_id": "45011",
+    "route_short_name": "",
+    "route_long_name": "富士山駅-熊穴　右-富士山駅",
+    "route_color": "",
+    "route_text_color": ""
+  },
+  {
+    "route_id": "45021",
+    "route_short_name": "",
+    "route_long_name": "富士山駅-熊穴　左-富士山駅",
+    "route_color": "",
+    "route_text_color": ""
+  },
+  {
+    "route_id": "45311",
+    "route_short_name": "",
+    "route_long_name": "河口湖駅--山梨赤十字病院",
+    "route_color": "",
+    "route_text_color": ""
+  },
+  {
+    "route_id": "45321",
+    "route_short_name": "",
+    "route_long_name": "山梨赤十字病院--河口湖駅",
+    "route_color": "",
+    "route_text_color": ""
+  },
+  {
+    "route_id": "45511",
+    "route_short_name": "",
+    "route_long_name": "富士山駅-上暮地　右-富士山駅",
+    "route_color": "",
+    "route_text_color": ""
+  },
+  {
+    "route_id": "45521",
+    "route_short_name": "",
+    "route_long_name": "富士山駅-上暮地　左-富士山駅",
+    "route_color": "",
+    "route_text_color": ""
+  },
+  {
+    "route_id": "46511",
+    "route_short_name": "",
+    "route_long_name": "富士山駅-富石甲北-甲府駅北口",
+    "route_color": "",
+    "route_text_color": ""
+  }
+]
