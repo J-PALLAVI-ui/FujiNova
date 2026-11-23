@@ -8,6 +8,13 @@ from backend.app.models.place import Place
 router = APIRouter(prefix="/api/v1/places", tags=["Places"])
 
 
+def _clean_param(val: Any) -> Any:
+    """Sanitize parameter, unwrap FastAPI Query objects if passed directly."""
+    if val is None or hasattr(val, "default"):
+        return None
+    return val
+
+
 def search_places_db(
     query: Optional[str] = None,
     category: Optional[str] = None,
@@ -20,6 +27,13 @@ def search_places_db(
     db_path: Optional[str] = None
 ) -> List[Dict[str, Any]]:
     """Search and filter places directly from the canonical SQLite database."""
+    query = _clean_param(query)
+    category = _clean_param(category)
+    accessibility_status = _clean_param(accessibility_status)
+    indoor_alternative = _clean_param(indoor_alternative)
+    opening_status = _clean_param(opening_status)
+    min_fuji_view_rating = _clean_param(min_fuji_view_rating)
+
     sql = "SELECT * FROM places WHERE 1=1"
     params: List[Any] = []
 

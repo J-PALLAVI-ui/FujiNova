@@ -65,7 +65,7 @@ app.include_router(crowd_router)
 
 # Direct Compatibility Endpoints (as inspected in /docs)
 from backend.app.api.routes_health import health_check
-from backend.app.api.routes_places import list_places
+from backend.app.api.routes_places import list_places, search_places_db
 from backend.app.api.routes_routing import search_transit_routes
 from backend.app.api.routes_chat import chat_stream_endpoint, ChatMessageRequest
 from backend.app.services.routing.transit_models import RouteSearchRequest
@@ -79,7 +79,7 @@ async def root_health():
 
 @app.get("/api/attractions", tags=["Places Compatibility"])
 def api_attractions(limit: int = 100, offset: int = 0):
-    places = list_places(limit=limit, offset=offset)
+    places = search_places_db(limit=limit, offset=offset)
     return {"items": places, "total": len(places), "limit": limit, "offset": offset}
 
 @app.get("/api/transport", tags=["Transport Compatibility"])
