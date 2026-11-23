@@ -41,8 +41,17 @@ async def lifespan(app: FastAPI):
     try:
         from backend.data.seed_places import seed_database
         from backend.data.seed_fujinova9 import seed_fujinova9_data
+        from backend.app.core.database import get_db_connection
+        from backend.app.services.smart_journey.data_seed import init_fujinova11_schema, seed_fujinova11_data
+        
         seed_database()
         seed_fujinova9_data()
+        
+        with next(get_db_connection()) as conn:
+            cursor = conn.cursor()
+            init_fujinova11_schema(cursor)
+            seed_fujinova11_data(cursor)
+            conn.commit()
         
         # Initialize FujiNova 10.0 Sync Manager and health diagnostics
         sync_mgr = SyncManager.get_instance()
