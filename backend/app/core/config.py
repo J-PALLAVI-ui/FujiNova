@@ -40,6 +40,10 @@ class Settings(BaseSettings):
     OPENAI_TIMEOUT_SECONDS: float = Field(25.0, description="Request timeout")
     OPENAI_MAX_RETRIES: int = Field(0, description="Retries disabled for paid OpenAI")
 
+    # Google Maps Platform Configuration (Guarded within monthly free allowance)
+    GOOGLE_MAPS_API_KEY: Optional[str] = Field(None, description="Google Maps Platform API key (optional; guarded by free quota)")
+    GOOGLE_MAPS_DAILY_LIMIT: int = Field(250, description="Daily limit for Google Maps requests to guarantee $0 spend")
+
     # Operational Parameters
     FUJINOVA_TEMPERATURE: float = Field(0.7, description="Default sampling temperature")
     FUJINOVA_MAX_RETRIES: int = Field(2, description="Maximum provider retry attempts")

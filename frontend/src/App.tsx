@@ -17,6 +17,10 @@ import { LanguageProvider, useTranslation } from './i18n/LanguageContext';
 import { GlobalLanguageSelector } from './components/GlobalLanguageSelector';
 import { InteractiveSakuraBackground, SeasonMode } from './components/InteractiveSakuraBackground';
 import { HanaSmartJourneyView } from './components/HanaSmartJourney/HanaSmartJourneyView';
+import { PlanMyTripView } from './components/PlanMyTripView';
+import { TreasureMapExplorerView } from './components/TreasureMapExplorerView';
+import { LiveCrowdTrafficView } from './components/LiveCrowdTrafficView';
+import { Step3StationGuide } from './components/HanaSmartJourney/Step3StationGuide';
 
 import { TravellerProfile, ItineraryPlan, Place, ItineraryStop } from './types';
 import ALL_VERIFIED_LANDMARKS from './data/all_landmarks.json';
@@ -24,18 +28,19 @@ import { apiUrl } from './config';
 import { 
   Sparkles, 
   Compass, 
-  Navigation, 
-  Activity, 
   Wallet, 
   Settings,
   ShoppingBag,
   Smile,
   ChevronDown,
-  Check,
-  ShieldAlert
+  Check
 } from 'lucide-react';
 
 export type WorkspaceTab = 
+  | 'plan_my_trip'
+  | 'treasure_map'
+  | 'transit'
+  | 'crowd_traffic'
   | 'smart_journey'
   | 'discover' 
   | 'hana' 
@@ -62,7 +67,7 @@ const AppInner: React.FC = () => {
     return localStorage.getItem('fujinova_active_session') || `fn_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
   });
 
-  const [activeTab, setActiveTab] = useState<WorkspaceTab>('smart_journey');
+  const [activeTab, setActiveTab] = useState<WorkspaceTab>('plan_my_trip');
   const [_profile, setProfile] = useState<TravellerProfile>({});
   const [itinerary, setItinerary] = useState<ItineraryPlan | null>(null);
   const [basket, setBasket] = useState<Place[]>([]);
@@ -295,110 +300,96 @@ const AppInner: React.FC = () => {
             <FujiNovaLogo variant="full-horizontal" size="sm" />
           </button>
 
-          {/* Primary Workspace Navigation Tabs (Streamlined 7 Sections, Zero Horizontal Scrollbar) */}
-          <nav className="flex items-center gap-1 bg-[#EFE4D6]/90 p-1 rounded-xl border border-[#E2D5C4] shrink-0 shadow-inner">
+          {/* Primary Workspace Navigation Tabs (FujiNova 12.0 Streamlined Navigation) */}
+          <nav className="flex items-center gap-1 bg-[#EFE4D6]/90 p-1 rounded-xl border border-[#E2D5C4] shrink-0 shadow-inner overflow-x-auto max-w-[65vw]">
             <button
-              onClick={() => setActiveTab('smart_journey')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                activeTab === 'smart_journey'
+              onClick={() => setActiveTab('plan_my_trip')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                activeTab === 'plan_my_trip'
                   ? 'bg-[#C66B4E] text-white shadow-xs'
                   : 'text-[#5A525E] hover:text-[#29252B] hover:bg-[#F7EFE5]/80'
               }`}
             >
-              <span className="text-sm">🌸</span>
-              <span>Hana Smart Journey</span>
-              <span className="text-[9px] bg-[#E9A5B5] text-white px-1.5 py-0.2 rounded-full font-bold">11.0</span>
+              <span>🗺️</span>
+              <span>Plan My Trip</span>
+              <span className="text-[9px] bg-[#E9A5B5] text-white px-1.5 py-0.2 rounded-full font-bold">12.0</span>
             </button>
 
             <button
-              onClick={() => setActiveTab('discover')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                activeTab === 'discover'
+              onClick={() => setActiveTab('treasure_map')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                activeTab === 'treasure_map'
                   ? 'bg-[#C66B4E] text-white shadow-xs'
                   : 'text-[#5A525E] hover:text-[#29252B] hover:bg-[#F7EFE5]/80'
               }`}
             >
-              <span>{t('nav_discover', 'Discover')}</span>
+              <span>🧭</span>
+              <span>Treasure Map</span>
             </button>
 
             <button
-              onClick={() => setActiveTab('hana')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                activeTab === 'hana'
+              onClick={() => setActiveTab('transit')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                activeTab === 'transit'
                   ? 'bg-[#C66B4E] text-white shadow-xs'
                   : 'text-[#5A525E] hover:text-[#29252B] hover:bg-[#F7EFE5]/80'
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5 text-[#E9A5B5]" />
-              <span>{t('nav_hana', 'Hana AI')}</span>
+              <span>🚌</span>
+              <span>Buses & Trains</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('crowd_traffic')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                activeTab === 'crowd_traffic'
+                  ? 'bg-[#C66B4E] text-white shadow-xs'
+                  : 'text-[#5A525E] hover:text-[#29252B] hover:bg-[#F7EFE5]/80'
+              }`}
+            >
+              <span>👥</span>
+              <span>Crowd & Traffic</span>
             </button>
 
             <button
               onClick={() => setActiveTab('twin')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                 activeTab === 'twin'
                   ? 'bg-[#C66B4E] text-white shadow-xs'
                   : 'text-[#5A525E] hover:text-[#29252B] hover:bg-[#F7EFE5]/80'
               }`}
             >
               <Compass className="w-3.5 h-3.5 text-[#789477]" />
-              <span>{t('nav_twin', '3D Digital Twin')}</span>
+              <span>3D Twin</span>
             </button>
 
             <button
-              onClick={() => setActiveTab('journey')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                activeTab === 'journey'
+              onClick={() => setActiveTab('hana')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                activeTab === 'hana'
                   ? 'bg-[#C66B4E] text-white shadow-xs'
                   : 'text-[#5A525E] hover:text-[#29252B] hover:bg-[#F7EFE5]/80'
               }`}
             >
-              <Navigation className="w-3.5 h-3.5 text-[#789477]" />
-              <span>{t('nav_journey', 'Journey Planner')}</span>
-              {itinerary && (
-                <span className="w-2 h-2 rounded-full bg-[#789477] inline-block" />
-              )}
-            </button>
-
-            <button
-              onClick={() => setActiveTab('essentials')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                activeTab === 'essentials'
-                  ? 'bg-[#C66B4E] text-white shadow-xs'
-                  : 'text-[#5A525E] hover:text-[#29252B] hover:bg-[#F7EFE5]/80'
-              }`}
-            >
-              <ShieldAlert className="w-3.5 h-3.5 text-[#C66B4E]" />
-              <span>{t('nav_essentials', 'Essentials')}</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('intelligence')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                activeTab === 'intelligence'
-                  ? 'bg-[#C66B4E] text-white shadow-xs'
-                  : 'text-[#5A525E] hover:text-[#29252B] hover:bg-[#F7EFE5]/80'
-              }`}
-            >
-              <Activity className="w-3.5 h-3.5 text-[#B99BCB]" />
-              <span>{t('nav_intelligence', 'Travel Intelligence')}</span>
+              <Sparkles className="w-3.5 h-3.5 text-[#E9A5B5]" />
+              <span>Ask Hana</span>
             </button>
 
             <button
               onClick={() => setActiveTab('mytravel')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                 activeTab === 'mytravel'
                   ? 'bg-[#C66B4E] text-white shadow-xs'
                   : 'text-[#5A525E] hover:text-[#29252B] hover:bg-[#F7EFE5]/80'
               }`}
             >
               <Wallet className="w-3.5 h-3.5 text-[#C66B4E]" />
-              <span>{t('nav_mytravel', 'My Travel')}</span>
+              <span>My Itinerary</span>
             </button>
 
             <button
               onClick={() => setActiveTab('settings')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                 activeTab === 'settings'
                   ? 'bg-[#C66B4E] text-white shadow-xs'
                   : 'text-[#5A525E] hover:text-[#29252B] hover:bg-[#F7EFE5]/80'
@@ -511,6 +502,30 @@ const AppInner: React.FC = () => {
 
       {/* Main Workspace Display Container */}
       <main id="main-content" tabIndex={-1} className="flex-1 overflow-hidden relative outline-hidden">
+        {activeTab === 'plan_my_trip' && (
+          <div className="h-full overflow-y-auto">
+            <PlanMyTripView onNavigateToTab={(t) => setActiveTab(t as any)} />
+          </div>
+        )}
+
+        {activeTab === 'treasure_map' && (
+          <div className="h-full overflow-y-auto">
+            <TreasureMapExplorerView />
+          </div>
+        )}
+
+        {activeTab === 'transit' && (
+          <div className="h-full overflow-y-auto p-4 sm:p-6 lg:p-8">
+            <Step3StationGuide stationName="Kawaguchiko Station" onProceedToJourneyPlan={() => setActiveTab('plan_my_trip')} />
+          </div>
+        )}
+
+        {activeTab === 'crowd_traffic' && (
+          <div className="h-full overflow-y-auto">
+            <LiveCrowdTrafficView />
+          </div>
+        )}
+
         {activeTab === 'smart_journey' && (
           <div className="h-full overflow-y-auto">
             <HanaSmartJourneyView />

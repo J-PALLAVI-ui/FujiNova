@@ -65,8 +65,11 @@ CORE RULES:
 @router.post("", response_model=TranslationResponse)
 async def translate_text(request: TranslationRequest) -> TranslationResponse:
     """Translate travel phrases bidirectionally across Japanese, English, Hindi, Tamil, Kannada, and Telugu."""
-    # Ensure Free-Tier compliance
+    # Check deterministic fallback first if Gemini is not configured
     if not settings.is_gemini_configured:
+        fallback = _get_deterministic_fallback(request.text, request.target_language, request.travel_mode)
+        if fallback:
+            return fallback
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Google Gemini API key is missing. Please configure GEMINI_API_KEY in FujiNova/.env."
@@ -132,6 +135,14 @@ def _get_deterministic_fallback(text: str, target_lang: str, mode: str) -> Optio
     text_lower = text.lower().strip()
     
     fallbacks: Dict[str, Dict[str, Any]] = {
+        "where is the red line bus stop?": {
+            "ja": ("レッドラインのバス停はどこですか？", "Reddo Rain no basutei wa doko desu ka?", "Where is the Red Line bus stop?", "The Kawaguchiko Sightseeing Red Line bus boards at Bus Stop #1 outside Kawaguchiko Station."),
+            "en": ("Where is the Red Line bus stop?", "Where is the Red Line bus stop?", "Where is the Red Line bus stop?", "The Kawaguchiko Sightseeing Red Line bus boards at Bus Stop #1.")
+        },
+        "could you please hold my luggage before check-in?": {
+            "ja": ("チェックイン前に荷物を預かっていただけますか？", "Chekkuin mae ni nimotsu o azukatte itadakemasu ka?", "Could you please hold my luggage before check-in?", "Most ryokan and hotels around Mt. Fuji will gladly store luggage before room access."),
+            "en": ("Could you please hold my luggage before check-in?", "Could you please hold my luggage before check-in?", "Could you please hold my luggage before check-in?", "Luggage holding before check-in is customary at most Japanese hotels.")
+        },
         "where is the bus stop?": {
             "ja": ("バス停はどこですか？", "Basutei wa doko desu ka?", "Where is the bus stop?", "Look for the colored bus line poles (Red Line, Green Line) outside Kawaguchiko Station."),
             "en": ("Where is the bus stop?", "Where is the bus stop?", "Where is the bus stop?", "Bus stops at Kawaguchiko Station are numbered 1 through 7.")

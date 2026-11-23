@@ -442,6 +442,14 @@ def seed_fujinova11_data(cursor: sqlite3.Cursor) -> None:
          "Reconstructed traditional thatched-roof farming village featuring folk handicrafts, pottery, and Mt. Fuji backdrop.", "富士山を望む美しい茅葺き屋根の伝統集落。",
          35.5036, 138.6575, "Fujikawaguchiko", "Home", "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800&auto=format&fit=crop&q=80",
          "Peaceful Heritage", 4.6, 500, "9:00 AM – 4:30 PM", "Low", "Paved Walkways"),
+        ("cat_a_lake_kawaguchi", "places_to_visit", "Places to Visit", "Lake Kawaguchi", "河口湖",
+         "Lakeside walk & photo spots offering pristine reflection of Mount Fuji across blue waters.", "富士五湖で最も親しまれる湖。四季折々の富士山の眺望が美しい。",
+         35.5167, 138.7567, "Fujikawaguchiko", "Sparkles", "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800&auto=format&fit=crop&q=80",
+         "Scenic Lake", 4.5, 0, "24 Hours Accessible", "Currently Calm", "Full Lake Promenade"),
+        ("cat_a_arakurayama_vp", "places_to_visit", "Places to Visit", "Arakurayama Viewpoint (Hidden Gem)", "新倉山展望台",
+         "Quiet scenic viewpoint tucked behind the pagoda along the hillside forest trail.", "忠霊塔の奥に広がる静寂な富士山絶景展望スポット。",
+         35.5028, 138.8025, "Fujiyoshida", "Landmark", "https://images.unsplash.com/photo-1528164344705-475426879c0d?w=800&auto=format&fit=crop&q=80",
+         "Hidden Gem", 4.8, 0, "Open Always", "Low", "Forest Trail"),
 
         # Category B: Railway Stations
         ("cat_b_kawaguchiko", "railway_stations", "Railway Stations", "Kawaguchiko Station [FJ18]", "河口湖駅",
@@ -498,6 +506,10 @@ def seed_fujinova11_data(cursor: sqlite3.Cursor) -> None:
          "San Francisco style specialty third-wave roastery serving pour-overs, Boston cream pie, and lake breezes.", "河口湖畔で極上のスペシャリティコーヒーと焼き菓子が味わえる人気カフェ。",
          35.5124, 138.7592, "Fujikawaguchiko", "Coffee", "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&auto=format&fit=crop&q=80",
          "Specialty Coffee", 4.6, 650, "9:30 AM – 5:00 PM", "Moderate", "Outdoor Terrace"),
+        ("cat_e_cafe_mignon", "food_and_cafes", "Food & Cafés", "Hidden Café (Café Mignon / みずカフェ)", "みずカフェ / Café Mignon",
+         "A cozy local café with Mt. Fuji views, serving handcrafted matcha latte, seasonal siphon brews, and chiffon cakes.", "隠れ家的な静寂のカフェ。窓から富士山を望む極上の珈琲時間。",
+         35.5112, 138.7610, "Fujikawaguchiko", "Coffee", "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&auto=format&fit=crop&q=80",
+         "Hidden Gem Café", 4.7, 750, "10:00 AM – 5:00 PM", "Quiet", "Accessible Entrance"),
 
         # Category F: Entertainment & Activities
         ("cat_f_fujiq", "entertainment_activities", "Entertainment & Activities", "Fuji-Q Highland", "富士急ハイランド",
